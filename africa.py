@@ -4,7 +4,7 @@ ASC AFRICA — Plateforme de gestion associative
 Version corrigée — bannière ASC AFRICA, pied de page YAM et navigation bleu/blanc animée
 Version locale SQLite : adhérents, cartes, cotisations, caisse, activités,
 actualités, partenaires, rapports, exports et journal d'audit.
-Lancer : streamlit run app_asc_africa.py
+Lancer : streamlit run asc_africa_edition_images_xxl.py
 """
 from pathlib import Path
 from datetime import date, datetime
@@ -146,6 +146,14 @@ div[data-testid="stImage"] img{{max-height:clamp(150px,18vw,230px);max-width:100
 .stApp{{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}}
 .news-card{{transition:transform .18s ease,box-shadow .18s ease}}
 .news-card:hover,.feature-card:hover{{transform:translateY(-2px);box-shadow:0 14px 32px #123b7517}}
+.club-gallery-card{{border-radius:24px;overflow:hidden;background:#fff;border:1px solid #e1e9f4;box-shadow:0 16px 40px rgba(7,23,46,.12);padding:12px;height:100%;transition:transform .35s ease,box-shadow .35s ease;animation:clubRise .8s both;}}
+.club-gallery-card:hover{{transform:translateY(-7px);box-shadow:0 22px 48px rgba(7,23,46,.19)}}
+.club-gallery-card img{{width:100%;height:clamp(230px,29vw,430px);object-fit:cover;object-position:center;border-radius:17px;display:block;transition:transform .7s ease;}}
+.club-gallery-card:hover img{{transform:scale(1.035)}}
+.club-gallery-message{{padding:14px 8px 7px;color:#123b75;font-weight:850;font-size:clamp(1rem,1.4vw,1.18rem);line-height:1.4}}
+.club-gallery-sub{{padding:0 8px 8px;color:#64748b;font-size:.94rem;line-height:1.55}}
+@media(max-width:700px){{.club-gallery-card img{{height:clamp(220px,68vw,360px)}}}}
+@media(prefers-reduced-motion:reduce){{.club-gallery-card,.club-gallery-card img{{animation:none!important;transition:none!important}}}}
 .news-cover{{display:block;width:100%;height:clamp(300px,42vw,620px);max-height:none;object-fit:cover;object-position:center center;border-radius:20px;margin:14px 0 20px;box-shadow:0 14px 34px rgba(7,23,46,.16);border:1px solid rgba(18,59,117,.10);background:#eaf2fc}}
 .news-card:has(.news-cover){{padding:clamp(18px,2.4vw,34px);overflow:hidden}}
 .news-card:has(.news-cover) h3{{font-size:clamp(1.35rem,2.4vw,2rem);line-height:1.2}}
@@ -538,6 +546,20 @@ def public_page():
         members = int(query_df("SELECT COUNT(*) n FROM members WHERE status='Actif'").iloc[0,0])
         partners = int(query_df("SELECT COUNT(*) n FROM sponsors").iloc[0,0])
         st.markdown("<div class='eyebrow'>Le journal de la vie associative</div><h2 style='font-size:clamp(1.8rem,4vw,3rem);font-weight:950;color:#123b75;line-height:1.1'>L’actualité du club,<br>la vie de notre communauté.</h2><p style='font-size:1.08rem;max-width:850px;color:#526176;line-height:1.7'>Retrouvez les informations, annonces, événements et actions communautaires de l’ASC AFRICA dans un espace clair, vivant et accessible à tous.</p>", unsafe_allow_html=True)
+        # Galerie officielle : portraits de supporters, équipe et emblème du club.
+        gallery_items = [
+            (APP_DIR / "galerie_supporters_asc_africa.png", "LA PASSION NOUS RASSEMBLE", "Chaque supporter fait battre le cœur de l’ASC AFRICA."),
+            (APP_DIR / "equipe_asc_africa.png", "UN GROUPE, UNE FAMILLE", "Ensemble sur le terrain, unis dans la vie."),
+            (APP_DIR / "logo_asc_africa.png", "UNE IDENTITÉ, UNE FIERTÉ", "AFRICA KASSÉ, AFRICA REK — Saint-Louis, Sénégal."),
+        ]
+        st.markdown("<div class='section'>💙 Notre fierté, notre famille, notre histoire</div><p style='color:#526176;line-height:1.7'>Des tribunes au terrain, l’ASC AFRICA vit grâce à celles et ceux qui portent ses couleurs.</p>", unsafe_allow_html=True)
+        gcols = st.columns(3, gap="large")
+        for col, (img_path, title, message) in zip(gcols, gallery_items):
+            with col:
+                if img_path.exists():
+                    st.markdown("<div class='club-gallery-card'>", unsafe_allow_html=True)
+                    st.image(str(img_path), use_container_width=True)
+                    st.markdown(f"<div class='club-gallery-message'>{html.escape(title)}</div><div class='club-gallery-sub'>{html.escape(message)}</div></div>", unsafe_allow_html=True)
         c1,c2,c3=st.columns(3)
         c1.metric("Membres actifs", members); c2.metric("Activités à venir", len(activities)); c3.metric("Partenaires", partners)
         left,right=st.columns([1.5,1], gap="large")
