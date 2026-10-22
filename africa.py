@@ -1,0 +1,898 @@
+# -*- coding: utf-8 -*-
+"""
+ASC AFRICA — Plateforme de gestion associative
+Version corrigée — bannière ASC AFRICA, pied de page YAM et navigation bleu/blanc animée
+Version locale SQLite : adhérents, cartes, cotisations, caisse, activités,
+actualités, partenaires, rapports, exports et journal d'audit.
+Lancer : streamlit run app_asc_africa.py
+"""
+from pathlib import Path
+from datetime import date, datetime
+import sqlite3
+import hashlib
+import secrets
+import urllib.parse
+import html
+import os
+import base64
+
+import pandas as pd
+import streamlit as st
+
+try:
+    from reportlab.lib import colors
+    from reportlab.lib.pagesizes import A4, landscape
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    from reportlab.lib.units import mm
+    from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image as RLImage, KeepTogether
+    from io import BytesIO
+    REPORTLAB_OK = True
+except Exception:
+    REPORTLAB_OK = False
+
+APP_DIR = Path(__file__).resolve().parent
+DB_PATH = APP_DIR / "asc_africa.db"
+LOGO_PATHS = [APP_DIR / "logo_asc_africa.png", APP_DIR / "africa.png", APP_DIR / "logo.png"]
+YAM_LOGO_PATHS = [APP_DIR / "Logo YAM(1).png", APP_DIR / "logo_yam.png", APP_DIR / "yam_logo.png"]
+CLUB = "ASC AFRICA"
+SLOGAN = "AFRICA KASSÉ, AFRICA REK"
+ADMIN_USER = "admin"
+# Changez ce mot de passe dès la première connexion.
+ADMIN_PASSWORD = os.environ.get("ASC_ADMIN_INITIAL_PASSWORD", "Africa@2026!")
+WHATSAPP_COUNTRY = "221"
+CURRENCY = "FCFA"
+BLUE = "#123B75"
+LIGHT_BLUE = "#EAF2FC"
+WHITE = "#FFFFFF"
+GOLD = "#D7A62A"
+
+st.set_page_config(page_title="ASC AFRICA | Gestion & communauté", page_icon="⚽",
+                   layout="wide", initial_sidebar_state="collapsed")
+
+st.markdown(f"""
+<style>
+:root{{--club-blue:{BLUE};--club-light:{LIGHT_BLUE};--club-gold:{GOLD};}}
+.stApp{{background:linear-gradient(180deg,#fff 0%,#f3f7fb 100%);color:#172033;}}
+[data-testid="stHeader"],[data-testid="stToolbar"],[data-testid="stDecoration"],[data-testid="stStatusWidget"],[data-testid="stAppDeployButton"],#MainMenu,footer{{visibility:hidden;}}
+.block-container{{padding-top:1rem;padding-bottom:2rem;max-width:1500px;}}
+.hero{{position:relative;isolation:isolate;padding:clamp(22px,4vw,42px);border-radius:26px;color:#fff;background:radial-gradient(circle at 88% 10%,rgba(79,145,218,.72) 0,transparent 30%),linear-gradient(125deg,#07172e 0%,#123b75 58%,#087e8b 100%);box-shadow:0 18px 45px rgba(18,59,117,.16);margin-bottom:22px;overflow:hidden;border:1px solid rgba(255,255,255,.18);}}
+.hero:before{{content:"";position:absolute;z-index:-1;width:230px;height:230px;right:-75px;bottom:-135px;border:1px solid rgba(255,255,255,.22);border-radius:50%;box-shadow:0 0 0 22px rgba(255,255,255,.035),0 0 0 46px rgba(255,255,255,.025);}}
+.hero h1{{font-size:clamp(2.2rem,5vw,4.6rem);font-weight:950;letter-spacing:-.045em;margin:0;line-height:1.05;}}
+.hero p{{font-size:clamp(1rem,2vw,1.22rem);margin:.8rem 0 0;max-width:850px;line-height:1.65;}}
+.kicker{{font-size:.76rem;letter-spacing:.18em;text-transform:uppercase;font-weight:850;color:#f8d77b;margin-bottom:12px;}}
+.card{{padding:20px;border-radius:20px;background:white;border:1px solid #e0e8f2;box-shadow:0 8px 24px #123b750b;}}
+.card-label{{color:#64748b;font-size:.86rem;font-weight:750;}}
+.card-value{{font-size:clamp(1.1rem,2vw,1.7rem);color:{BLUE};font-weight:900;margin-top:5px;}}
+.section{{font-size:clamp(1.25rem,2vw,1.7rem);font-weight:900;color:{BLUE};margin:1rem 0;letter-spacing:-.02em;}}
+.stButton>button,.stDownloadButton>button{{border-radius:12px;font-weight:800;min-height:2.7rem;}}
+.stButton>button[kind="primary"]{{background:{BLUE};border:0;}}
+div[data-testid="stMetric"]{{background:#fff;border:1px solid #dce7f7;border-radius:16px;padding:14px;}}
+div[data-testid="stTabs"] button{{font-weight:800;}}
+/* Navigation bleu & blanc : barre compacte, active visible et animée */
+div[data-testid="stRadio"] div[role="radiogroup"]{{
+  display:flex;align-items:stretch;gap:7px;flex-wrap:wrap;
+  padding:8px;background:linear-gradient(110deg,#f7fbff,#e8f1ff);
+  border:1px solid #c8daf4;border-radius:18px;
+  box-shadow:0 8px 24px rgba(18,59,117,.10);position:relative;
+}}
+div[data-testid="stRadio"] div[role="radiogroup"] label{{
+  position:relative;isolation:isolate;overflow:hidden;
+  background:#fff;color:#123B75;border:1px solid #d5e3f7;
+  padding:10px 15px;border-radius:12px;font-weight:850;
+  transition:background .22s ease,color .22s ease,transform .22s ease,box-shadow .22s ease,border-color .22s ease;
+  box-shadow:0 2px 5px rgba(18,59,117,.04);cursor:pointer;
+}}
+div[data-testid="stRadio"] div[role="radiogroup"] label:before{{
+  content:"";position:absolute;z-index:-1;inset:0;
+  background:linear-gradient(115deg,#123B75,#2368b7);
+  transform:translateY(105%);transition:transform .24s ease;border-radius:inherit;
+}}
+div[data-testid="stRadio"] div[role="radiogroup"] label:hover{{
+  color:#123B75;border-color:#6f9bd8;transform:translateY(-2px);
+  box-shadow:0 7px 15px rgba(18,59,117,.13);
+}}
+div[data-testid="stRadio"] div[role="radiogroup"] label:has(input:checked){{
+  color:#fff!important;background:#123B75;border-color:#123B75;
+  box-shadow:0 7px 18px rgba(18,59,117,.24);transform:translateY(-1px);
+}}
+div[data-testid="stRadio"] div[role="radiogroup"] label:has(input:checked):before{{transform:translateY(0)}}
+div[data-testid="stRadio"] div[role="radiogroup"] label:has(input:checked) p,
+div[data-testid="stRadio"] div[role="radiogroup"] label:has(input:checked) span{{color:#fff!important}}
+div[data-testid="stRadio"] div[role="radiogroup"] input{{accent-color:#123B75}}
+@keyframes navGlow{{0%,100%{{box-shadow:0 7px 18px rgba(18,59,117,.18)}}50%{{box-shadow:0 9px 24px rgba(35,104,183,.30)}}}}
+div[data-testid="stRadio"] div[role="radiogroup"] label:has(input:checked){{animation:navGlow 2.8s ease-in-out infinite}}
+@media(max-width:760px){{
+  div[data-testid="stRadio"] div[role="radiogroup"]{{gap:6px;padding:7px;border-radius:14px}}
+  div[data-testid="stRadio"] div[role="radiogroup"] label{{padding:8px 10px;font-size:.88rem}}
+}}
+@media(prefers-reduced-motion:reduce){{
+  div[data-testid="stRadio"] div[role="radiogroup"] label,
+  div[data-testid="stRadio"] div[role="radiogroup"] label:before{{transition:none;animation:none}}
+}}
+.news-ticker{{background:#0c294f;color:#fff;border-left:6px solid #f4bd38;padding:13px 17px;border-radius:12px;margin:12px 0 20px;font-weight:750;line-height:1.5;}}
+.eyebrow{{text-transform:uppercase;letter-spacing:.13em;font-size:.72rem;font-weight:900;color:#0b8278;}}
+.news-card{{background:#fff;border:1px solid #e2eaf3;border-radius:18px;padding:20px 22px;margin:12px 0;box-shadow:0 8px 22px #0c294f0a;}}
+.news-card h3{{color:#123b75;margin:.45rem 0 .6rem;font-size:1.25rem;}}
+.pill{{display:inline-block;background:#e7f6f2;color:#087e70;border-radius:30px;padding:5px 10px;font-size:.75rem;font-weight:850;}}
+.feature-card{{background:linear-gradient(140deg,#fff,#eef5fb);border:1px solid #dbe7f2;border-radius:20px;padding:20px;height:100%;}}
+.site-footer{{position:relative;margin-top:34px;padding:clamp(24px,4vw,38px) 18px 0;border-radius:24px 24px 0 0;background:radial-gradient(circle at 50% 0,rgba(58,122,192,.3),transparent 42%),linear-gradient(135deg,#07172e,#123b75 62%,#0b8278);color:#fff;text-align:center;overflow:hidden;border-top:4px solid #d7a62a;box-shadow:0 -8px 28px rgba(18,59,117,.07);}}
+.site-footer .credit{{font-size:1.05rem;font-weight:850;line-height:1.6;}}
+.site-footer .subcredit{{color:#d4e1f1;font-size:.88rem;line-height:1.7;}}\n.logo-band{{display:flex;align-items:center;justify-content:center;gap:22px;flex-wrap:wrap;margin:18px auto 8px;}}
+.brand-lockup{{display:flex;align-items:center;gap:clamp(14px,3vw,32px);justify-content:center;flex-wrap:wrap;padding:20px 0 0;}}
+.brand-lockup img{{width:auto;height:auto;max-width:min(180px,32vw);max-height:150px;object-fit:contain;filter:drop-shadow(0 8px 18px #0002);}}
+/* Logo d'en-tête aligné sur la hauteur visuelle de la bannière */
+div[data-testid="stImage"]{{display:flex;align-items:center;justify-content:center;height:100%;}}
+div[data-testid="stImage"] img{{max-height:clamp(100px,14vw,170px);width:auto;object-fit:contain;filter:drop-shadow(0 8px 18px rgba(18,59,117,.16));border-radius:16px;}}
+@media(max-width:760px){{div[data-testid="stImage"] img{{max-height:105px;max-width:38vw}}}}
+
+.brand-seal{{width:clamp(86px,12vw,150px);height:clamp(86px,12vw,150px);object-fit:contain;display:block;margin:0 auto 18px;}}
+.public-nav-label{{font-size:.72rem;text-transform:uppercase;letter-spacing:.2em;font-weight:900;color:#0b8278;margin:8px 0 0;}}
+.admin-banner{{border-radius:22px;padding:20px 24px;background:linear-gradient(115deg,#07172e,#123b75 70%,#0b8278);color:white;margin:10px 0 18px;box-shadow:0 18px 40px #123b7522;}}
+.admin-banner h2{{margin:0;color:white;font-size:clamp(1.4rem,3vw,2.3rem);font-weight:950;}}
+.admin-banner p{{margin:7px 0 0;color:#dce8f7;}}
+.report-hero{{padding:24px;border-radius:22px;background:linear-gradient(125deg,#07172e,#123b75 65%,#0b8278);color:white;margin:12px 0 20px;border-bottom:5px solid #d7a62a;}}
+.report-hero h2{{font-size:clamp(1.6rem,3vw,2.6rem);font-weight:950;color:#fff;margin:8px 0;}}
+.report-hero p{{color:#dbe7f6;margin:0;}}
+.report-stat{{border-radius:16px;padding:16px;background:#fff;border:1px solid #dbe5f2;border-top:4px solid #123b75;box-shadow:0 8px 20px #07172e0b;min-height:92px;}}
+.report-stat.green{{border-top-color:#0b8278}}.report-stat.gold{{border-top-color:#d7a62a}}.report-stat.red{{border-top-color:#c2414b}}
+.footer-bottom{{margin:24px -18px 0;padding:16px;background:#061326;color:#cbd8e8;font-size:.83rem;}}
+@keyframes riseIn{{from{{opacity:0;transform:translateY(12px)}}to{{opacity:1;transform:translateY(0)}}}}
+.hero,.news-card,.feature-card,.report-hero{{animation:riseIn .45s ease both}}\n.about-grid{{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin:14px 0;}}
+.hero:after{{content:"";display:block;height:3px;width:100%;margin-top:22px;background:linear-gradient(90deg,#f4bd38,rgba(255,255,255,.35),transparent);border-radius:8px}}
+.stApp{{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}}
+.news-card{{transition:transform .18s ease,box-shadow .18s ease}}
+.news-card:hover,.feature-card:hover{{transform:translateY(-2px);box-shadow:0 14px 32px #123b7517}}
+.news-cover{{width:100%;max-height:360px;object-fit:cover;border-radius:14px;margin:8px 0 14px}}
+a{{overflow-wrap:anywhere}}
+.stDownloadButton>button{{border:1px solid #cbd8e8}}
+@media(prefers-reduced-motion:reduce){{*,*:before,*:after{{animation:none!important;transition:none!important;scroll-behavior:auto!important}}}}
+@media(max-width:700px){{.hero{{padding:22px 18px;border-radius:18px;}}.block-container{{padding-left:.8rem;padding-right:.8rem;}}.news-card{{padding:16px;}}div[data-testid="stRadio"] div[role="radiogroup"]{{gap:5px;}}div[data-testid="stRadio"] div[role="radiogroup"] label{{padding:7px 9px;font-size:.82rem;}}}}
+</style>
+""", unsafe_allow_html=True)
+
+def connect():
+    con = sqlite3.connect(DB_PATH, timeout=20, check_same_thread=False)
+    con.row_factory = sqlite3.Row
+    con.execute("PRAGMA foreign_keys=ON")
+    con.execute("PRAGMA journal_mode=WAL")
+    return con
+
+def pw_hash(password, salt=None):
+    salt = salt or secrets.token_hex(16)
+    digest = hashlib.pbkdf2_hmac("sha256", password.encode(), salt.encode(), 180_000).hex()
+    return f"{salt}${digest}"
+
+def verify_password(password, stored):
+    try:
+        salt, expected = stored.split("$", 1)
+        return hashlib.pbkdf2_hmac("sha256", password.encode(), salt.encode(), 180_000).hex() == expected
+    except Exception:
+        return False
+
+def init_db():
+    with connect() as c:
+        c.executescript("""
+        CREATE TABLE IF NOT EXISTS admins(
+            id INTEGER PRIMARY KEY, username TEXT UNIQUE NOT NULL, password_hash TEXT NOT NULL,
+            full_name TEXT NOT NULL, active INTEGER DEFAULT 1, created_at TEXT NOT NULL);
+        CREATE TABLE IF NOT EXISTS members(
+            id INTEGER PRIMARY KEY AUTOINCREMENT, member_no TEXT UNIQUE, full_name TEXT NOT NULL,
+            phone TEXT, neighborhood TEXT, birth_date TEXT, membership_date TEXT NOT NULL,
+            role TEXT DEFAULT 'Supporter', status TEXT DEFAULT 'Actif', notes TEXT,
+            created_at TEXT NOT NULL, updated_at TEXT NOT NULL);
+        CREATE TABLE IF NOT EXISTS payments(
+            id INTEGER PRIMARY KEY AUTOINCREMENT, receipt_no TEXT UNIQUE NOT NULL,
+            member_id INTEGER, payment_date TEXT NOT NULL, payment_type TEXT NOT NULL,
+            amount REAL NOT NULL CHECK(amount>0), period TEXT, method TEXT DEFAULT 'Espèces',
+            note TEXT, created_by TEXT, created_at TEXT NOT NULL,
+            FOREIGN KEY(member_id) REFERENCES members(id) ON DELETE SET NULL);
+        CREATE TABLE IF NOT EXISTS cash_entries(
+            id INTEGER PRIMARY KEY AUTOINCREMENT, entry_date TEXT NOT NULL,
+            direction TEXT NOT NULL CHECK(direction IN ('Entrée','Sortie')),
+            category TEXT NOT NULL, label TEXT NOT NULL, amount REAL NOT NULL CHECK(amount>0),
+            method TEXT DEFAULT 'Espèces', reference TEXT, note TEXT, created_by TEXT,
+            created_at TEXT NOT NULL);
+        CREATE TABLE IF NOT EXISTS activities(
+            id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT NOT NULL, activity_type TEXT,
+            start_date TEXT NOT NULL, end_date TEXT, location TEXT, description TEXT,
+            budget REAL DEFAULT 0, status TEXT DEFAULT 'Prévue', created_at TEXT NOT NULL);
+        CREATE TABLE IF NOT EXISTS news(
+            id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT NOT NULL, category TEXT,
+            publish_date TEXT NOT NULL, content TEXT NOT NULL, published INTEGER DEFAULT 1,
+            created_at TEXT NOT NULL);
+        CREATE TABLE IF NOT EXISTS sponsors(
+            id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, contact TEXT,
+            phone TEXT, contribution REAL DEFAULT 0, partnership_type TEXT,
+            start_date TEXT, end_date TEXT, notes TEXT, created_at TEXT NOT NULL);
+        CREATE TABLE IF NOT EXISTS audit_logs(
+            id INTEGER PRIMARY KEY AUTOINCREMENT, created_at TEXT NOT NULL,
+            actor TEXT NOT NULL, action TEXT NOT NULL, entity TEXT, entity_id INTEGER, details TEXT);
+        CREATE TABLE IF NOT EXISTS public_messages(
+            id INTEGER PRIMARY KEY AUTOINCREMENT, created_at TEXT NOT NULL,
+            full_name TEXT NOT NULL, contact TEXT NOT NULL, subject TEXT NOT NULL,
+            message TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'Nouveau',
+            admin_note TEXT DEFAULT '', handled_by TEXT DEFAULT '', handled_at TEXT DEFAULT '');
+        CREATE INDEX IF NOT EXISTS idx_public_messages_status ON public_messages(status, created_at);
+        CREATE TABLE IF NOT EXISTS site_settings(
+            setting_key TEXT PRIMARY KEY, setting_value TEXT NOT NULL DEFAULT '');
+        CREATE INDEX IF NOT EXISTS idx_payments_date ON payments(payment_date);
+        CREATE INDEX IF NOT EXISTS idx_cash_date ON cash_entries(entry_date);
+        CREATE INDEX IF NOT EXISTS idx_members_name ON members(full_name);
+        """)
+        # Migrations additives : conserver les données déjà enregistrées.
+        existing_news_cols = {row["name"] for row in c.execute("PRAGMA table_info(news)").fetchall()}
+        for col, definition in {
+            "subtitle": "TEXT DEFAULT ''",
+            "author": "TEXT DEFAULT ''",
+            "cover_url": "TEXT DEFAULT ''",
+            "featured": "INTEGER DEFAULT 0",
+        }.items():
+            if col not in existing_news_cols:
+                c.execute(f"ALTER TABLE news ADD COLUMN {col} {definition}")
+        c.execute("CREATE INDEX IF NOT EXISTS idx_news_public_date ON news(published, publish_date)")
+        if not c.execute("SELECT 1 FROM admins WHERE username=?", (ADMIN_USER,)).fetchone():
+            c.execute("INSERT INTO admins(username,password_hash,full_name,created_at) VALUES(?,?,?,?)",
+                      (ADMIN_USER, pw_hash(ADMIN_PASSWORD), "Administrateur ASC AFRICA", datetime.now().isoformat(timespec="seconds")))
+
+def audit(action, entity="", entity_id=None, details=""):
+    with connect() as c:
+        c.execute("INSERT INTO audit_logs(created_at,actor,action,entity,entity_id,details) VALUES(?,?,?,?,?,?)",
+                  (datetime.now().isoformat(timespec="seconds"), st.session_state.get("actor","Visiteur"),
+                   action, entity, entity_id, str(details)[:2000]))
+
+def query_df(sql, params=()):
+    with connect() as c:
+        return pd.read_sql_query(sql, c, params=params)
+
+def execute(sql, params=()):
+    with connect() as c:
+        cur = c.execute(sql, params)
+        return cur.lastrowid
+
+def money(v):
+    try: return f"{float(v or 0):,.0f}".replace(",", " ") + " FCFA"
+    except Exception: return "0 FCFA"
+
+def receipt_no(prefix="AF"):
+    return f"{prefix}-{datetime.now():%Y%m%d}-{secrets.randbelow(90000)+10000}"
+
+def fmt_date(value):
+    try: return datetime.fromisoformat(str(value)[:10]).strftime("%d/%m/%Y")
+    except Exception: return str(value or "—")
+
+def whatsapp_url(phone, message):
+    digits = "".join(ch for ch in str(phone or "") if ch.isdigit())
+    if digits.startswith("0"): digits = WHATSAPP_COUNTRY + digits[1:]
+    elif digits and not digits.startswith(WHATSAPP_COUNTRY): digits = WHATSAPP_COUNTRY + digits
+    return "https://wa.me/" + digits + "?text=" + urllib.parse.quote(message) if digits else ""
+
+def pdf_bytes(title, df, subtitle="ASC AFRICA — Document interne", metrics=None):
+    if not REPORTLAB_OK: return None
+    buf = BytesIO()
+    logo = next((p for p in LOGO_PATHS if p.exists()), None)
+    yam_logo = next((p for p in YAM_LOGO_PATHS if p.exists()), None)
+    styles = getSampleStyleSheet()
+    styles.add(ParagraphStyle(name="ClubTitleXXL", parent=styles["Title"], textColor=colors.HexColor(BLUE), fontSize=25, leading=29, alignment=1, spaceAfter=5))
+    styles.add(ParagraphStyle(name="ClubSubXXL", parent=styles["Normal"], textColor=colors.HexColor("#526176"), fontSize=10, leading=14, alignment=1))
+    styles.add(ParagraphStyle(name="TableHeadXXL", parent=styles["BodyText"], textColor=colors.white, fontSize=8, leading=10, fontName="Helvetica-Bold"))
+    styles.add(ParagraphStyle(name="TableCellXXL", parent=styles["BodyText"], textColor=colors.HexColor("#172033"), fontSize=7.5, leading=9))
+    def page_decor(canvas, doc):
+        canvas.saveState()
+        w,h=doc.pagesize
+        canvas.setFillColor(colors.HexColor(BLUE)); canvas.rect(0,h-7*mm,w,7*mm,fill=1,stroke=0)
+        canvas.setFillColor(colors.HexColor(GOLD)); canvas.rect(0,h-8*mm,w,1.2*mm,fill=1,stroke=0)
+        canvas.setStrokeColor(colors.HexColor("#D7A62A")); canvas.setLineWidth(.7); canvas.line(12*mm,12*mm,w-12*mm,12*mm)
+        canvas.setFont("Helvetica",7); canvas.setFillColor(colors.HexColor("#526176"))
+        canvas.drawString(12*mm,7*mm,"ASC AFRICA · Saint-Louis, Sénégal · Confidentiel si données nominatives")
+        canvas.drawRightString(w-12*mm,7*mm,f"Page {doc.page}")
+        canvas.restoreState()
+    doc = SimpleDocTemplate(buf, pagesize=landscape(A4), rightMargin=13*mm,leftMargin=13*mm,topMargin=16*mm,bottomMargin=18*mm, title=title, author="ASC AFRICA")
+    story=[]
+    logos=[]
+    for path in [logo,yam_logo]:
+        if path:
+            try:
+                im=RLImage(str(path),width=27*mm,height=27*mm,kind="proportional")
+                logos.append(im)
+            except Exception: pass
+    if logos:
+        logo_cells=[logos[0], Paragraph("<font color='#123B75'><b>ASC AFRICA</b></font><br/><font color='#D7A62A'>RAPPORT OFFICIEL</font>",styles["ClubSubXXL"]), logos[1] if len(logos)>1 else ""]
+        head=Table([logo_cells],colWidths=[32*mm,doc.width-64*mm,32*mm],rowHeights=[29*mm])
+        head.setStyle(TableStyle([("VALIGN",(0,0),(-1,-1),"MIDDLE"),("ALIGN",(0,0),(-1,-1),"CENTER"),("LEFTPADDING",(0,0),(-1,-1),4),("RIGHTPADDING",(0,0),(-1,-1),4),("BOTTOMPADDING",(0,0),(-1,-1),7)]))
+        story.append(head)
+    else:
+        story.append(Paragraph("ASC AFRICA · SAINT-LOUIS, SÉNÉGAL",styles["ClubTitleXXL"]))
+    story += [Spacer(1,2*mm),Paragraph(html.escape(title),styles["ClubTitleXXL"]),Paragraph(html.escape(subtitle),styles["ClubSubXXL"]),Spacer(1,5*mm)]
+    if metrics:
+        cells=[]
+        for label,value,color in metrics:
+            cells.append(Paragraph(f"<font color='{color}' size='8'><b>{html.escape(str(label).upper())}</b></font><br/><font color='#123B75' size='15'><b>{html.escape(str(value))}</b></font>",styles["BodyText"]))
+        tab=Table([cells],colWidths=[doc.width/max(1,len(cells))]*len(cells))
+        tab.setStyle(TableStyle([("BACKGROUND",(0,0),(-1,-1),colors.HexColor("#F2F6FC")),("BOX",(0,0),(-1,-1),.7,colors.HexColor("#D7E2F0")),("INNERGRID",(0,0),(-1,-1),.5,colors.HexColor("#D7E2F0")),("VALIGN",(0,0),(-1,-1),"MIDDLE"),("ALIGN",(0,0),(-1,-1),"CENTER"),("TOPPADDING",(0,0),(-1,-1),9),("BOTTOMPADDING",(0,0),(-1,-1),9)]))
+        story += [tab,Spacer(1,6*mm)]
+    story.append(Paragraph("SYNTHÈSE DES DONNÉES",ParagraphStyle(name="SectXXL",parent=styles["Heading2"],textColor=colors.HexColor(BLUE),fontSize=13,leading=16,spaceAfter=6)))
+    if df.empty:
+        story.append(Paragraph("Aucune donnée à afficher pour la période sélectionnée.",styles["Normal"]))
+    else:
+        safe=df.fillna("").astype(str)
+        data=[[Paragraph(html.escape(str(col)),styles["TableHeadXXL"]) for col in safe.columns]]
+        for row in safe.values.tolist():
+            data.append([Paragraph(html.escape(str(v)).replace("\n","<br/>")[:1000],styles["TableCellXXL"]) for v in row])
+        available=doc.width
+        widths=[available/len(safe.columns)]*len(safe.columns)
+        table=Table(data,colWidths=widths,repeatRows=1,hAlign="LEFT")
+        table.setStyle(TableStyle([("BACKGROUND",(0,0),(-1,0),colors.HexColor(BLUE)),("TEXTCOLOR",(0,0),(-1,0),colors.white),("GRID",(0,0),(-1,-1),.35,colors.HexColor("#CBD5E1")),("VALIGN",(0,0),(-1,-1),"TOP"),("ROWBACKGROUNDS",(0,1),(-1,-1),[colors.white,colors.HexColor("#F2F6FC")]),("LEFTPADDING",(0,0),(-1,-1),5),("RIGHTPADDING",(0,0),(-1,-1),5),("TOPPADDING",(0,0),(-1,-1),5),("BOTTOMPADDING",(0,0),(-1,-1),5)]))
+        story.append(table)
+    story += [Spacer(1,7*mm),Paragraph("Document généré par la plateforme de gestion ASC AFRICA. Vérifier les chiffres et pièces justificatives avant diffusion externe.",styles["Italic"])]
+    doc.build(story,onFirstPage=page_decor,onLaterPages=page_decor)
+    return buf.getvalue()
+
+
+def header():
+    """Bannière publique ASC AFRICA, avec logo aligné et texte adaptatif."""
+    logo = next((p for p in LOGO_PATHS if p.exists()), None)
+    slogan = html.escape(SLOGAN)
+    hero_html = f"""<section class="hero" role="banner" aria-label="Présentation de l’ASC AFRICA">
+      <div class="kicker">Saint-Louis • Sénégal • Le média de la communauté</div>
+      <h1>ASC AFRICA</h1>
+      <p><b>{slogan}</b><br>Actualités, histoire du club, bureau, événements, partenaires et initiatives communautaires.</p>
+    </section>"""
+    if logo:
+        left, right = st.columns([1, 4], gap="large", vertical_alignment="center")
+        with left:
+            st.image(str(logo), width=150)
+        with right:
+            st.markdown(hero_html, unsafe_allow_html=True)
+    else:
+        st.markdown(hero_html.replace('class="hero"', 'class="hero" style="text-align:center"'), unsafe_allow_html=True)
+
+
+def bottom_message():
+    st.markdown("<div class='news-ticker'>📣 MESSAGE À LA COMMUNAUTÉ — Retrouvez ici les nouvelles officielles, les activités à venir, l’histoire et les informations utiles de l’ASC AFRICA. AFRICA KASSÉ, AFRICA REK !</div>", unsafe_allow_html=True)
+
+
+def _logo_data_uri(path):
+    if not path or not path.exists():
+        return ""
+    try:
+        ext=path.suffix.lower()
+        mime="image/jpeg" if ext in {".jpg", ".jpeg"} else "image/png"
+        return f"data:{mime};base64," + base64.b64encode(path.read_bytes()).decode("ascii")
+    except Exception:
+        return ""
+
+
+def yam_footer():
+    club_logo = next((p for p in LOGO_PATHS if p.exists()), None)
+    yam_logo = next((p for p in YAM_LOGO_PATHS if p.exists()), None)
+    club_uri=_logo_data_uri(club_logo)
+    yam_uri=_logo_data_uri(yam_logo)
+    club_img=f"<img src='{club_uri}' alt='Logo ASC AFRICA' style='max-width:135px;max-height:110px;width:auto;height:auto;object-fit:contain;background:#fff;border-radius:16px;padding:8px'>" if club_uri else "<div style='font-size:2rem'>⚽</div>"
+    yam_img=f"<img src='{yam_uri}' alt='Logo YAM Consultance' style='max-width:135px;max-height:110px;width:auto;height:auto;object-fit:contain;background:#fff;border-radius:16px;padding:8px'>" if yam_uri else "<div style='font-weight:900;color:#f4bd38'>YAM CONSULTANCE</div>"
+    st.markdown(f"""<div class='site-footer'>
+      <div class='eyebrow' style='color:#f4bd38'>Réalisation & accompagnement numérique</div>
+      <div class='credit' style='font-size:clamp(1.1rem,2.5vw,1.7rem);margin:8px 0'>PLATEFORME NUMÉRIQUE OFFERTE GRACIEUSEMENT PAR YAM CONSULTANCE</div>
+      <div class='subcredit'>Filiale de YAM Group · Des solutions numériques au service des organisations, des communautés et du développement.</div>
+      <div style='display:flex;align-items:center;justify-content:center;gap:clamp(20px,5vw,64px);flex-wrap:wrap;margin:24px auto 10px'>{club_img}<span style='color:#f4bd38;font-size:1.8rem;font-weight:950'>×</span>{yam_img}</div>
+      <div class='subcredit' style='margin:14px auto 0;max-width:760px'>Conception de plateformes web, applications de gestion et accompagnement numérique.</div>
+      <div class='footer-bottom'>© {date.today().year} ASC AFRICA · Saint-Louis, Sénégal · Portail officiel d’information et de vie associative</div>
+    </div>""",unsafe_allow_html=True)
+
+
+def metric_row():
+    members = query_df("SELECT COUNT(*) n FROM members WHERE status='Actif'").iloc[0,0]
+    month = date.today().strftime("%Y-%m")
+    paid = query_df("SELECT COALESCE(SUM(amount),0) n FROM payments WHERE substr(payment_date,1,7)=?",(month,)).iloc[0,0]
+    income = query_df("SELECT COALESCE(SUM(amount),0) n FROM cash_entries WHERE direction='Entrée'").iloc[0,0]
+    expense = query_df("SELECT COALESCE(SUM(amount),0) n FROM cash_entries WHERE direction='Sortie'").iloc[0,0]
+    c1,c2,c3,c4 = st.columns(4)
+    for col,label,value in [(c1,"Membres actifs",f"{members}"),(c2,"Encaissements du mois",money(paid)),(c3,"Entrées caisse",money(income)),(c4,"Solde caisse",money(income-expense))]:
+        with col: st.markdown(f'<div class="card"><div class="card-label">{label}</div><div class="card-value">{value}</div></div>',unsafe_allow_html=True)
+
+def login():
+    header()
+    left,right=st.columns([1.1,1])
+    with left:
+        st.markdown("""<div class="card"><h2 style="color:#123B75">Bienvenue à l'ASC AFRICA</h2>
+        <p>La plateforme accompagne la vie associative, les adhésions, les cotisations, les cartes, la caisse, les activités et la transparence financière.</p>
+        <hr><b>Portail public et communautaire</b><br>Actualités • Agenda • Partenaires • Adhésion<br><br>
+        <b>Espace de gestion</b><br>Accès réservé aux responsables autorisés.</div>""",unsafe_allow_html=True)
+    with right:
+        st.subheader("🔐 Connexion à l'administration")
+        with st.form("login_form"):
+            username=st.text_input("Identifiant",value="")
+            password=st.text_input("Mot de passe",type="password")
+            ok=st.form_submit_button("Se connecter",type="primary",use_container_width=True)
+        if ok:
+            with connect() as c: admin=c.execute("SELECT * FROM admins WHERE username=? AND active=1",(username.strip(),)).fetchone()
+            if admin and verify_password(password,admin["password_hash"]):
+                st.session_state.authenticated=True; st.session_state.actor=admin["full_name"]; st.session_state.login_at=datetime.now().isoformat()
+                audit("Connexion","administration",admin["id"],"Connexion réussie")
+                st.rerun()
+            else: st.error("Identifiant ou mot de passe incorrect.")
+        st.caption("Accès initial : admin / Africa@2026! — changez ce mot de passe dans Paramètres.")
+
+def public_page():
+    header()
+    bottom_message()
+    st.markdown("<div class='public-nav-label'>Explorer le club</div>",unsafe_allow_html=True)
+    menu = st.radio("Navigation du site",
+        ["🏠 Accueil", "📰 Actualités", "📖 À propos", "🏛️ Bureau", "🕰️ Historique", "📅 Agenda", "🤝 Partenaires", "📄 Documents utiles", "📍 Contact", "📝 Rejoindre le club"],
+        horizontal=True, label_visibility="collapsed", key="public_navigation")
+    st.markdown("<div style='height:4px;background:linear-gradient(90deg,#123b75,#0b8278,#f4bd38);border-radius:5px;margin:8px 0 22px'></div>", unsafe_allow_html=True)
+
+    if menu == "🏠 Accueil":
+        latest = query_df("SELECT title,subtitle,author,cover_url,featured,category,publish_date,content FROM news WHERE published=1 ORDER BY featured DESC,publish_date DESC,id DESC LIMIT 4")
+        activities = query_df("SELECT title,activity_type,start_date,end_date,location,description,status FROM activities WHERE status!='Annulée' AND start_date>=? ORDER BY start_date LIMIT 4", (date.today().isoformat(),))
+        members = int(query_df("SELECT COUNT(*) n FROM members WHERE status='Actif'").iloc[0,0])
+        partners = int(query_df("SELECT COUNT(*) n FROM sponsors").iloc[0,0])
+        st.markdown("<div class='eyebrow'>Le journal de la vie associative</div><h2 style='font-size:clamp(1.8rem,4vw,3rem);font-weight:950;color:#123b75;line-height:1.1'>L’actualité du club,<br>la vie de notre communauté.</h2><p style='font-size:1.08rem;max-width:850px;color:#526176;line-height:1.7'>Retrouvez les informations, annonces, événements et actions communautaires de l’ASC AFRICA dans un espace clair, vivant et accessible à tous.</p>", unsafe_allow_html=True)
+        c1,c2,c3=st.columns(3)
+        c1.metric("Membres actifs", members); c2.metric("Activités à venir", len(activities)); c3.metric("Partenaires", partners)
+        left,right=st.columns([1.5,1], gap="large")
+        with left:
+            st.markdown("<div class='section'>📰 À la une</div>", unsafe_allow_html=True)
+            if latest.empty:
+                st.markdown("<div class='news-card'><span class='pill'>Bienvenue</span><h3>La rubrique actualités démarre ici</h3><p>Les annonces et articles publiés par l’équipe de communication apparaîtront dans cet espace.</p></div>", unsafe_allow_html=True)
+            else:
+                for _,r in latest.iterrows():
+                    cover = str(r.get("cover_url") or "").strip()
+                    cover_html = f"<img class='news-cover' src='{html.escape(cover, quote=True)}' alt='Illustration de l’actualité' loading='lazy'>" if cover.startswith(("https://", "http://")) else ""
+                    badge = "<span class='pill'>À LA UNE</span> " if int(r.get("featured") or 0) else ""
+                    subtitle = f"<p><b>{html.escape(str(r.get('subtitle') or ''))}</b></p>" if r.get("subtitle") else ""
+                    author = f"<span> • {html.escape(str(r.get('author') or ''))}</span>" if r.get("author") else ""
+                    body = html.escape(str(r['content'])[:650])
+                    st.markdown(f"<div class='news-card'>{badge}<span class='pill'>{html.escape(str(r['category'] or 'Actualité'))}</span>{cover_html}<div style='color:#718096;font-size:.82rem;margin-top:10px'>{fmt_date(r['publish_date'])}{author}</div><h3>{html.escape(str(r['title']))}</h3>{subtitle}<p style='white-space:pre-wrap;line-height:1.65'>{body}{'…' if len(str(r['content']))>650 else ''}</p></div>", unsafe_allow_html=True)
+        with right:
+            st.markdown("<div class='section'>📅 Prochains rendez-vous</div>", unsafe_allow_html=True)
+            if activities.empty: st.info("Les prochaines activités seront annoncées ici.")
+            else:
+                for _,r in activities.iterrows():
+                    st.markdown(f"<div class='feature-card' style='margin-bottom:12px'><div class='eyebrow'>{fmt_date(r['start_date'])} • {r['activity_type'] or 'Activité'}</div><h3 style='color:#123b75;margin:.5rem 0'>{r['title']}</h3><div>📍 {r['location'] or 'Lieu à préciser'}</div><p style='line-height:1.5'>{str(r['description'] or '')[:220]}</p><span class='pill'>{r['status']}</span></div>", unsafe_allow_html=True)
+        st.markdown("<div class='section'>🌍 Nos engagements</div>", unsafe_allow_html=True)
+        a,b,c=st.columns(3)
+        for col,icon,title,desc in [(a,"⚽","Sport & jeunesse","Promouvoir le sport, l’esprit d’équipe et l’épanouissement des jeunes."),(b,"🤝","Solidarité","Valoriser les initiatives citoyennes, l’entraide et les actions sociales."),(c,"📢","Information","Diffuser des annonces utiles et partager les temps forts de la communauté.")]:
+            with col: st.markdown(f"<div class='feature-card'><div style='font-size:2rem'>{icon}</div><h3 style='color:#123b75'>{title}</h3><p style='line-height:1.6'>{desc}</p></div>", unsafe_allow_html=True)
+
+    elif menu == "📰 Actualités":
+        st.markdown("<div class='section'>📰 Toutes les actualités</div>", unsafe_allow_html=True)
+        news=query_df("SELECT title,subtitle,author,cover_url,featured,category,publish_date,content FROM news WHERE published=1 ORDER BY featured DESC,publish_date DESC,id DESC")
+        if news.empty: st.info("Aucune actualité n’a encore été publiée. Revenez bientôt.")
+        else:
+            search=st.text_input("🔎 Rechercher une actualité", placeholder="Mot-clé, rubrique, sujet…")
+            if search: news=news[news.astype(str).apply(lambda col:col.str.contains(search,case=False,na=False)).any(axis=1)]
+            st.caption(f"{len(news)} publication(s)")
+            for _,r in news.iterrows():
+                cover = str(r.get("cover_url") or "").strip()
+                cover_html = f"<img class='news-cover' src='{html.escape(cover, quote=True)}' alt='Illustration de l’actualité' loading='lazy'>" if cover.startswith(("https://", "http://")) else ""
+                badge = "<span class='pill'>À LA UNE</span> " if int(r.get("featured") or 0) else ""
+                subtitle = f"<p><b>{html.escape(str(r.get('subtitle') or ''))}</b></p>" if r.get("subtitle") else ""
+                author = f"<span> • {html.escape(str(r.get('author') or ''))}</span>" if r.get("author") else ""
+                st.markdown(f"<div class='news-card'>{badge}<span class='pill'>{html.escape(str(r['category'] or 'Actualité'))}</span>{cover_html}<div style='color:#718096;font-size:.82rem;margin-top:10px'>{fmt_date(r['publish_date'])}{author}</div><h3>{html.escape(str(r['title']))}</h3>{subtitle}<p style='white-space:pre-wrap;line-height:1.75'>{html.escape(str(r['content']))}</p></div>", unsafe_allow_html=True)
+
+    elif menu == "📖 À propos":
+        st.markdown("<div class='section'>📖 À propos de l’ASC AFRICA</div>", unsafe_allow_html=True)
+        st.markdown("<div class='news-card'><span class='pill'>Identité du club</span><h3>ASC AFRICA — Saint-Louis</h3><p style='line-height:1.8'>L’ASC AFRICA est une association sportive et communautaire. Cet espace présente ses activités, ses membres, ses initiatives et ses informations officielles. Le bureau peut enrichir cette page avec la date de création, les fondateurs, les couleurs officielles, les disciplines et les objectifs validés par le club.</p><p><b>Devise :</b> AFRICA KASSÉ, AFRICA REK</p></div>", unsafe_allow_html=True)
+        x,y,z=st.columns(3)
+        with x: st.markdown("<div class='feature-card'><div style='font-size:2rem'>⚽</div><h3 style='color:#123b75'>Sport</h3><p>Encourager la pratique sportive, le respect, la discipline et l’esprit d’équipe.</p></div>",unsafe_allow_html=True)
+        with y: st.markdown("<div class='feature-card'><div style='font-size:2rem'>🤝</div><h3 style='color:#123b75'>Solidarité</h3><p>Favoriser l’entraide, l’inclusion et les actions positives au sein de la communauté.</p></div>",unsafe_allow_html=True)
+        with z: st.markdown("<div class='feature-card'><div style='font-size:2rem'>🌱</div><h3 style='color:#123b75'>Jeunesse</h3><p>Créer des occasions d’engagement, d’apprentissage et de participation citoyenne.</p></div>",unsafe_allow_html=True)
+        st.info("Les éléments historiques ou statutaires qui n’ont pas encore été fournis ne sont pas inventés : ils pourront être ajoutés par le club.")
+
+    elif menu == "🏛️ Bureau":
+        st.markdown("<div class='section'>🏛️ Le bureau et les responsables</div>", unsafe_allow_html=True)
+        st.write("Les responsables enregistrés comme « Dirigeant » dans le registre des membres sont présentés ci-dessous.")
+        bureau=query_df("SELECT full_name,role,status,neighborhood FROM members WHERE status='Actif' AND (role LIKE '%Dirigeant%' OR role LIKE '%Président%' OR role LIKE '%Secrétaire%' OR role LIKE '%Trésorier%' OR role LIKE '%Responsable%') ORDER BY full_name")
+        if bureau.empty:
+            st.info("La liste du bureau n’est pas encore renseignée. Pour afficher les responsables, ajoutez-les dans l’administration des membres avec leur fonction et le statut « Actif ».")
+        else:
+            cols=st.columns(3)
+            for i,(_,r) in enumerate(bureau.iterrows()):
+                with cols[i%3]:
+                    st.markdown(f"<div class='feature-card' style='margin-bottom:14px'><div style='font-size:2rem'>👤</div><h3 style='color:#123b75'>{r['full_name']}</h3><span class='pill'>{r['role']}</span><p style='margin-top:10px'>ASC AFRICA • Saint-Louis</p></div>",unsafe_allow_html=True)
+        st.caption("Pour afficher les fonctions correctement, utilisez les rôles Président, Secrétaire général, Trésorier, Responsable sportif, Responsable communication ou Dirigeant dans le registre des membres.")
+
+    elif menu == "🕰️ Historique":
+        st.markdown("<div class='section'>🕰️ Histoire de l’ASC AFRICA</div>", unsafe_allow_html=True)
+        st.markdown("<div class='news-card'><h3>Une histoire à raconter et à transmettre</h3><p style='line-height:1.8'>Cette rubrique est destinée à conserver la mémoire du club : sa création, ses fondateurs, les générations de joueurs, les saisons marquantes, les titres, les anciens dirigeants, les grands matchs et les actions réalisées à Saint-Louis.</p><p>Pour publier une chronologie fiable, le bureau peut fournir les dates, noms et événements vérifiés. Aucun palmarès ni date de fondation n’est affiché sans confirmation.</p></div>",unsafe_allow_html=True)
+        st.markdown("<div class='section'>📚 Les archives du club</div>",unsafe_allow_html=True)
+        hist_news=query_df("SELECT title,category,publish_date,content FROM news WHERE published=1 AND (category LIKE '%Historique%' OR category LIKE '%Archive%' OR title LIKE '%histoire%' OR title LIKE '%anniversaire%' OR title LIKE '%palmarès%') ORDER BY publish_date DESC")
+        if hist_news.empty:
+            st.info("Les articles d’histoire et d’archives apparaîtront ici lorsqu’ils seront publiés dans la rubrique « Historique » ou « Archives ».")
+        else:
+            for _,r in hist_news.iterrows():
+                st.markdown(f"<div class='news-card'><div class='eyebrow'>{fmt_date(r['publish_date'])}</div><h3>{r['title']}</h3><p style='white-space:pre-wrap;line-height:1.7'>{r['content']}</p></div>",unsafe_allow_html=True)
+
+    elif menu == "📅 Agenda":
+        st.markdown("<div class='section'>📅 Agenda communautaire</div>", unsafe_allow_html=True)
+        acts=query_df("SELECT title,activity_type,start_date,end_date,location,description,status FROM activities WHERE status!='Annulée' ORDER BY start_date")
+        if acts.empty: st.info("Aucune activité annoncée pour le moment.")
+        else:
+            for _,r in acts.iterrows():
+                st.markdown(f"<div class='news-card'><span class='pill'>{r['status']}</span><div class='eyebrow' style='margin-top:10px'>{r['activity_type'] or 'Activité'}</div><h3>{r['title']}</h3><p>🗓️ Du {fmt_date(r['start_date'])} au {fmt_date(r['end_date']) if r['end_date'] else fmt_date(r['start_date'])} • 📍 {r['location'] or 'Lieu à préciser'}</p><p style='line-height:1.7'>{r['description'] or ''}</p></div>", unsafe_allow_html=True)
+
+    elif menu == "🤝 Partenaires":
+        st.markdown("<div class='section'>🤝 Nos partenaires et soutiens</div>", unsafe_allow_html=True)
+        sp=query_df("SELECT name,partnership_type,notes FROM sponsors ORDER BY name")
+        if sp.empty: st.info("Les partenaires et mécènes seront présentés ici dès leur publication.")
+        else:
+            cols=st.columns(2)
+            for i,(_,r) in enumerate(sp.iterrows()):
+                with cols[i%2]: st.markdown(f"<div class='feature-card' style='margin-bottom:14px'><span class='pill'>{r['partnership_type'] or 'Partenaire'}</span><h3 style='color:#123b75'>{r['name']}</h3><p style='line-height:1.65'>{r['notes'] or 'Partenaire de la vie associative.'}</p></div>", unsafe_allow_html=True)
+
+    elif menu == "📄 Documents utiles":
+        st.markdown("<div class='section'>📄 Documents et informations utiles</div>", unsafe_allow_html=True)
+        st.markdown("<div class='about-grid'><div class='feature-card'><h3 style='color:#123b75'>📜 Statuts & règlement</h3><p>Les statuts et le règlement intérieur pourront être mis à disposition après validation par le bureau.</p></div><div class='feature-card'><h3 style='color:#123b75'>📆 Calendrier sportif</h3><p>Consultez la rubrique Agenda pour les activités, rencontres et événements annoncés.</p></div><div class='feature-card'><h3 style='color:#123b75'>🤝 Partenariat</h3><p>Les organisations souhaitant soutenir le club peuvent prendre contact avec les responsables.</p></div></div>",unsafe_allow_html=True)
+        st.info("Les fichiers statutaires ne sont pas encore joints au projet. Cette rubrique est prête à les accueillir lorsqu’ils seront fournis.")
+
+    elif menu == "📍 Contact":
+        st.markdown("<div class='section'>📍 Contact & informations</div>", unsafe_allow_html=True)
+        st.markdown("<div class='news-card'><h3>ASC AFRICA — Saint-Louis, Sénégal</h3><p>Pour les informations officielles, les demandes de partenariat, les adhésions et les activités, utilisez le formulaire ci-dessous. Les coordonnées publiques (téléphone, e-mail, réseaux sociaux et adresse) pourront être ajoutées dès qu’elles seront confirmées.</p></div>",unsafe_allow_html=True)
+        with st.form("public_contact"):
+            cname=st.text_input("Votre nom *")
+            cphone=st.text_input("Téléphone ou e-mail *")
+            subject=st.selectbox("Objet",["Demande d’information","Partenariat / sponsoring","Presse / communication","Activité sportive","Autre"])
+            message=st.text_area("Votre message *",height=130)
+            send=st.form_submit_button("Préparer mon message",type="primary",use_container_width=True)
+        if send:
+            if not cname.strip() or not cphone.strip() or not message.strip():
+                st.error("Veuillez remplir le nom, un moyen de contact et le message.")
+            else:
+                mid=execute("INSERT INTO public_messages(created_at,full_name,contact,subject,message,status) VALUES(?,?,?,?,?,'Nouveau')",
+                    (datetime.now().isoformat(timespec="seconds"),cname.strip(),cphone.strip(),subject,message.strip()))
+                audit("Message reçu","message_public",mid,subject)
+                st.success("Votre message a été transmis au registre de l’administration de l’ASC AFRICA. Merci.")
+
+    elif menu == "📝 Rejoindre le club":
+        st.markdown("<div class='section'>📝 Rejoindre la communauté ASC AFRICA</div>", unsafe_allow_html=True)
+        st.write("Envoyez votre demande d’adhésion. Le bureau du club pourra ensuite vérifier les informations et vous recontacter.")
+        with st.form("public_join"):
+            name=st.text_input("Nom complet *"); phone=st.text_input("Téléphone *")
+            neighborhood=st.text_input("Quartier"); role=st.selectbox("Profil",["Supporter","Membre","Ancien joueur","Dirigeant","Sympathisant"])
+            notes=st.text_area("Message (facultatif)")
+            submit=st.form_submit_button("Envoyer ma demande d’adhésion",type="primary",use_container_width=True)
+        if submit:
+            if not name.strip() or not phone.strip(): st.error("Le nom et le téléphone sont obligatoires.")
+            else:
+                execute("INSERT INTO members(member_no,full_name,phone,neighborhood,membership_date,role,status,notes,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?)",(receipt_no("MEM"),name.strip(),phone.strip(),neighborhood.strip(),date.today().isoformat(),role,"À valider",notes.strip(),datetime.now().isoformat(timespec="seconds"),datetime.now().isoformat(timespec="seconds")))
+                audit("Demande d'adhésion","membre",None,name.strip())
+                st.success("Votre demande a été enregistrée. Le bureau de l’ASC AFRICA pourra la vérifier.")
+
+    bottom_message()
+    yam_footer()
+
+
+def members_page():
+    st.markdown('<div class="section">👥 Membres & adhésions</div>',unsafe_allow_html=True)
+    pending_count=int(query_df("SELECT COUNT(*) n FROM members WHERE status='À valider'").iloc[0,0])
+    st.markdown(f"<div class='admin-banner'><div class='kicker'>Espace de gestion · Communauté</div><h2>Adhésions & registre des membres</h2><p>{pending_count} demande(s) d’adhésion en attente de validation · Les formulaires publics sont centralisés ici.</p></div>",unsafe_allow_html=True)
+    t1,t2,t3=st.tabs(["Ajouter un membre","Registre des membres",f"Demandes publiques ({pending_count})"])
+    with t1:
+        with st.form("member_add",clear_on_submit=True):
+            a,b=st.columns(2)
+            name=a.text_input("Nom complet *"); phone=b.text_input("Téléphone *")
+            neighborhood=a.text_input("Quartier"); role=b.selectbox("Profil",["Membre","Supporter","Ancien joueur","Dirigeant","Sympathisant"])
+            member_date=a.date_input("Date d'adhésion",value=date.today()); status=b.selectbox("Statut",["Actif","À valider","Suspendu","Ancien membre"])
+            notes=st.text_area("Observations")
+            save=st.form_submit_button("Enregistrer le membre",type="primary")
+        if save:
+            if not name.strip() or not phone.strip(): st.error("Nom et téléphone obligatoires.")
+            else:
+                no=receipt_no("MEM")
+                mid=execute("INSERT INTO members(member_no,full_name,phone,neighborhood,membership_date,role,status,notes,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?)",
+                    (no,name.strip(),phone.strip(),neighborhood.strip(),member_date.isoformat(),role,status,notes.strip(),datetime.now().isoformat(timespec="seconds"),datetime.now().isoformat(timespec="seconds")))
+                audit("Création","membre",mid,f"{no} — {name}")
+                st.success(f"Membre enregistré : {no}"); st.rerun()
+    with t2:
+        df=query_df("SELECT id,member_no,full_name,phone,neighborhood,membership_date,role,status,notes FROM members ORDER BY full_name")
+        search=st.text_input("Rechercher par nom, numéro ou téléphone")
+        if search: df=df[df.astype(str).apply(lambda col:col.str.contains(search,case=False,na=False)).any(axis=1)]
+        st.dataframe(df.rename(columns={"member_no":"N° membre","full_name":"Nom complet","phone":"Téléphone","neighborhood":"Quartier","membership_date":"Adhésion","role":"Profil","status":"Statut","notes":"Notes"}),use_container_width=True,hide_index=True)
+        if not df.empty:
+            ids=df["id"].tolist(); selected=st.selectbox("Membre à modifier / supprimer",ids,format_func=lambda i:f"{i} — {df.loc[df.id==i,'full_name'].iloc[0]}")
+            row=query_df("SELECT * FROM members WHERE id=?",(selected,)).iloc[0]
+            with st.form("member_edit"):
+                name=st.text_input("Nom",str(row.full_name)); phone=st.text_input("Téléphone",str(row.phone or ""))
+                neighborhood=st.text_input("Quartier",str(row.neighborhood or "")); role=st.selectbox("Profil",["Membre","Supporter","Ancien joueur","Dirigeant","Sympathisant"],index=["Membre","Supporter","Ancien joueur","Dirigeant","Sympathisant"].index(row.role) if row.role in ["Membre","Supporter","Ancien joueur","Dirigeant","Sympathisant"] else 0)
+                status=st.selectbox("Statut",["Actif","À valider","Suspendu","Ancien membre"],index=["Actif","À valider","Suspendu","Ancien membre"].index(row.status) if row.status in ["Actif","À valider","Suspendu","Ancien membre"] else 0)
+                notes=st.text_area("Notes",str(row.notes or "")); save=st.form_submit_button("Enregistrer les modifications")
+            if save:
+                execute("UPDATE members SET full_name=?,phone=?,neighborhood=?,role=?,status=?,notes=?,updated_at=? WHERE id=?",(name.strip(),phone.strip(),neighborhood.strip(),role,status,notes,datetime.now().isoformat(timespec="seconds"),int(selected)))
+                audit("Modification","membre",int(selected),name); st.success("Membre mis à jour."); st.rerun()
+            if st.button("Supprimer ce membre",type="secondary"):
+                execute("DELETE FROM members WHERE id=?",(int(selected),)); audit("Suppression","membre",int(selected),str(row.full_name)); st.warning("Membre supprimé."); st.rerun()
+        st.download_button("Exporter les membres en CSV",df.to_csv(index=False).encode("utf-8-sig"),"asc_africa_membres.csv","text/csv")
+
+    with t3:
+        pending=query_df("SELECT id,member_no,full_name,phone,neighborhood,membership_date,role,notes,created_at FROM members WHERE status='À valider' ORDER BY created_at DESC")
+        st.subheader("Demandes reçues depuis le portail public")
+        if pending.empty:
+            st.success("Aucune demande en attente.")
+        else:
+            st.dataframe(pending.drop(columns=["id"]),use_container_width=True,hide_index=True)
+            pid=st.selectbox("Demande à traiter",pending.id.tolist(),format_func=lambda i:f"{i} — {pending.loc[pending.id==i,'full_name'].iloc[0]}")
+            a,b=st.columns(2)
+            if a.button("✅ Valider l’adhésion",type="primary",use_container_width=True):
+                execute("UPDATE members SET status='Actif',updated_at=? WHERE id=?",(datetime.now().isoformat(timespec="seconds"),int(pid)))
+                audit("Validation adhésion publique","membre",int(pid)); st.success("Demande validée."); st.rerun()
+            if b.button("↩️ Refuser / classer",use_container_width=True):
+                execute("UPDATE members SET status='Ancien membre',updated_at=? WHERE id=?",(datetime.now().isoformat(timespec="seconds"),int(pid)))
+                audit("Classement demande publique","membre",int(pid)); st.rerun()
+            st.download_button("Exporter les demandes CSV",pending.drop(columns=["id"]).to_csv(index=False).encode("utf-8-sig"),"asc_africa_demandes_adhesion.csv","text/csv")
+
+def payments_page():
+    st.markdown('<div class="section">💳 Cartes, cotisations & reçus</div>',unsafe_allow_html=True)
+    members=query_df("SELECT id,member_no,full_name,phone FROM members ORDER BY full_name")
+    if members.empty: st.warning("Ajoutez d'abord les membres ou validez les demandes d'adhésion."); return
+    t1,t2=st.tabs(["Nouvel encaissement","Historique & reçus"])
+    with t1:
+        opts={f"{r.member_no or r.id} — {r.full_name} ({r.phone or 'sans téléphone'})":int(r.id) for _,r in members.iterrows()}
+        with st.form("payment_form"):
+            member_label=st.selectbox("Membre",list(opts)); ptype=st.selectbox("Type de paiement",["Carte membre — 500 FCFA","Carte de soutien — 1 000 FCFA","Cotisation","Don","Contribution événementielle","Autre"])
+            default=500 if ptype.startswith("Carte membre") else 1000 if ptype.startswith("Carte de soutien") else 0
+            amount=st.number_input("Montant encaissé (FCFA)",min_value=0,step=500,value=default)
+            d=st.date_input("Date du paiement",value=date.today()); period=st.text_input("Période concernée",placeholder="Ex. Octobre 2026")
+            method=st.selectbox("Mode de paiement",["Espèces","Wave","Orange Money","Virement","Chèque","Autre"]); note=st.text_input("Observation")
+            save=st.form_submit_button("Valider et générer le reçu",type="primary")
+        if save:
+            if amount<=0: st.error("Le montant doit être supérieur à zéro.")
+            else:
+                rn=receipt_no("ASC")
+                pid=execute("INSERT INTO payments(receipt_no,member_id,payment_date,payment_type,amount,period,method,note,created_by,created_at) VALUES(?,?,?,?,?,?,?,?,?,?)",
+                    (rn,opts[member_label],d.isoformat(),ptype,float(amount),period,method,note,st.session_state.actor,datetime.now().isoformat(timespec="seconds")))
+                execute("INSERT INTO cash_entries(entry_date,direction,category,label,amount,method,reference,note,created_by,created_at) VALUES(?,?,?,?,?,?,?,?,?,?)",
+                    (d.isoformat(),"Entrée",ptype,f"Paiement {rn}",float(amount),method,rn,note,st.session_state.actor,datetime.now().isoformat(timespec="seconds")))
+                audit("Encaissement","paiement",pid,f"{rn} — {member_label} — {money(amount)}")
+                st.success(f"Paiement enregistré. Numéro de reçu : {rn}")
+                phone=members.loc[members.id==opts[member_label],"phone"].iloc[0]
+                msg=f"ASC AFRICA — Reçu {rn}\\nMembre : {member_label}\\nObjet : {ptype}\\nMontant : {money(amount)}\\nDate : {d.strftime('%d/%m/%Y')}\\nMerci pour votre soutien !"
+                url=whatsapp_url(phone,msg)
+                if url: st.link_button("Envoyer le reçu par WhatsApp",url)
+    with t2:
+        df=query_df("""SELECT p.id,p.receipt_no,p.payment_date,m.full_name,m.phone,p.payment_type,p.amount,p.period,p.method,p.note
+        FROM payments p LEFT JOIN members m ON m.id=p.member_id ORDER BY p.payment_date DESC,p.id DESC""")
+        st.dataframe(df.rename(columns={"receipt_no":"N° reçu","payment_date":"Date","full_name":"Membre","phone":"Téléphone","payment_type":"Objet","amount":"Montant FCFA","period":"Période","method":"Mode","note":"Observation"}),use_container_width=True,hide_index=True)
+        if not df.empty:
+            chosen=st.selectbox("Reçu à partager",df["receipt_no"].tolist())
+            r=df[df.receipt_no==chosen].iloc[0]
+            message=f"ASC AFRICA — Reçu {r.receipt_no}\\nMembre : {r.full_name}\\nObjet : {r.payment_type}\\nMontant : {money(r.amount)}\\nDate : {fmt_date(r.payment_date)}"
+            url=whatsapp_url(r.phone,message)
+            if url: st.link_button("Relancer / envoyer le reçu sur WhatsApp",url)
+        st.download_button("Exporter l'historique en CSV",df.to_csv(index=False).encode("utf-8-sig"),"asc_africa_paiements.csv","text/csv")
+
+def cash_page():
+    st.markdown('<div class="section">💰 Trésorerie & caisse</div>',unsafe_allow_html=True)
+    entries=query_df("SELECT * FROM cash_entries ORDER BY entry_date DESC,id DESC")
+    income=entries.loc[entries.direction=="Entrée","amount"].sum() if not entries.empty else 0
+    expense=entries.loc[entries.direction=="Sortie","amount"].sum() if not entries.empty else 0
+    a,b,c=st.columns(3); a.metric("Total entrées",money(income)); b.metric("Total sorties",money(expense)); c.metric("Solde théorique",money(income-expense))
+    with st.expander("➕ Enregistrer une entrée ou une sortie",expanded=True):
+        with st.form("cash_form"):
+            x,y=st.columns(2); d=x.date_input("Date",value=date.today()); direction=y.selectbox("Sens",["Entrée","Sortie"])
+            cat=x.selectbox("Catégorie",["Cotisations","Cartes","Dons","Sponsoring","Événement","Transport","Équipement sportif","Logistique","Communication","Action sociale","Autre"])
+            label=y.text_input("Libellé *"); amount=x.number_input("Montant (FCFA)",min_value=0,step=500); method=y.selectbox("Mode",["Espèces","Wave","Orange Money","Virement","Chèque","Autre"])
+            reference=x.text_input("Référence (facultatif)"); note=st.text_area("Justificatif / observation")
+            save=st.form_submit_button("Enregistrer l'opération",type="primary")
+        if save:
+            if not label.strip() or amount<=0: st.error("Le libellé et un montant positif sont obligatoires.")
+            else:
+                eid=execute("INSERT INTO cash_entries(entry_date,direction,category,label,amount,method,reference,note,created_by,created_at) VALUES(?,?,?,?,?,?,?,?,?,?)",
+                    (d.isoformat(),direction,cat,label.strip(),float(amount),method,reference,note,st.session_state.actor,datetime.now().isoformat(timespec="seconds")))
+                audit("Opération de caisse","caisse",eid,f"{direction} — {label} — {money(amount)}"); st.success("Opération enregistrée."); st.rerun()
+    st.subheader("Journal de caisse")
+    if entries.empty: st.info("Aucune opération de caisse.")
+    else:
+        st.dataframe(entries.rename(columns={"entry_date":"Date","direction":"Sens","category":"Catégorie","label":"Libellé","amount":"Montant FCFA","method":"Mode","reference":"Référence","note":"Observation","created_by":"Saisi par"}),use_container_width=True,hide_index=True)
+        st.download_button("Exporter la caisse en CSV",entries.to_csv(index=False).encode("utf-8-sig"),"asc_africa_caisse.csv","text/csv")
+        if st.button("Supprimer une opération de caisse sélectionnée"):
+            eid=st.selectbox("ID opération",entries.id.tolist(),key="cash_delete_id")
+            if st.checkbox("Je confirme la suppression",key="cash_delete_confirm"):
+                execute("DELETE FROM cash_entries WHERE id=?",(int(eid),)); audit("Suppression","caisse",int(eid),"Suppression opération"); st.rerun()
+
+def activities_page():
+    st.markdown('<div class="section">📅 Agenda & activités ASC AFRICA</div>',unsafe_allow_html=True)
+    with st.expander("➕ Ajouter une activité",expanded=True):
+        with st.form("activity_form"):
+            title=st.text_input("Nom de l'activité *"); typ=st.selectbox("Type",["Navétanes","Tournoi","72H ASC AFRICA","Africa Social & Solidaire","Africa New Look","Set-Setal","Réunion","Action communautaire","Autre"])
+            a,b=st.columns(2); start=a.date_input("Date de début",value=date.today()); end=b.date_input("Date de fin",value=date.today())
+            loc=a.text_input("Lieu"); budget=b.number_input("Budget prévisionnel (FCFA)",min_value=0,step=5000)
+            desc=st.text_area("Description"); status=st.selectbox("Statut",["Prévue","En préparation","En cours","Réalisée","Annulée"])
+            save=st.form_submit_button("Enregistrer l'activité",type="primary")
+        if save:
+            if not title.strip(): st.error("Le nom de l'activité est obligatoire.")
+            else:
+                aid=execute("INSERT INTO activities(title,activity_type,start_date,end_date,location,description,budget,status,created_at) VALUES(?,?,?,?,?,?,?,?,?)",
+                    (title.strip(),typ,start.isoformat(),end.isoformat(),loc,desc,float(budget),status,datetime.now().isoformat(timespec="seconds")))
+                audit("Création","activité",aid,title); st.success("Activité enregistrée."); st.rerun()
+    df=query_df("SELECT * FROM activities ORDER BY start_date DESC")
+    st.dataframe(df.rename(columns={"title":"Activité","activity_type":"Type","start_date":"Début","end_date":"Fin","location":"Lieu","description":"Description","budget":"Budget FCFA","status":"Statut"}),use_container_width=True,hide_index=True)
+    if not df.empty:
+        with st.expander("Modifier le statut d'une activité"):
+            aid=st.selectbox("Activité",df.id.tolist(),format_func=lambda i:f"{i} — {df.loc[df.id==i,'title'].iloc[0]}")
+            status=st.selectbox("Nouveau statut",["Prévue","En préparation","En cours","Réalisée","Annulée"])
+            if st.button("Mettre à jour le statut"):
+                execute("UPDATE activities SET status=? WHERE id=?",(status,int(aid))); audit("Modification statut","activité",int(aid),status); st.rerun()
+
+def news_sponsors_page():
+    st.markdown('<div class="section">📰 Communication, actualités & partenaires</div>',unsafe_allow_html=True)
+    t1,t2,t3,t4=st.tabs(["Publier une actualité","Partenaires & mécènes","Registres","Messages publics"])
+    with t1:
+        with st.form("news_form"):
+            title=st.text_input("Titre *")
+            subtitle=st.text_input("Sous-titre (facultatif)")
+            category=st.selectbox("Rubrique",["Communiqué officiel","Actualité","Équipe première","Jeunes et formation","Matchs et compétitions","Résultats et classements","Portrait de joueur","Interview et témoignage","Vie associative","Action sociale","Historique","Archives","Palmarès","Annonce","Partenaires","Autre"])
+            a,b=st.columns(2)
+            d=a.date_input("Date de publication",value=date.today())
+            author=b.text_input("Auteur / service")
+            cover_url=st.text_input("Lien HTTPS de l’image de couverture (facultatif)")
+            content=st.text_area("Contenu *",height=220)
+            a,b=st.columns(2)
+            published=a.checkbox("Publier sur le portail public",value=True)
+            featured=b.checkbox("Mettre cette actualité à la une")
+            save=st.form_submit_button("Enregistrer la publication",type="primary")
+        if save:
+            if not title.strip() or not content.strip(): st.error("Le titre et le contenu sont obligatoires.")
+            else:
+                if cover_url.strip() and not cover_url.strip().startswith(("https://", "http://")):
+                    st.error("Le lien de couverture doit commencer par https:// ou http://.")
+                else:
+                    if featured:
+                        execute("UPDATE news SET featured=0")
+                    nid=execute("INSERT INTO news(title,category,publish_date,content,published,created_at,subtitle,author,cover_url,featured) VALUES(?,?,?,?,?,?,?,?,?,?)",
+                        (title.strip(),category,d.isoformat(),content.strip(),int(published),datetime.now().isoformat(timespec="seconds"),subtitle.strip(),author.strip(),cover_url.strip(),int(featured)))
+                    audit("Publication","actualité",nid,title); st.success("Actualité enregistrée."); st.rerun()
+    with t2:
+        with st.form("sponsor_form"):
+            name=st.text_input("Nom du partenaire / mécène *"); typ=st.selectbox("Type",["Partenaire officiel","Sponsor événementiel","Mécène","Partenaire institutionnel","Partenaire média","Autre"])
+            a,b=st.columns(2); contact=a.text_input("Personne à contacter"); phone=b.text_input("Téléphone / email")
+            amount=a.number_input("Contribution (FCFA)",min_value=0,step=10000); start=b.date_input("Début partenariat",value=date.today())
+            end=b.date_input("Fin partenariat",value=date.today()); notes=st.text_area("Présentation / engagements")
+            save=st.form_submit_button("Enregistrer le partenaire",type="primary")
+        if save:
+            if not name.strip(): st.error("Le nom du partenaire est obligatoire.")
+            else:
+                sid=execute("INSERT INTO sponsors(name,contact,phone,contribution,partnership_type,start_date,end_date,notes,created_at) VALUES(?,?,?,?,?,?,?,?,?)",(name.strip(),contact,phone,float(amount),typ,start.isoformat(),end.isoformat(),notes,datetime.now().isoformat(timespec="seconds")))
+                audit("Création","partenaire",sid,name); st.success("Partenaire enregistré.")
+    with t3:
+        st.subheader("Actualités")
+        n=query_df("SELECT id,title,subtitle,category,publish_date,published,featured FROM news ORDER BY featured DESC,publish_date DESC")
+        st.dataframe(n,use_container_width=True,hide_index=True)
+        if not n.empty:
+            nid=st.selectbox("Actualité à publier / dépublier",n.id.tolist())
+            if st.button("Basculer publication"):
+                old=int(n.loc[n.id==nid,"published"].iloc[0]); execute("UPDATE news SET published=? WHERE id=?",(0 if old else 1,int(nid))); audit("Publication modifiée","actualité",int(nid)); st.rerun()
+        st.subheader("Partenaires")
+        sp=query_df("SELECT * FROM sponsors ORDER BY name")
+        st.dataframe(sp,use_container_width=True,hide_index=True)
+        st.download_button("Exporter les partenaires CSV",sp.to_csv(index=False).encode("utf-8-sig"),"asc_africa_partenaires.csv","text/csv")
+
+    with t4:
+        st.markdown("<div class='admin-banner'><div class='kicker'>Espace public → administration</div><h2>Messages reçus</h2><p>Les demandes envoyées depuis Contact sont enregistrées dans la base et consultables ici.</p></div>",unsafe_allow_html=True)
+        msgs=query_df("SELECT id,created_at,full_name,contact,subject,message,status,admin_note FROM public_messages ORDER BY created_at DESC")
+        if msgs.empty:
+            st.info("Aucun message reçu pour le moment.")
+        else:
+            st.dataframe(msgs.drop(columns=["message","admin_note"]),use_container_width=True,hide_index=True)
+            mid=st.selectbox("Ouvrir un message",msgs.id.tolist(),format_func=lambda i:f"#{i} — {msgs.loc[msgs.id==i,'full_name'].iloc[0]} · {msgs.loc[msgs.id==i,'subject'].iloc[0]}")
+            msg=msgs.loc[msgs.id==mid].iloc[0]
+            st.markdown(f"<div class='news-card'><div class='eyebrow'>{html.escape(str(msg.subject))} · {html.escape(str(msg.created_at))}</div><h3>{html.escape(str(msg.full_name))}</h3><p><b>Contact :</b> {html.escape(str(msg.contact))}</p><p style='white-space:pre-wrap;line-height:1.75'>{html.escape(str(msg.message))}</p></div>",unsafe_allow_html=True)
+            with st.form("message_admin_update"):
+                status=st.selectbox("Statut",["Nouveau","En cours","Traité","Archivé"],index=["Nouveau","En cours","Traité","Archivé"].index(msg.status) if msg.status in ["Nouveau","En cours","Traité","Archivé"] else 0)
+                note=st.text_area("Note interne",str(msg.admin_note or ""))
+                save_msg=st.form_submit_button("Enregistrer le suivi")
+            if save_msg:
+                execute("UPDATE public_messages SET status=?,admin_note=?,handled_by=?,handled_at=? WHERE id=?",(status,note,st.session_state.get("actor","Admin"),datetime.now().isoformat(timespec="seconds"),int(mid)))
+                audit("Suivi message public","message_public",int(mid),status); st.success("Suivi enregistré."); st.rerun()
+            st.download_button("Exporter les messages CSV",msgs.to_csv(index=False).encode("utf-8-sig"),"asc_africa_messages_publics.csv","text/csv")
+
+def reports_page():
+    st.markdown("<div class='report-hero'><div class='kicker'>Pilotage · Transparence · Assemblée générale</div><h2>Centre de rapports XXL</h2><p>Des documents structurés, identifiables et prêts à être partagés, avec identité graphique ASC AFRICA et signature YAM Consultance.</p></div>",unsafe_allow_html=True)
+    start=st.date_input("Du",value=date(date.today().year,1,1),key="report_start")
+    end=st.date_input("Au",value=date.today(),key="report_end")
+    if start>end: st.error("La date de début doit précéder la date de fin."); return
+    p=query_df("""SELECT p.receipt_no,p.payment_date,m.full_name,p.payment_type,p.amount,p.period,p.method
+    FROM payments p LEFT JOIN members m ON m.id=p.member_id WHERE p.payment_date BETWEEN ? AND ? ORDER BY p.payment_date""",(start.isoformat(),end.isoformat()))
+    cash=query_df("SELECT entry_date,direction,category,label,amount,method,reference,note FROM cash_entries WHERE entry_date BETWEEN ? AND ? ORDER BY entry_date",(start.isoformat(),end.isoformat()))
+    inc=cash.loc[cash.direction=="Entrée","amount"].sum() if not cash.empty else 0
+    out=cash.loc[cash.direction=="Sortie","amount"].sum() if not cash.empty else 0
+    a,b,c,d=st.columns(4)
+    for col,label,value,cls in [(a,"Paiements enregistrés",f"{len(p):,}".replace(","," "),""),(b,"Total paiements",money(p.amount.sum() if not p.empty else 0),"green"),(c,"Entrées caisse",money(inc),"gold"),(d,"Sorties caisse",money(out),"red")]:
+        col.markdown(f"<div class='report-stat {cls}'><div class='card-label'>{label}</div><div class='card-value'>{value}</div></div>",unsafe_allow_html=True)
+    st.subheader("Registre des paiements"); st.dataframe(p,use_container_width=True,hide_index=True)
+    st.subheader("Journal de caisse"); st.dataframe(cash,use_container_width=True,hide_index=True)
+    st.download_button("📥 Exporter paiements Excel",excel_bytes({"Paiements":p,"Caisse":cash}),"rapport_asc_africa.xlsx","application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+    st.download_button("📥 Exporter paiements CSV",p.to_csv(index=False).encode("utf-8-sig"),"rapport_paiements.csv","text/csv")
+    if REPORTLAB_OK:
+        pdf=pdf_bytes(f"Rapport financier ASC AFRICA — {start:%d/%m/%Y} au {end:%d/%m/%Y}",cash,"Trésorerie et encaissements consolidés",[("Paiements",len(p),BLUE),("Total paiements",money(p.amount.sum() if not p.empty else 0),"#0B8278"),("Entrées caisse",money(inc),"#D7A62A"),("Sorties caisse",money(out),"#C2414B")])
+        if pdf: st.download_button("📄 Télécharger le rapport PDF",pdf,"rapport_financier_asc_africa.pdf","application/pdf")
+        news_period=query_df("SELECT title,category,publish_date,author,published,featured FROM news WHERE publish_date BETWEEN ? AND ? ORDER BY publish_date DESC",(start.isoformat(),end.isoformat()))
+        activities_period=query_df("SELECT title,activity_type,start_date,end_date,location,status,budget FROM activities WHERE start_date BETWEEN ? AND ? ORDER BY start_date",(start.isoformat(),end.isoformat()))
+        members_period=query_df("SELECT member_no,full_name,phone,neighborhood,membership_date,role,status FROM members WHERE membership_date BETWEEN ? AND ? ORDER BY membership_date DESC",(start.isoformat(),end.isoformat()))
+        st.markdown("<div class='section'>Autres sous-rapports</div>",unsafe_allow_html=True)
+        x1,x2,x3=st.columns(3)
+        for col,label,data,filename in [(x1,"Communication & actualités",news_period,"rapport_communication.pdf"),(x2,"Activités du club",activities_period,"rapport_activites.pdf"),(x3,"Adhésions & membres",members_period,"rapport_membres.pdf")]:
+            with col:
+                st.markdown(f"<div class='feature-card'><h3>{label}</h3><p>{len(data)} enregistrement(s) sur la période.</p></div>",unsafe_allow_html=True)
+                if REPORTLAB_OK:
+                    payload=pdf_bytes(label,data,f"Période du {start:%d/%m/%Y} au {end:%d/%m/%Y}",[("Enregistrements",len(data),BLUE),("Du",start.strftime("%d/%m/%Y"),"#0B8278"),("Au",end.strftime("%d/%m/%Y"),"#D7A62A")])
+                    st.download_button(f"📄 Télécharger",payload,filename,"application/pdf",key=f"download_{filename}",use_container_width=True)
+                st.download_button("Excel / CSV",data.to_csv(index=False).encode("utf-8-sig"),filename.replace(".pdf",".csv"),"text/csv",key=f"csv_{filename}",use_container_width=True)
+    else: st.info("Pour les PDF : installez reportlab avec pip install reportlab")
+
+def excel_bytes(sheets):
+    from io import BytesIO
+    try:
+        buf=BytesIO()
+        with pd.ExcelWriter(buf,engine="openpyxl") as writer:
+            for name,df in sheets.items(): df.to_excel(writer,index=False,sheet_name=name[:31])
+        return buf.getvalue()
+    except Exception:
+        return b""
+
+def audit_page():
+    st.markdown('<div class="section">🛡️ Journal d’audit & traçabilité</div>',unsafe_allow_html=True)
+    df=query_df("SELECT created_at,actor,action,entity,entity_id,details FROM audit_logs ORDER BY id DESC LIMIT 2000")
+    st.dataframe(df,use_container_width=True,hide_index=True)
+    st.download_button("Exporter le journal CSV",df.to_csv(index=False).encode("utf-8-sig"),"asc_africa_audit.csv","text/csv")
+
+def settings_page():
+    st.markdown('<div class="section">⚙️ Paramètres & sécurité</div>',unsafe_allow_html=True)
+    st.warning("La base SQLite est stockée localement dans asc_africa.db, dans le dossier de l'application. Faites régulièrement une copie de sauvegarde.")
+    st.caption(f"Fichier de base : {DB_PATH}")
+    with st.form("password_change"):
+        current=st.text_input("Mot de passe actuel",type="password")
+        new=st.text_input("Nouveau mot de passe",type="password")
+        confirm=st.text_input("Confirmer le nouveau mot de passe",type="password")
+        change=st.form_submit_button("Changer le mot de passe administrateur",type="primary")
+    if change:
+        with connect() as c: admin=c.execute("SELECT * FROM admins WHERE username=?",(ADMIN_USER,)).fetchone()
+        if not admin or not verify_password(current,admin["password_hash"]): st.error("Mot de passe actuel incorrect.")
+        elif len(new)<10: st.error("Choisissez au moins 10 caractères.")
+        elif new!=confirm: st.error("Les mots de passe ne correspondent pas.")
+        else:
+            execute("UPDATE admins SET password_hash=? WHERE username=?",(pw_hash(new),ADMIN_USER)); audit("Changement mot de passe","admin",admin["id"]); st.success("Mot de passe modifié.")
+    st.subheader("Sauvegarde locale")
+    if DB_PATH.exists():
+        st.download_button("Télécharger une copie SQLite",DB_PATH.read_bytes(),"asc_africa_backup.db","application/octet-stream")
+
+def main():
+    init_db()
+    if "authenticated" not in st.session_state: st.session_state.authenticated=False
+    if not st.session_state.authenticated:
+        mode=st.radio("Espace",["Portail public","Administration"],horizontal=True,label_visibility="collapsed")
+        if mode=="Portail public": public_page()
+        else: login()
+        return
+    header()
+    st.markdown(f"<div class='admin-banner'><div class='kicker'>ASC AFRICA · Administration sécurisée</div><h2>Centre de pilotage du club</h2><p>Connecté : <b>{html.escape(str(st.session_state.actor))}</b> · Les données publiques et administratives sont reliées à la même base locale.</p></div>",unsafe_allow_html=True)
+    nav=st.radio("Navigation",["🏠 Tableau de bord","👥 Membres","💳 Cotisations & cartes","💰 Trésorerie","📅 Activités","📰 Communication","📊 Rapports & exports","🛡️ Audit","⚙️ Paramètres"],horizontal=True,label_visibility="collapsed")
+    if st.button("Se déconnecter",key="logout"):
+        audit("Déconnexion","administration"); st.session_state.authenticated=False; st.rerun()
+    st.divider()
+    if nav=="🏠 Tableau de bord":
+        metric_row()
+        st.markdown('<div class="section">Pilotage de l’ASC AFRICA</div>',unsafe_allow_html=True)
+        a,b=st.columns(2)
+        with a:
+            st.subheader("Derniers encaissements")
+            df=query_df("""SELECT p.receipt_no,p.payment_date,m.full_name,p.payment_type,p.amount FROM payments p LEFT JOIN members m ON m.id=p.member_id ORDER BY p.id DESC LIMIT 8""")
+            st.dataframe(df,use_container_width=True,hide_index=True)
+        with b:
+            st.subheader("Prochaines activités")
+            acts=query_df("SELECT title,start_date,location,status FROM activities WHERE start_date>=? ORDER BY start_date LIMIT 8",(date.today().isoformat(),))
+            st.dataframe(acts,use_container_width=True,hide_index=True)
+        st.info("Priorités : maintenir le registre des adhérents à jour, enregistrer chaque recette et dépense, conserver les reçus et préparer les bilans pour l'assemblée générale.")
+    elif nav=="👥 Membres": members_page()
+    elif nav=="💳 Cotisations & cartes": payments_page()
+    elif nav=="💰 Trésorerie": cash_page()
+    elif nav=="📅 Activités": activities_page()
+    elif nav=="📰 Communication": news_sponsors_page()
+    elif nav=="📊 Rapports & exports": reports_page()
+    elif nav=="🛡️ Audit": audit_page()
+    elif nav=="⚙️ Paramètres": settings_page()
+    st.divider()
+    st.caption("ASC AFRICA • Saint-Louis, Sénégal • Plateforme de gestion associative — SQLite local")
+    yam_footer()
+
+if __name__=="__main__":
+    main()
