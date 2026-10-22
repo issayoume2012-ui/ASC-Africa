@@ -473,7 +473,8 @@ def init_db():
         c.executescript("""
         CREATE TABLE IF NOT EXISTS admins(
             id INTEGER PRIMARY KEY, username TEXT UNIQUE NOT NULL, password_hash TEXT NOT NULL,
-            full_name TEXT NOT NULL, active INTEGER DEFAULT 1, created_at TEXT NOT NULL);
+            full_name TEXT NOT NULL, active INTEGER DEFAULT 1, created_at TEXT NOT NULL,
+            role TEXT NOT NULL DEFAULT 'admin');
         CREATE TABLE IF NOT EXISTS members(
             id INTEGER PRIMARY KEY AUTOINCREMENT, member_no TEXT UNIQUE, full_name TEXT NOT NULL,
             phone TEXT, neighborhood TEXT, birth_date TEXT, membership_date TEXT NOT NULL,
@@ -533,19 +534,19 @@ def init_db():
             if col not in existing_news_cols:
                 c.execute(f"ALTER TABLE news ADD COLUMN {col} {definition}")
         c.execute("CREATE INDEX IF NOT EXISTS idx_news_public_date ON news(published, publish_date)")
-        # Un seul compte partagé et fixe : désactive les anciens comptes afin que
-        # les anciens identifiants ne continuent pas à ouvrir l’administration.
+        # Migration additive des rôles : les anciens comptes sont conservés.
+        admin_cols = {row["name"] for row in c.execute("PRAGMA table_info(admins)").fetchall()}
+        if "role" not in admin_cols:
+            c.execute("ALTER TABLE admins ADD COLUMN role TEXT NOT NULL DEFAULT 'admin'")
         now = datetime.now().isoformat(timespec="seconds")
-        c.execute("UPDATE admins SET active=0 WHERE username<>?", (ADMIN_USER,))
         current_admin = c.execute("SELECT id FROM admins WHERE username=?", (ADMIN_USER,)).fetchone()
         if current_admin:
-            # Réapplique les identifiants demandés à chaque démarrage : le mot de
-            # passe ne peut pas être changé durablement depuis l’application.
-            c.execute("UPDATE admins SET password_hash=?, full_name=?, active=1 WHERE username=?",
-                      (pw_hash(ADMIN_PASSWORD), "Accès ASC AFRICA", ADMIN_USER))
+            # Le compte historique conserve son mot de passe actuel et ses accès complets.
+            c.execute("UPDATE admins SET full_name=?, active=1, role='admin' WHERE username=?",
+                      ("Accès ASC AFRICA", ADMIN_USER))
         else:
-            c.execute("INSERT INTO admins(username,password_hash,full_name,active,created_at) VALUES(?,?,?,?,?)",
-                      (ADMIN_USER, pw_hash(ADMIN_PASSWORD), "Accès ASC AFRICA", 1, now))
+            c.execute("INSERT INTO admins(username,password_hash,full_name,active,created_at,role) VALUES(?,?,?,?,?,?)",
+                      (ADMIN_USER, pw_hash(ADMIN_PASSWORD), "Accès ASC AFRICA", 1, now, "admin"))
 
 def audit(action, entity="", entity_id=None, details=""):
     with connect() as c:
@@ -811,12 +812,12 @@ def login():
         if ok:
             with connect() as c: admin=c.execute("SELECT * FROM admins WHERE username=? AND active=1",(username.strip(),)).fetchone()
             if admin and verify_password(password,admin["password_hash"]):
-                st.session_state.authenticated=True; st.session_state.actor=admin["full_name"]; st.session_state.login_at=datetime.now().isoformat()
+                st.session_state.authenticated=True; st.session_state.actor=admin["full_name"]; st.session_state.actor_username=admin["username"]; st.session_state.actor_role=admin["role"] if "role" in admin.keys() else "admin"; st.session_state.login_at=datetime.now().isoformat()
                 audit("Connexion","administration",admin["id"],"Connexion réussie")
                 st.rerun()
             else: st.error("Identifiant ou mot de passe incorrect.")
-        st.caption("Identifiants fixes : utilisateur Africa · mot de passe africa2026.")
-        st.warning("Ce compte partagé ouvre l’administration complète, y compris les fonctions de modification. Ne le diffusez qu’à des personnes de confiance.")
+        st.caption("Compte historique conservé : Africa. Le mot de passe initial est africa2026 si le compte n’a jamais été modifié.")
+        st.info("Les responsables disposent désormais d’accès séparés selon leur bureau : Finances globales ou Affaires administratives.")
 
 def public_page():
     header()
@@ -1367,11 +1368,61 @@ def audit_page():
     st.download_button("Exporter le journal CSV",df.to_csv(index=False).encode("utf-8-sig"),"asc_africa_audit.csv","text/csv")
 
 def settings_page():
-    st.markdown('<div class="section">⚙️ Paramètres & sécurité</div>',unsafe_allow_html=True)
-    st.warning("La base SQLite est stockée localement dans asc_africa.db, dans le dossier de l'application. Faites régulièrement une copie de sauvegarde.")
+    st.markdown('<div class="section">⚙️ Paramètres, sécurité & gestion des accès</div>',unsafe_allow_html=True)
+    st.warning("La base SQLite est stockée localement dans asc_africa.db. Faites régulièrement une copie de sauvegarde.")
     st.caption(f"Fichier de base : {DB_PATH}")
-    st.info("Le compte partagé est fixe et ne peut pas être modifié depuis cette interface. Identifiant : Africa · Mot de passe : africa2026.")
-    st.caption("Pour préserver la simplicité de l’accès partagé, le mot de passe est réinitialisé automatiquement au démarrage de l’application.")
+    st.subheader("Créer ou modifier un accès de bureau")
+    st.write("Le compte **Africa** conserve l’accès général. Les autres comptes peuvent être affectés à un bureau et leurs droits peuvent être modifiés ici.")
+    roles = {
+        "admin": "Administrateur général — tous les bureaux",
+        "finance": "Finances globales — tableau de bord, paiements, trésorerie, rapports",
+        "affaires": "Coordination administrative — membres, activités, communication",
+        "secretariat": "Secrétariat & membres — adhésions et dossiers des membres",
+        "activites": "Bureau des activités — calendrier, événements et suivi",
+        "communication": "Communication — actualités, partenaires et messages publics"
+    }
+    accounts = query_df("SELECT id,username,full_name,active,role,created_at FROM admins ORDER BY username")
+    if not accounts.empty:
+        st.dataframe(accounts.assign(role=accounts.role.map(roles).fillna(accounts.role), active=accounts.active.map({1:"Actif",0:"Désactivé"})),use_container_width=True,hide_index=True)
+    account_names = ["➕ Créer un nouvel accès"] + (accounts.username.tolist() if not accounts.empty else [])
+    selected_account = st.selectbox("Compte à créer ou modifier", account_names, key="access_account_select")
+    is_new = selected_account == "➕ Créer un nouvel accès"
+    current = None if is_new else accounts.loc[accounts.username == selected_account].iloc[0]
+    with st.form("access_account_form"):
+        username = st.text_input("Identifiant", value="" if is_new else str(current.username), disabled=(not is_new))
+        full_name = st.text_input("Nom du responsable / bureau", value="" if is_new else str(current.full_name))
+        role_keys = list(roles.keys())
+        current_role = "admin" if is_new else (str(current.role) if str(current.role) in roles else "admin")
+        role = st.selectbox("Bureau et niveau d’accès", role_keys, index=role_keys.index(current_role), format_func=lambda x: roles[x], disabled=(not is_new and str(current.username)==ADMIN_USER))
+        password = st.text_input("Nouveau mot de passe" + (" (obligatoire)" if is_new else " (laisser vide pour ne pas changer)"), type="password")
+        active = st.checkbox("Accès actif", value=True if is_new else bool(int(current.active)), disabled=(not is_new and str(current.username)==ADMIN_USER))
+        save = st.form_submit_button("Créer l’accès" if is_new else "Enregistrer les modifications", type="primary", use_container_width=True)
+    if save:
+        uname = username.strip()
+        fullname = full_name.strip()
+        if not uname or not fullname:
+            st.error("Renseignez l’identifiant et le nom du responsable.")
+        elif is_new and not password:
+            st.error("Choisissez un mot de passe pour ce nouvel accès.")
+        elif is_new and int(query_df("SELECT COUNT(*) AS n FROM admins WHERE username=?", (uname,)).iloc[0]["n"]) > 0:
+            st.error("Cet identifiant existe déjà.")
+        else:
+            try:
+                if is_new:
+                    execute("INSERT INTO admins(username,password_hash,full_name,active,created_at,role) VALUES(?,?,?,?,?,?)",
+                            (uname,pw_hash(password),fullname,int(active),datetime.now().isoformat(timespec="seconds"),role))
+                    audit("Création accès administration","admin",None,f"{uname} · {role}")
+                    st.success("Accès créé. Le responsable peut se connecter avec ses identifiants.")
+                else:
+                    execute("UPDATE admins SET full_name=?,role=?,active=? WHERE username=?",(fullname,role,int(active),uname))
+                    if password:
+                        execute("UPDATE admins SET password_hash=? WHERE username=?",(pw_hash(password),uname))
+                    audit("Modification accès administration","admin",int(current.id),f"{uname} · rôle={role} · actif={active}")
+                    st.success("Accès et droits mis à jour.")
+                st.rerun()
+            except sqlite3.IntegrityError:
+                st.error("Impossible d’enregistrer : cet identifiant est déjà utilisé.")
+    st.caption("Conseil : créez un compte pour le responsable des Finances et un autre pour les Affaires administratives. Vous pourrez modifier leur rôle, leur nom, leur mot de passe ou désactiver leur accès.")
     st.subheader("Sauvegarde locale")
     if DB_PATH.exists():
         st.download_button("Télécharger une copie SQLite",DB_PATH.read_bytes(),"asc_africa_backup.db","application/octet-stream")
@@ -1405,25 +1456,54 @@ def main():
         return
     header()
     st.markdown(f"<div class='admin-banner'><div class='kicker'>ASC AFRICA · Administration sécurisée</div><h2>Centre de pilotage du club</h2><p>Connecté : <b>{html.escape(str(st.session_state.actor))}</b> · Les données publiques et administratives sont reliées à la même base locale.</p></div>",unsafe_allow_html=True)
-    admin_sections=["🏠 Tableau de bord","👥 Membres","💳 Cotisations & cartes","💰 Trésorerie","📅 Activités","📰 Communication","📊 Rapports & exports","🛡️ Audit","⚙️ Paramètres"]
-    st.markdown("<div class='public-nav-label'>MENU ADMINISTRATION</div><div class='nav-help-mobile'>Choisissez une rubrique dans le menu pour accéder aux outils de gestion.</div>",unsafe_allow_html=True)
-    nav=st.selectbox("Ouvrir une rubrique d’administration",admin_sections,key="admin_navigation_select",label_visibility="collapsed")
+    role = st.session_state.get("actor_role", "admin")
+    is_admin = role == "admin"
+    finance_sections = ["🏠 Tableau de bord financier", "💳 Cotisations & cartes", "💰 Trésorerie", "📊 Rapports & exports"]
+    affairs_sections = ["👥 Membres", "📅 Activités", "📰 Communication"]
+    if is_admin:
+        bureau_options = ["💰 Finances globales", "🏛️ Affaires administratives", "🛡️ Contrôle & paramètres"]
+    elif role == "finance":
+        bureau_options = ["💰 Finances globales"]
+    else:
+        bureau_options = ["🏛️ Affaires administratives"]
+    st.markdown("<div class='public-nav-label'>BUREAUX DE L’ADMINISTRATION</div><div class='nav-help-mobile'>Choisissez d’abord le bureau, puis son sous-service.</div>",unsafe_allow_html=True)
+    bureau = st.selectbox("Choisir un bureau", bureau_options, key="admin_bureau_select")
+    if bureau == "💰 Finances globales":
+        st.info("**Contenu du bureau financier :** suivi global des encaissements, cotisations des membres et partenaires, cartes, reçus, historique par mode de paiement, entrées/sorties de caisse et rapports financiers exportables.")
+        nav = st.selectbox("Sous-services financiers", finance_sections, key="admin_finance_navigation")
+    elif bureau == "🏛️ Affaires administratives":
+        if role in ("admin", "affaires"):
+            st.info("**Contenu du bureau administratif :** secrétariat et dossiers des membres, organisation des activités, communication officielle, actualités, partenaires et messages du public.")
+        if role == "secretariat":
+            permitted_affairs = ["👥 Membres"]
+        elif role == "activites":
+            permitted_affairs = ["📅 Activités"]
+        elif role == "communication":
+            permitted_affairs = ["📰 Communication"]
+        else:
+            permitted_affairs = affairs_sections
+        nav = st.selectbox("Sous-bureau administratif", permitted_affairs, key="admin_affairs_navigation")
+    else:
+        nav = st.selectbox("Contrôle et configuration", ["🛡️ Audit", "⚙️ Paramètres & accès"], key="admin_control_navigation")
     if st.button("Se déconnecter",key="logout"):
-        audit("Déconnexion","administration"); st.session_state.authenticated=False; st.rerun()
+        audit("Déconnexion","administration"); st.session_state.authenticated=False
+        for key in ("actor", "actor_username", "actor_role", "login_at"):
+            st.session_state.pop(key, None)
+        st.rerun()
     st.divider()
-    if nav=="🏠 Tableau de bord":
+    if nav in ("🏠 Tableau de bord financier", "🏠 Tableau de bord"):
         metric_row()
-        st.markdown('<div class="section">Pilotage de l’ASC AFRICA</div>',unsafe_allow_html=True)
+        st.markdown('<div class="section">Pilotage financier de l’ASC AFRICA</div>',unsafe_allow_html=True)
+        p=query_df("SELECT payment_date,payment_type,amount,method,COALESCE(NULLIF(payer_name,''),m.full_name,'Partenaire') AS payeur FROM payments p LEFT JOIN members m ON m.id=p.member_id ORDER BY p.id DESC LIMIT 12")
+        cash=query_df("SELECT entry_date,direction,category,label,amount,method FROM cash_entries ORDER BY id DESC LIMIT 12")
         a,b=st.columns(2)
         with a:
             st.subheader("Derniers encaissements")
-            df=query_df("""SELECT p.receipt_no,p.payment_date,m.full_name,p.payment_type,p.amount FROM payments p LEFT JOIN members m ON m.id=p.member_id ORDER BY p.id DESC LIMIT 8""")
-            st.dataframe(df,use_container_width=True,hide_index=True)
+            st.dataframe(p,use_container_width=True,hide_index=True)
         with b:
-            st.subheader("Prochaines activités")
-            acts=query_df("SELECT title,start_date,location,status FROM activities WHERE start_date>=? ORDER BY start_date LIMIT 8",(date.today().isoformat(),))
-            st.dataframe(acts,use_container_width=True,hide_index=True)
-        st.info("Priorités : maintenir le registre des adhérents à jour, enregistrer chaque recette et dépense, conserver les reçus et préparer les bilans pour l'assemblée générale.")
+            st.subheader("Dernières opérations de caisse")
+            st.dataframe(cash,use_container_width=True,hide_index=True)
+        st.info("Le bureau des Finances suit les cotisations, contributions partenaires, recettes, dépenses, modes de paiement, justificatifs et rapports périodiques.")
     elif nav=="👥 Membres": members_page()
     elif nav=="💳 Cotisations & cartes": payments_page()
     elif nav=="💰 Trésorerie": cash_page()
@@ -1431,7 +1511,9 @@ def main():
     elif nav=="📰 Communication": news_sponsors_page()
     elif nav=="📊 Rapports & exports": reports_page()
     elif nav=="🛡️ Audit": audit_page()
-    elif nav=="⚙️ Paramètres": settings_page()
+    elif nav in ("⚙️ Paramètres", "⚙️ Paramètres & accès"):
+        if is_admin: settings_page()
+        else: st.error("Votre compte n’a pas accès à la gestion des paramètres.")
     st.divider()
     st.caption("ASC AFRICA • Saint-Louis, Sénégal • Plateforme de gestion associative — SQLite local")
     yam_footer()
