@@ -36,9 +36,10 @@ LOGO_PATHS = [APP_DIR / "logo_asc_africa.png", APP_DIR / "africa.png", APP_DIR /
 YAM_LOGO_PATHS = [APP_DIR / "Logo YAM(1).png", APP_DIR / "logo_yam.png", APP_DIR / "yam_logo.png"]
 CLUB = "ASC AFRICA"
 SLOGAN = "AFRICA KASSÉ, AFRICA REK"
-ADMIN_USER = "admin"
-# Changez ce mot de passe dès la première connexion.
-ADMIN_PASSWORD = os.environ.get("ASC_ADMIN_INITIAL_PASSWORD", "Africa@2026!")
+ADMIN_USER = "Africa"
+# Identifiants fixes demandés pour l’accès partagé.
+# Attention : ce compte ouvre l’espace complet d’administration.
+ADMIN_PASSWORD = "africa2026"
 WHATSAPP_COUNTRY = "221"
 CURRENCY = "FCFA"
 BLUE = "#123B75"
@@ -46,7 +47,10 @@ LIGHT_BLUE = "#EAF2FC"
 WHITE = "#FFFFFF"
 GOLD = "#D7A62A"
 
-st.set_page_config(page_title="ASC AFRICA | Gestion & communauté", page_icon="⚽",
+# Utilise le véritable logo comme icône d’onglet/favori lorsqu’il est présent.
+_FAVICON = next((p for p in LOGO_PATHS if p.exists()), None)
+st.set_page_config(page_title="ASC AFRICA | Gestion & communauté",
+                   page_icon=str(_FAVICON) if _FAVICON else "⚽",
                    layout="wide", initial_sidebar_state="collapsed")
 
 st.markdown(f"""
@@ -150,6 +154,24 @@ a{{overflow-wrap:anywhere}}
 .stDownloadButton>button{{border:1px solid #cbd8e8}}
 @media(prefers-reduced-motion:reduce){{*,*:before,*:after{{animation:none!important;transition:none!important;scroll-behavior:auto!important}}}}
 @media(max-width:700px){{.hero{{padding:22px 18px;border-radius:18px;}}.block-container{{padding-left:.8rem;padding-right:.8rem;}}.news-card{{padding:16px;}}div[data-testid="stRadio"] div[role="radiogroup"]{{gap:5px;}}div[data-testid="stRadio"] div[role="radiogroup"] label{{padding:7px 9px;font-size:.82rem;}}}}
+/* ASC AFRICA signature motion: contenus qui entrent progressivement au défilement */
+@keyframes africaReveal{{from{{opacity:0;transform:translateY(34px) scale(.985);filter:blur(3px)}}to{{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}}}}
+@keyframes africaShimmer{{0%{{background-position:0% 50%}}100%{{background-position:200% 50%}}}}
+.hero{{background-size:160% 160%;animation:africaReveal .75s cubic-bezier(.2,.75,.2,1) both,africaShimmer 12s ease-in-out infinite alternate;}}
+.stButton>button{{transition:transform .22s ease,box-shadow .22s ease,filter .22s ease;}}
+.stButton>button:hover{{transform:translateY(-2px);box-shadow:0 10px 24px rgba(18,59,117,.18);filter:saturate(1.12);}}
+.news-cover{{transition:transform .65s cubic-bezier(.2,.7,.2,1),filter .5s ease;}}
+.news-card:hover .news-cover{{transform:scale(1.018);filter:saturate(1.08);}}
+@supports (animation-timeline: view()){{
+  .news-card,.feature-card,.report-stat,.card,div[data-testid="stMetric"],.report-hero{{
+    animation-name:africaReveal;animation-duration:1ms;animation-timing-function:linear;
+    animation-fill-mode:both;animation-timeline:view();animation-range:entry 0% entry 38%;
+  }}
+  .news-card:nth-of-type(3n+2),.feature-card:nth-of-type(3n+2){{animation-range:entry 4% entry 42%;}}
+  .news-card:nth-of-type(3n),.feature-card:nth-of-type(3n){{animation-range:entry 8% entry 46%;}}
+}}
+@media(prefers-reduced-motion:reduce){{.hero{{animation:none!important}}.news-cover{{transition:none!important}}}}
+
 
 /* Identité visuelle signature : stade nocturne, or et vert, pensée pour toutes les tailles */
 :root{{color-scheme:light;--club-ink:#07172e;--club-teal:#087e78;--club-gold:#f4bd38;--club-line:#dce7f4;}}
@@ -305,9 +327,19 @@ def init_db():
             if col not in existing_news_cols:
                 c.execute(f"ALTER TABLE news ADD COLUMN {col} {definition}")
         c.execute("CREATE INDEX IF NOT EXISTS idx_news_public_date ON news(published, publish_date)")
-        if not c.execute("SELECT 1 FROM admins WHERE username=?", (ADMIN_USER,)).fetchone():
-            c.execute("INSERT INTO admins(username,password_hash,full_name,created_at) VALUES(?,?,?,?)",
-                      (ADMIN_USER, pw_hash(ADMIN_PASSWORD), "Administrateur ASC AFRICA", datetime.now().isoformat(timespec="seconds")))
+        # Un seul compte partagé et fixe : désactive les anciens comptes afin que
+        # les anciens identifiants ne continuent pas à ouvrir l’administration.
+        now = datetime.now().isoformat(timespec="seconds")
+        c.execute("UPDATE admins SET active=0 WHERE username<>?", (ADMIN_USER,))
+        current_admin = c.execute("SELECT id FROM admins WHERE username=?", (ADMIN_USER,)).fetchone()
+        if current_admin:
+            # Réapplique les identifiants demandés à chaque démarrage : le mot de
+            # passe ne peut pas être changé durablement depuis l’application.
+            c.execute("UPDATE admins SET password_hash=?, full_name=?, active=1 WHERE username=?",
+                      (pw_hash(ADMIN_PASSWORD), "Accès ASC AFRICA", ADMIN_USER))
+        else:
+            c.execute("INSERT INTO admins(username,password_hash,full_name,active,created_at) VALUES(?,?,?,?,?)",
+                      (ADMIN_USER, pw_hash(ADMIN_PASSWORD), "Accès ASC AFRICA", 1, now))
 
 def audit(action, entity="", entity_id=None, details=""):
     with connect() as c:
@@ -488,7 +520,8 @@ def login():
                 audit("Connexion","administration",admin["id"],"Connexion réussie")
                 st.rerun()
             else: st.error("Identifiant ou mot de passe incorrect.")
-        st.caption("Accès initial : admin / Africa@2026! — changez ce mot de passe dans Paramètres.")
+        st.caption("Identifiants fixes : utilisateur Africa · mot de passe africa2026.")
+        st.warning("Ce compte partagé ouvre l’administration complète, y compris les fonctions de modification. Ne le diffusez qu’à des personnes de confiance.")
 
 def public_page():
     header()
@@ -923,18 +956,8 @@ def settings_page():
     st.markdown('<div class="section">⚙️ Paramètres & sécurité</div>',unsafe_allow_html=True)
     st.warning("La base SQLite est stockée localement dans asc_africa.db, dans le dossier de l'application. Faites régulièrement une copie de sauvegarde.")
     st.caption(f"Fichier de base : {DB_PATH}")
-    with st.form("password_change"):
-        current=st.text_input("Mot de passe actuel",type="password")
-        new=st.text_input("Nouveau mot de passe",type="password")
-        confirm=st.text_input("Confirmer le nouveau mot de passe",type="password")
-        change=st.form_submit_button("Changer le mot de passe administrateur",type="primary")
-    if change:
-        with connect() as c: admin=c.execute("SELECT * FROM admins WHERE username=?",(ADMIN_USER,)).fetchone()
-        if not admin or not verify_password(current,admin["password_hash"]): st.error("Mot de passe actuel incorrect.")
-        elif len(new)<10: st.error("Choisissez au moins 10 caractères.")
-        elif new!=confirm: st.error("Les mots de passe ne correspondent pas.")
-        else:
-            execute("UPDATE admins SET password_hash=? WHERE username=?",(pw_hash(new),ADMIN_USER)); audit("Changement mot de passe","admin",admin["id"]); st.success("Mot de passe modifié.")
+    st.info("Le compte partagé est fixe et ne peut pas être modifié depuis cette interface. Identifiant : Africa · Mot de passe : africa2026.")
+    st.caption("Pour préserver la simplicité de l’accès partagé, le mot de passe est réinitialisé automatiquement au démarrage de l’application.")
     st.subheader("Sauvegarde locale")
     if DB_PATH.exists():
         st.download_button("Télécharger une copie SQLite",DB_PATH.read_bytes(),"asc_africa_backup.db","application/octet-stream")
