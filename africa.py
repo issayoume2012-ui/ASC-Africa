@@ -519,6 +519,10 @@ def init_db():
         CREATE INDEX IF NOT EXISTS idx_members_name ON members(full_name);
         """)
         # Migrations additives : conserver les données déjà enregistrées.
+        existing_payment_cols = {row["name"] for row in c.execute("PRAGMA table_info(payments)").fetchall()}
+        for col, definition in {"payer_name": "TEXT DEFAULT ''", "payer_phone": "TEXT DEFAULT ''"}.items():
+            if col not in existing_payment_cols:
+                c.execute(f"ALTER TABLE payments ADD COLUMN {col} {definition}")
         existing_news_cols = {row["name"] for row in c.execute("PRAGMA table_info(news)").fetchall()}
         for col, definition in {
             "subtitle": "TEXT DEFAULT ''",
@@ -660,7 +664,7 @@ def receipt_pdf_bytes(row):
     story = [Spacer(1,5*mm), Paragraph("ASC AFRICA", styles["ReceiptBrand"]), Paragraph(html.escape(SLOGAN), styles["ReceiptSub"]), Spacer(1,8*mm)]
     header = Table([[Paragraph("REÇU DE PAIEMENT", ParagraphStyle(name="ReceiptType", parent=styles["Heading2"], textColor=colors.white, alignment=1, fontSize=15)), Paragraph("N° <b>"+html.escape(str(row['receipt_no']))+"</b><br/>Date : "+html.escape(fmt_date(row['payment_date'])), ParagraphStyle(name="ReceiptNo", parent=styles["Normal"], textColor=colors.white, alignment=2, fontSize=9, leading=14))]], colWidths=[doc.width*.58,doc.width*.42])
     header.setStyle(TableStyle([("BACKGROUND",(0,0),(-1,-1),colors.HexColor(BLUE)),("VALIGN",(0,0),(-1,-1),"MIDDLE"),("LEFTPADDING",(0,0),(-1,-1),12),("RIGHTPADDING",(0,0),(-1,-1),12),("TOPPADDING",(0,0),(-1,-1),14),("BOTTOMPADDING",(0,0),(-1,-1),14)])); story += [header,Spacer(1,8*mm)]
-    fields = [("Reçu de", row.get("full_name") or "Membre non renseigné"),("Téléphone",row.get("phone") or "—"),("Objet du paiement",row.get("payment_type") or "—"),("Période concernée",row.get("period") or "—"),("Mode de paiement",row.get("method") or "—"),("Observation",row.get("note") or "—")]
+    fields = [("Reçu de", row.get("payer_name") or row.get("full_name") or "Membre non renseigné"),("Téléphone",row.get("payer_phone") or row.get("phone") or "—"),("Objet du paiement",row.get("payment_type") or "—"),("Période concernée",row.get("period") or "—"),("Mode de paiement",row.get("method") or "—"),("Observation",row.get("note") or "—")]
     rows=[]
     for label,value in fields:
         rows.append([Paragraph(html.escape(label),styles["ReceiptLabel"]),Paragraph(html.escape(str(value)),styles["ReceiptValue"])])
@@ -1091,20 +1095,31 @@ def members_page():
             st.download_button("Exporter les demandes CSV",pending.drop(columns=["id"]).to_csv(index=False).encode("utf-8-sig"),"asc_africa_demandes_adhesion.csv","text/csv")
 
 def payments_page():
-    st.markdown('<div class="section">💳 Cartes, cotisations & reçus</div>', unsafe_allow_html=True)
-    st.markdown("<div class='admin-banner'><div class='kicker'>Encaissements · justificatifs</div><h2>Centre des paiements</h2><p>Enregistrez un paiement, téléchargez un reçu PDF officiel ou partagez ses détails par WhatsApp. Interface adaptée aux téléphones.</p></div>", unsafe_allow_html=True)
+    st.markdown('<div class="section">💳 Cotisations, cartes & reçus</div>', unsafe_allow_html=True)
+    st.markdown("<div class='admin-banner'><div class='kicker'>Encaissements · justificatifs</div><h2>Centre des paiements</h2><p>Enregistrez les cotisations des membres et contributions des partenaires, consultez les sommes reçues par mode de paiement et téléchargez les reçus PDF. Interface adaptée aux téléphones.</p></div>", unsafe_allow_html=True)
     members = query_df("SELECT id,member_no,full_name,phone FROM members ORDER BY full_name")
     t1, t2 = st.tabs(["➕ Nouvel encaissement", "🧾 Historique & reçus"])
     with t1:
-        if members.empty:
+        payer_kind = st.radio("Qui effectue le paiement ?", ["Membre", "Partenaire"], horizontal=True, key="payment_payer_kind")
+        if payer_kind == "Membre" and members.empty:
             st.warning("Ajoutez d'abord les membres ou validez les demandes d'adhésion.")
         else:
-            opts = {f"{r.member_no or r.id} — {r.full_name} ({r.phone or 'sans téléphone'})": int(r.id) for _, r in members.iterrows()}
+            opts = {f"{r.member_no or r.id} — {r.full_name} ({r.phone or 'sans téléphone'})": int(r.id) for _, r in members.iterrows()} if not members.empty else {}
             with st.form("payment_form", clear_on_submit=True):
-                member_label = st.selectbox("Membre", list(opts))
-                ptype = st.selectbox("Type de paiement", ["Carte membre — 500 FCFA", "Carte de soutien — 1 000 FCFA", "Cotisation", "Don", "Contribution événementielle", "Autre"])
-                default = 500 if ptype.startswith("Carte membre") else 1000 if ptype.startswith("Carte de soutien") else 0
+                if payer_kind == "Membre":
+                    member_label = st.selectbox("Membre", list(opts))
+                    payer_name = opts[member_label]
+                    payer_phone = ""
+                else:
+                    partner_name = st.text_input("Nom du partenaire / organisme", placeholder="Nom du partenaire")
+                    partner_phone = st.text_input("Téléphone du partenaire (facultatif)", placeholder="77 xxx xx xx")
+                    payer_name = None
+                    payer_phone = partner_phone
+                ptype = st.selectbox("Type de paiement", ["Cotisation membre — 2 000 FCFA", "Cotisation partenaire (montant variable)", "Carte membre — 500 FCFA", "Carte de soutien — 1 000 FCFA", "Don", "Contribution événementielle", "Autre"])
+                default = 2000 if ptype.startswith("Cotisation membre") else 500 if ptype.startswith("Carte membre") else 1000 if ptype.startswith("Carte de soutien") else 0
                 amount = st.number_input("Montant encaissé (FCFA)", min_value=0, step=500, value=default)
+                if ptype.startswith("Cotisation partenaire"):
+                    st.caption("Le montant de la cotisation partenaire est libre et dépend de la contribution convenue.")
                 d = st.date_input("Date du paiement", value=date.today())
                 period = st.text_input("Période concernée", placeholder="Ex. Octobre 2026")
                 method = st.selectbox("Mode de paiement", ["Espèces", "Wave", "Orange Money", "Virement", "Chèque", "Autre"])
@@ -1113,43 +1128,66 @@ def payments_page():
             if save:
                 if amount <= 0:
                     st.error("Le montant doit être supérieur à zéro.")
+                elif payer_kind == "Partenaire" and not partner_name.strip():
+                    st.error("Veuillez renseigner le nom du partenaire.")
                 else:
                     rn = receipt_no("ASC")
-                    pid = execute("INSERT INTO payments(receipt_no,member_id,payment_date,payment_type,amount,period,method,note,created_by,created_at) VALUES(?,?,?,?,?,?,?,?,?,?)", (rn, opts[member_label], d.isoformat(), ptype, float(amount), period, method, note, st.session_state.actor, datetime.now().isoformat(timespec="seconds")))
-                    execute("INSERT INTO cash_entries(entry_date,direction,category,label,amount,method,reference,note,created_by,created_at) VALUES(?,?,?,?,?,?,?,?,?,?)", (d.isoformat(), "Entrée", ptype, f"Paiement {rn}", float(amount), method, rn, note, st.session_state.actor, datetime.now().isoformat(timespec="seconds")))
-                    audit("Encaissement", "paiement", pid, f"{rn} — {member_label} — {money(amount)}")
+                    member_id = opts[member_label] if payer_kind == "Membre" else None
+                    stored_name = (opts and next((r.full_name for _, r in members.iterrows() if int(r.id)==member_id), "")) if member_id else partner_name.strip()
+                    stored_phone = (next((r.phone or "" for _, r in members.iterrows() if int(r.id)==member_id), "")) if member_id else payer_phone.strip()
+                    pid = execute("INSERT INTO payments(receipt_no,member_id,payment_date,payment_type,amount,period,method,note,created_by,created_at,payer_name,payer_phone) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)", (rn, member_id, d.isoformat(), ptype, float(amount), period, method, note, st.session_state.actor, datetime.now().isoformat(timespec="seconds"), stored_name, stored_phone))
+                    execute("INSERT INTO cash_entries(entry_date,direction,category,label,amount,method,reference,note,created_by,created_at) VALUES(?,?,?,?,?,?,?,?,?,?)", (d.isoformat(), "Entrée", ptype, f"Paiement {rn} — {stored_name}", float(amount), method, rn, note, st.session_state.actor, datetime.now().isoformat(timespec="seconds")))
+                    audit("Encaissement", "paiement", pid, f"{rn} — {stored_name} — {money(amount)} — {method}")
                     st.session_state["last_receipt_no"] = rn
                     st.success(f"Paiement enregistré. Numéro de reçu : {rn}")
                     st.rerun()
             last_no = st.session_state.get("last_receipt_no")
             if last_no:
-                last = query_df("SELECT p.*,m.full_name,m.phone FROM payments p LEFT JOIN members m ON m.id=p.member_id WHERE p.receipt_no=?", (last_no,))
+                last = query_df("SELECT p.*,COALESCE(NULLIF(p.payer_name,''),m.full_name,'Membre') AS full_name,COALESCE(NULLIF(p.payer_phone,''),m.phone,'') AS phone FROM payments p LEFT JOIN members m ON m.id=p.member_id WHERE p.receipt_no=?", (last_no,))
                 if not last.empty:
                     r = last.iloc[0]
-                    st.markdown(f"<div class='card'><div class='eyebrow'>Paiement confirmé</div><h3 style='color:#123b75'>{html.escape(str(r.full_name or 'Membre'))}</h3><div class='card-value'>{money(r.amount)}</div><p>N° reçu : <b>{html.escape(str(r.receipt_no))}</b> · {fmt_date(r.payment_date)}</p></div>", unsafe_allow_html=True)
+                    st.markdown(f"<div class='card'><div class='eyebrow'>Paiement confirmé</div><h3 style='color:#123b75'>{html.escape(str(r.full_name or 'Membre'))}</h3><div class='card-value'>{money(r.amount)}</div><p>N° reçu : <b>{html.escape(str(r.receipt_no))}</b> · {fmt_date(r.payment_date)} · {html.escape(str(r.method or ''))}</p></div>", unsafe_allow_html=True)
                     pdf = receipt_pdf_bytes(r)
                     if pdf: st.download_button("📄 Télécharger le reçu PDF officiel", pdf, f"recu_{r.receipt_no}.pdf", "application/pdf", use_container_width=True)
-                    url = whatsapp_url(r.phone, f"ASC AFRICA — Reçu {r.receipt_no}\nMembre : {r.full_name}\nObjet : {r.payment_type}\nMontant : {money(r.amount)}\nDate : {fmt_date(r.payment_date)}\nMode : {r.method}\nMerci pour votre soutien !")
+                    url = whatsapp_url(r.phone, f"ASC AFRICA — Reçu {r.receipt_no}\nPayeur : {r.full_name}\nObjet : {r.payment_type}\nMontant : {money(r.amount)}\nDate : {fmt_date(r.payment_date)}\nMode : {r.method}\nMerci pour votre soutien !")
                     if url: st.link_button("📲 Partager les détails sur WhatsApp", url, use_container_width=True)
     with t2:
-        df = query_df("SELECT p.id,p.receipt_no,p.payment_date,m.full_name,m.phone,p.payment_type,p.amount,p.period,p.method,p.note FROM payments p LEFT JOIN members m ON m.id=p.member_id ORDER BY p.payment_date DESC,p.id DESC")
+        df = query_df("SELECT p.id,p.receipt_no,p.payment_date,COALESCE(NULLIF(p.payer_name,''),m.full_name,'Membre') AS full_name,COALESCE(NULLIF(p.payer_phone,''),m.phone,'') AS phone,p.payment_type,p.amount,p.period,p.method,p.note FROM payments p LEFT JOIN members m ON m.id=p.member_id ORDER BY p.payment_date DESC,p.id DESC")
         if df.empty:
             st.info("Aucun paiement enregistré pour le moment.")
         else:
             q = st.text_input("🔎 Rechercher un reçu, un membre ou un numéro", placeholder="Nom, ASC-2026…")
             view = df[df.astype(str).apply(lambda col: col.str.contains(q, case=False, na=False)).any(axis=1)] if q.strip() else df
-            st.caption(f"{len(view)} reçu(s) affiché(s)")
-            st.dataframe(view.rename(columns={"receipt_no":"N° reçu","payment_date":"Date","full_name":"Membre","phone":"Téléphone","payment_type":"Objet","amount":"Montant FCFA","period":"Période","method":"Mode","note":"Observation"}), use_container_width=True, hide_index=True)
+            st.caption(f"{len(view)} reçu(s) affiché(s) · sommes calculées sur les résultats affichés")
+            total = float(view["amount"].sum()) if not view.empty else 0
+            st.metric("💰 Total reçu", money(total))
+            methods_order = ["Espèces", "Wave", "Orange Money", "Virement", "Chèque", "Autre"]
+            method_totals = view.groupby("method", dropna=False)["amount"].agg(["sum", "count"]).reset_index() if not view.empty else pd.DataFrame(columns=["method", "sum", "count"])
+            method_totals["method"] = method_totals["method"].fillna("Non précisé")
+            cols = st.columns(3)
+            summary = {str(row["method"]): (float(row["sum"]), int(row["count"])) for _, row in method_totals.iterrows()}
+            for i, m in enumerate(methods_order):
+                value, count = summary.get(m, (0, 0))
+                with cols[i % 3]:
+                    st.metric(f"{m} · {count} paiement(s)", money(value))
+            for _, row in method_totals.iterrows():
+                m = str(row["method"])
+                if m not in methods_order:
+                    st.metric(f"{m} · {int(row['count'])} paiement(s)", money(row["sum"]))
+            st.dataframe(view.rename(columns={"receipt_no":"N° reçu","payment_date":"Date","full_name":"Payeur / membre","phone":"Téléphone","payment_type":"Objet","amount":"Montant FCFA","period":"Période","method":"Mode","note":"Observation"}), use_container_width=True, hide_index=True)
             chosen = st.selectbox("Choisir le reçu à télécharger ou partager", view["receipt_no"].tolist()) if not view.empty else None
             if chosen:
                 r = view[view.receipt_no == chosen].iloc[0]
                 st.markdown(f"<div class='card'><div class='eyebrow'>Aperçu du reçu</div><h3 style='color:#123b75'>ASC AFRICA · {html.escape(str(r.receipt_no))}</h3><p><b>Bénéficiaire :</b> {html.escape(str(r.full_name or '—'))}</p><p><b>Objet :</b> {html.escape(str(r.payment_type))}</p><div class='card-value'>{money(r.amount)}</div><p><b>Date :</b> {fmt_date(r.payment_date)} &nbsp; · &nbsp; <b>Mode :</b> {html.escape(str(r.method or '—'))}</p></div>", unsafe_allow_html=True)
-                pdf = receipt_pdf_bytes(r)
+                receipt_row = r.copy()
+                receipt_row["payer_name"] = r.full_name
+                receipt_row["payer_phone"] = r.phone
+                pdf = receipt_pdf_bytes(receipt_row)
                 if pdf: st.download_button("📄 Télécharger le reçu PDF", pdf, f"recu_{r.receipt_no}.pdf", "application/pdf", use_container_width=True)
-                message = f"ASC AFRICA — Reçu {r.receipt_no}\nMembre : {r.full_name}\nObjet : {r.payment_type}\nMontant : {money(r.amount)}\nDate : {fmt_date(r.payment_date)}\nMode : {r.method}"
+                message = f"ASC AFRICA — Reçu {r.receipt_no}\nMembre / partenaire : {r.full_name}\nObjet : {r.payment_type}\nMontant : {money(r.amount)}\nDate : {fmt_date(r.payment_date)}\nMode : {r.method}"
                 url = whatsapp_url(r.phone, message)
                 if url: st.link_button("📲 Envoyer / relancer sur WhatsApp", url, use_container_width=True)
-            st.download_button("📥 Exporter l'historique en CSV", df.to_csv(index=False).encode("utf-8-sig"), "asc_africa_paiements.csv", "text/csv", use_container_width=True)
+            st.download_button("📥 Exporter l'historique en CSV", view.to_csv(index=False).encode("utf-8-sig"), "asc_africa_paiements.csv", "text/csv", use_container_width=True)
     if not REPORTLAB_OK:
         st.info("Pour générer les reçus PDF, installez ReportLab : pip install reportlab")
 
