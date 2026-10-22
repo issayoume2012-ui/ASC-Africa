@@ -315,6 +315,80 @@ div[data-testid="stTabs"] button[aria-selected="true"] p{{color:#fff!important;}
 </style>
 """, unsafe_allow_html=True)
 
+# Couche responsive XXL complémentaire : téléphone, tablette, ordinateur et grands écrans.
+st.markdown(r"""
+<style>
+/* Le contenu utilise réellement la largeur disponible, sans débordement horizontal. */
+.stApp, [data-testid="stAppViewContainer"], section.main { width:100%; max-width:100%; }
+.block-container { width:100%; max-width:1900px!important; padding-left:clamp(12px,2.4vw,42px)!important; padding-right:clamp(12px,2.4vw,42px)!important; }
+[data-testid="stHorizontalBlock"] { gap:clamp(10px,1.6vw,26px)!important; align-items:stretch; }
+[data-testid="stVerticalBlock"] { min-width:0; }
+[data-testid="stMarkdownContainer"], [data-testid="stMarkdownContainer"] p,
+[data-testid="stMarkdownContainer"] li { overflow-wrap:anywhere; }
+.hero { width:100%; padding:clamp(20px,4vw,58px)!important; border-radius:clamp(16px,2vw,30px)!important; }
+.hero h1 { font-size:clamp(2rem,5.2vw,5.2rem)!important; line-height:1.02!important; }
+.hero p { font-size:clamp(1rem,1.5vw,1.35rem)!important; }
+.card, .news-card, .feature-card, .report-stat { min-width:0; box-sizing:border-box; }
+.card { padding:clamp(14px,1.6vw,26px)!important; }
+.news-card { padding:clamp(14px,1.8vw,28px)!important; }
+.stButton>button, .stDownloadButton>button, [data-testid="stFormSubmitButton"] button { min-height:46px; padding:10px 16px; white-space:normal; overflow-wrap:anywhere; }
+[data-testid="stTextInput"] input, [data-testid="stNumberInput"] input,
+[data-testid="stTextArea"] textarea, [data-testid="stSelectbox"] div[role="combobox"] { font-size:16px!important; }
+[data-testid="stDataFrame"], [data-testid="stTable"] { max-width:100%; overflow-x:auto; }
+[data-testid="stTabs"] [data-baseweb="tab-list"] { max-width:100%; overflow-x:auto!important; flex-wrap:nowrap!important; scroll-snap-type:x proximity; }
+[data-testid="stTabs"] [data-baseweb="tab"] { flex:0 0 auto!important; scroll-snap-align:start; }
+.yam-domain-grid { grid-template-columns:repeat(3,minmax(0,1fr)); }
+.site-footer { width:100%; box-sizing:border-box; }
+
+/* Tablettes portrait et paysage */
+@media (min-width:701px) and (max-width:1100px) {
+  .block-container { padding-left:18px!important; padding-right:18px!important; }
+  .hero h1 { font-size:clamp(2.3rem,5vw,3.8rem)!important; }
+  .yam-domain-grid { grid-template-columns:repeat(2,minmax(0,1fr))!important; }
+  [data-testid="stHorizontalBlock"] { gap:12px!important; }
+  .card-value { font-size:clamp(1.15rem,2.2vw,1.65rem)!important; }
+}
+
+/* Téléphones : taille de texte confortable, contrôles tactiles et aucun élément coupé. */
+@media (max-width:700px) {
+  .block-container { padding-top: .65rem!important; padding-left:12px!important; padding-right:12px!important; padding-bottom:0!important; }
+  .hero { padding:20px 16px!important; margin-bottom:14px!important; }
+  .hero h1 { font-size:clamp(2rem,9vw,3rem)!important; letter-spacing:-.035em!important; }
+  .hero p { font-size:1rem!important; line-height:1.55!important; }
+  .kicker, .eyebrow { font-size:.68rem!important; letter-spacing:.1em!important; }
+  .section { font-size:1.35rem!important; line-height:1.25!important; }
+  .card, .feature-card, .news-card, .report-hero { border-radius:15px!important; padding:15px!important; }
+  [data-testid="stHorizontalBlock"] { flex-wrap:wrap!important; gap:10px!important; }
+  [data-testid="stHorizontalBlock"] > [data-testid="column"] { min-width:100%!important; width:100%!important; flex:1 1 100%!important; }
+  div[data-testid="stRadio"] div[role="radiogroup"] { display:flex!important; flex-wrap:nowrap!important; overflow-x:auto!important; gap:7px!important; padding:7px!important; }
+  div[data-testid="stRadio"] div[role="radiogroup"] label { flex:0 0 auto!important; min-height:44px!important; padding:10px 13px!important; font-size:.9rem!important; }
+  [data-testid="stTabs"] [data-baseweb="tab-list"] { gap:6px!important; padding:6px 2px 10px!important; }
+  [data-testid="stTabs"] [data-baseweb="tab"] { padding:10px 12px!important; min-height:44px!important; font-size:.88rem!important; }
+  .yam-domain-grid { grid-template-columns:1fr!important; gap:9px!important; }
+  .yam-domain-card { min-height:0!important; padding:13px!important; }
+  .yam-domain-card p { font-size:.92rem!important; line-height:1.5!important; }
+  .yam-footer-headline { font-size:clamp(1.35rem,6vw,2rem)!important; }
+  .yam-footer-intro { font-size:.95rem!important; line-height:1.6!important; }
+  .yam-activity-strip { margin-left:-12px!important; margin-right:-12px!important; }
+  .footer-bottom { font-size:.78rem!important; line-height:1.5!important; overflow-wrap:anywhere; }
+  .stButton>button, .stDownloadButton>button { width:100%; }
+  [data-testid="stImage"] img { max-width:100%!important; max-height:170px!important; }
+}
+
+/* Très petits téléphones */
+@media (max-width:380px) {
+  .block-container { padding-left:8px!important; padding-right:8px!important; }
+  .hero { padding:16px 12px!important; }
+  .hero h1 { font-size:1.85rem!important; }
+  .card-value { font-size:1.15rem!important; }
+  .yam-domain-card { grid-template-columns:30px minmax(0,1fr)!important; }
+}
+@media (prefers-reduced-motion:reduce) {
+  *, *::before, *::after { scroll-behavior:auto!important; animation-duration:.01ms!important; animation-iteration-count:1!important; transition-duration:.01ms!important; }
+}
+</style>
+""", unsafe_allow_html=True)
+
 components.html("""
 <script>
 (function () {
