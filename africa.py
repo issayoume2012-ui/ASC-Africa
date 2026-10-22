@@ -4,7 +4,7 @@ ASC AFRICA — Plateforme de gestion associative
 Version corrigée — bannière ASC AFRICA, pied de page YAM et navigation bleu/blanc animée
 Version locale SQLite : adhérents, cartes, cotisations, caisse, activités,
 actualités, partenaires, rapports, exports et journal d'audit.
-Lancer : streamlit run asc_africa_edition_images_xxl.py
+Lancer : streamlit run africa.py
 """
 from pathlib import Path
 from datetime import date, datetime
@@ -18,6 +18,7 @@ import base64
 
 import pandas as pd
 import streamlit as st
+import streamlit.components.v1 as components
 
 try:
     from reportlab.lib import colors
@@ -141,7 +142,18 @@ div[data-testid="stImage"] img{{max-height:clamp(150px,18vw,230px);max-width:100
 .report-hero p{{color:#dbe7f6;margin:0;}}
 .report-stat{{border-radius:16px;padding:16px;background:#fff;border:1px solid #dbe5f2;border-top:4px solid #123b75;box-shadow:0 8px 20px #07172e0b;min-height:92px;}}
 .report-stat.green{{border-top-color:#0b8278}}.report-stat.gold{{border-top-color:#d7a62a}}.report-stat.red{{border-top-color:#c2414b}}
-.footer-bottom{{margin:24px -18px 0;padding:16px;background:#061326;color:#cbd8e8;font-size:.83rem;}}
+.footer-bottom{{margin:24px -18px 0;padding:18px clamp(12px,3vw,36px);background:#061326;color:#cbd8e8;font-size:.92rem;font-weight:700;}}
+.yam-activity-strip{{position:relative;overflow:hidden;margin:24px auto 0;padding:16px 0;border-top:1px solid #ffffff35;border-bottom:1px solid #ffffff35;background:#061326;color:#fff;}}
+.yam-activity-track{{display:flex;width:max-content;gap:34px;white-space:nowrap;animation:yamMarquee 26s linear infinite;font-weight:900;letter-spacing:.07em;font-size:clamp(.85rem,1.2vw,1rem);}}
+.yam-activity-track span{{display:inline-flex;align-items:center;gap:12px;}}
+.yam-activity-track b{{color:#f4bd38;}}
+.yam-footer-logo{{max-width:clamp(120px,16vw,190px)!important;max-height:clamp(100px,12vw,150px)!important;padding:12px!important;}}
+@keyframes yamMarquee{{from{{transform:translateX(0)}}to{{transform:translateX(-50%)}}}}
+.site-footer{{padding-top:clamp(30px,5vw,58px);}}
+.site-footer .credit{{font-size:clamp(1.25rem,2.8vw,2.25rem)!important;max-width:1100px;margin:14px auto!important;line-height:1.25!important;}}
+.site-footer .subcredit{{font-size:clamp(.95rem,1.3vw,1.12rem);}}
+@media(max-width:700px){{.yam-activity-track{{animation-duration:19s}}.yam-footer-logo{{max-width:115px!important;max-height:100px!important}}}}
+@media(prefers-reduced-motion:reduce){{.yam-activity-track{{animation:none;white-space:normal;justify-content:center;flex-wrap:wrap;width:auto;padding:0 12px}}}}
 @keyframes riseIn{{from{{opacity:0;transform:translateY(12px)}}to{{opacity:1;transform:translateY(0)}}}}
 .hero,.news-card,.feature-card,.report-hero{{animation:riseIn .45s ease both}}\n.about-grid{{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin:14px 0;}}
 .hero:after{{content:"";display:block;height:3px;width:100%;margin-top:22px;background:linear-gradient(90deg,#f4bd38,rgba(255,255,255,.35),transparent);border-radius:8px}}
@@ -302,6 +314,57 @@ div[data-testid="stTabs"] button[aria-selected="true"] p{{color:#fff!important;}
 }}
 </style>
 """, unsafe_allow_html=True)
+
+components.html("""
+<script>
+(function () {
+  function installReveal() {
+    try {
+      const doc = window.parent.document;
+      if (!doc || doc.documentElement.dataset.ascRevealReady === "1") return;
+      doc.documentElement.dataset.ascRevealReady = "1";
+      const style = doc.createElement("style");
+      style.textContent = `
+        .asc-scroll-reveal { opacity: 0; transform: translateY(34px) scale(.985);
+          filter: blur(2px); transition: opacity .72s cubic-bezier(.2,.7,.2,1),
+          transform .72s cubic-bezier(.2,.7,.2,1), filter .72s ease; }
+        .asc-scroll-reveal.asc-visible { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+        .asc-scroll-reveal.asc-visible:hover { transform: translateY(-4px); }
+        @media (prefers-reduced-motion: reduce) {
+          .asc-scroll-reveal, .asc-scroll-reveal.asc-visible { opacity: 1; transform: none;
+            filter: none; transition: none; }
+        }`;
+      doc.head.appendChild(style);
+      const selectors = ".news-card, .feature-card, .club-gallery-card, .report-stat, .card, .report-hero, div[data-testid='stMetric'], div[data-testid='stDataFrame'], div[data-testid='stTable']";
+      const seen = new WeakSet();
+      let observer = null;
+      if ("IntersectionObserver" in window.parent) {
+        observer = new window.parent.IntersectionObserver(entries => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add("asc-visible");
+              observer.unobserve(entry.target);
+            }
+          });
+        }, { threshold: 0.08, rootMargin: "0px 0px -35px 0px" });
+      }
+      function scan() {
+        doc.querySelectorAll(selectors).forEach(el => {
+          if (seen.has(el)) return;
+          seen.add(el);
+          el.classList.add("asc-scroll-reveal");
+          if (observer) observer.observe(el);
+          else el.classList.add("asc-visible");
+        });
+      }
+      scan();
+      new window.parent.MutationObserver(scan).observe(doc.body, {childList:true,subtree:true});
+    } catch (e) { /* Les styles CSS de secours restent actifs. */ }
+  }
+  installReveal();
+})();
+</script>
+""", height=0, scrolling=False)
 
 def connect():
     con = sqlite3.connect(DB_PATH, timeout=20, check_same_thread=False)
@@ -529,20 +592,48 @@ def _logo_data_uri(path):
 
 
 def yam_footer():
+    """Pied de page XXL dédié à YAM Consultance et aux services numériques."""
     club_logo = next((p for p in LOGO_PATHS if p.exists()), None)
     yam_logo = next((p for p in YAM_LOGO_PATHS if p.exists()), None)
-    club_uri=_logo_data_uri(club_logo)
-    yam_uri=_logo_data_uri(yam_logo)
-    club_img=f"<img src='{club_uri}' alt='Logo ASC AFRICA' style='max-width:135px;max-height:110px;width:auto;height:auto;object-fit:contain;background:#fff;border-radius:16px;padding:8px'>" if club_uri else "<div style='font-size:2rem'>⚽</div>"
-    yam_img=f"<img src='{yam_uri}' alt='Logo YAM Consultance' style='max-width:135px;max-height:110px;width:auto;height:auto;object-fit:contain;background:#fff;border-radius:16px;padding:8px'>" if yam_uri else "<div style='font-weight:900;color:#f4bd38'>YAM CONSULTANCE</div>"
-    st.markdown(f"""<div class='site-footer'>
-      <div class='eyebrow' style='color:#f4bd38'>Réalisation & accompagnement numérique</div>
-      <div class='credit' style='font-size:clamp(1.1rem,2.5vw,1.7rem);margin:8px 0'>PLATEFORME NUMÉRIQUE OFFERTE GRACIEUSEMENT PAR YAM CONSULTANCE</div>
-      <div class='subcredit'>Filiale de YAM Group · Des solutions numériques au service des organisations, des communautés et du développement.</div>
-      <div style='display:flex;align-items:center;justify-content:center;gap:clamp(20px,5vw,64px);flex-wrap:wrap;margin:24px auto 10px'>{club_img}<span style='color:#f4bd38;font-size:1.8rem;font-weight:950'>×</span>{yam_img}</div>
-      <div class='subcredit' style='margin:14px auto 0;max-width:760px'>Conception de plateformes web, applications de gestion et accompagnement numérique.</div>
+    club_uri = _logo_data_uri(club_logo)
+    yam_uri = _logo_data_uri(yam_logo)
+    club_img = (
+        f"<img class='yam-footer-logo' src='{club_uri}' alt='Logo ASC AFRICA'>"
+        if club_uri else "<div style='font-size:clamp(3rem,7vw,5rem)'>⚽</div>"
+    )
+    yam_img = (
+        f"<img class='yam-footer-logo' src='{yam_uri}' alt='Logo YAM Consultance'>"
+        if yam_uri else
+        "<div style='font-size:clamp(1.7rem,4vw,2.5rem);font-weight:950;color:#f4bd38'>YAM<br>CONSULTANCE</div>"
+    )
+    st.markdown(f"""
+    <footer class='site-footer' aria-label='Partenaire numérique YAM Consultance'>
+      <div class='eyebrow' style='color:#f4bd38;font-size:clamp(.78rem,1.2vw,1rem)'>PARTENAIRE NUMÉRIQUE · RÉALISATION & ACCOMPAGNEMENT</div>
+      <div class='credit'>PLATEFORME NUMÉRIQUE OFFERTE GRACIEUSEMENT PAR YAM CONSULTANCE</div>
+      <div class='subcredit' style='max-width:1000px;margin:0 auto'>
+        Filiale de YAM Group · Des solutions numériques au service des organisations,
+        des communautés et du développement.
+      </div>
+      <div style='display:flex;align-items:center;justify-content:center;gap:clamp(22px,6vw,90px);flex-wrap:wrap;margin:clamp(24px,4vw,44px) auto 14px'>
+        {club_img}<span style='color:#f4bd38;font-size:clamp(2rem,4vw,3.4rem);font-weight:950'>×</span>{yam_img}
+      </div>
+      <div class='subcredit' style='margin:14px auto 0;max-width:1000px'>
+        Conception de plateformes web · Applications de gestion · Digitalisation des activités
+        · Accompagnement numérique · Solutions adaptées aux associations et aux entreprises.
+      </div>
+      <div class='yam-activity-strip' aria-label='Services YAM Consultance'>
+        <div class='yam-activity-track'>
+          <span>💻 <b>YAM CONSULTANCE</b> · PLATEFORMES WEB</span><span>✦ APPLICATIONS DE GESTION</span>
+          <span>✦ DIGITALISATION DES ACTIVITÉS</span><span>✦ SOLUTIONS NUMÉRIQUES</span>
+          <span>✦ ACCOMPAGNEMENT & INNOVATION</span>
+          <span>💻 <b>YAM CONSULTANCE</b> · PLATEFORMES WEB</span><span>✦ APPLICATIONS DE GESTION</span>
+          <span>✦ DIGITALISATION DES ACTIVITÉS</span><span>✦ SOLUTIONS NUMÉRIQUES</span>
+          <span>✦ ACCOMPAGNEMENT & INNOVATION</span>
+        </div>
+      </div>
       <div class='footer-bottom'>© {date.today().year} ASC AFRICA · Saint-Louis, Sénégal · Portail officiel d’information et de vie associative</div>
-    </div>""",unsafe_allow_html=True)
+    </footer>
+    """, unsafe_allow_html=True)
 
 
 def metric_row():
@@ -751,6 +842,8 @@ def public_page():
             st.session_state.show_admin_login = True
             st.rerun()
 
+
+    yam_footer()
 
 def members_page():
     st.markdown('<div class="section">👥 Membres & adhésions</div>',unsafe_allow_html=True)
