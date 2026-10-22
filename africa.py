@@ -54,7 +54,7 @@ st.markdown(f"""
 :root{{--club-blue:{BLUE};--club-light:{LIGHT_BLUE};--club-gold:{GOLD};}}
 .stApp{{background:linear-gradient(180deg,#fff 0%,#f3f7fb 100%);color:#172033;}}
 [data-testid="stHeader"],[data-testid="stToolbar"],[data-testid="stDecoration"],[data-testid="stStatusWidget"],[data-testid="stAppDeployButton"],#MainMenu,footer{{visibility:hidden;}}
-.block-container{{padding-top:1rem;padding-bottom:2rem;max-width:1500px;}}
+.block-container{{padding-top:1.2rem;padding-bottom:2.5rem;max-width:1720px;}}
 .hero{{position:relative;isolation:isolate;padding:clamp(22px,4vw,42px);border-radius:26px;color:#fff;background:radial-gradient(circle at 88% 10%,rgba(79,145,218,.72) 0,transparent 30%),linear-gradient(125deg,#07172e 0%,#123b75 58%,#087e8b 100%);box-shadow:0 18px 45px rgba(18,59,117,.16);margin-bottom:22px;overflow:hidden;border:1px solid rgba(255,255,255,.18);}}
 .hero:before{{content:"";position:absolute;z-index:-1;width:230px;height:230px;right:-75px;bottom:-135px;border:1px solid rgba(255,255,255,.22);border-radius:50%;box-shadow:0 0 0 22px rgba(255,255,255,.035),0 0 0 46px rgba(255,255,255,.025);}}
 .hero h1{{font-size:clamp(2.2rem,5vw,4.6rem);font-weight:950;letter-spacing:-.045em;margin:0;line-height:1.05;}}
@@ -119,11 +119,11 @@ div[data-testid="stRadio"] div[role="radiogroup"] label:has(input:checked){{anim
 .site-footer .credit{{font-size:1.05rem;font-weight:850;line-height:1.6;}}
 .site-footer .subcredit{{color:#d4e1f1;font-size:.88rem;line-height:1.7;}}\n.logo-band{{display:flex;align-items:center;justify-content:center;gap:22px;flex-wrap:wrap;margin:18px auto 8px;}}
 .brand-lockup{{display:flex;align-items:center;gap:clamp(14px,3vw,32px);justify-content:center;flex-wrap:wrap;padding:20px 0 0;}}
-.brand-lockup img{{width:auto;height:auto;max-width:min(180px,32vw);max-height:150px;object-fit:contain;filter:drop-shadow(0 8px 18px #0002);}}
+.brand-lockup img{{width:auto;height:auto;max-width:min(220px,38vw);max-height:190px;object-fit:contain;filter:drop-shadow(0 10px 24px #0003);}}
 /* Logo d'en-tête aligné sur la hauteur visuelle de la bannière */
 div[data-testid="stImage"]{{display:flex;align-items:center;justify-content:center;height:100%;}}
-div[data-testid="stImage"] img{{max-height:clamp(100px,14vw,170px);width:auto;object-fit:contain;filter:drop-shadow(0 8px 18px rgba(18,59,117,.16));border-radius:16px;}}
-@media(max-width:760px){{div[data-testid="stImage"] img{{max-height:105px;max-width:38vw}}}}
+div[data-testid="stImage"] img{{max-height:clamp(150px,18vw,230px);max-width:100%;width:auto;object-fit:contain;filter:drop-shadow(0 10px 24px rgba(18,59,117,.20));border-radius:20px;}}
+@media(max-width:760px){{div[data-testid="stImage"] img{{max-height:150px;max-width:42vw}}}}
 
 .brand-seal{{width:clamp(86px,12vw,150px);height:clamp(86px,12vw,150px);object-fit:contain;display:block;margin:0 auto 18px;}}
 .public-nav-label{{font-size:.72rem;text-transform:uppercase;letter-spacing:.2em;font-weight:900;color:#0b8278;margin:8px 0 0;}}
@@ -142,7 +142,10 @@ div[data-testid="stImage"] img{{max-height:clamp(100px,14vw,170px);width:auto;ob
 .stApp{{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}}
 .news-card{{transition:transform .18s ease,box-shadow .18s ease}}
 .news-card:hover,.feature-card:hover{{transform:translateY(-2px);box-shadow:0 14px 32px #123b7517}}
-.news-cover{{width:100%;max-height:360px;object-fit:cover;border-radius:14px;margin:8px 0 14px}}
+.news-cover{{display:block;width:100%;height:clamp(300px,42vw,620px);max-height:none;object-fit:cover;object-position:center center;border-radius:20px;margin:14px 0 20px;box-shadow:0 14px 34px rgba(7,23,46,.16);border:1px solid rgba(18,59,117,.10);background:#eaf2fc}}
+.news-card:has(.news-cover){{padding:clamp(18px,2.4vw,34px);overflow:hidden}}
+.news-card:has(.news-cover) h3{{font-size:clamp(1.35rem,2.4vw,2rem);line-height:1.2}}
+@media(max-width:700px){{.news-cover{{height:clamp(240px,70vw,390px);border-radius:15px}}}}
 a{{overflow-wrap:anywhere}}
 .stDownloadButton>button{{border:1px solid #cbd8e8}}
 @media(prefers-reduced-motion:reduce){{*,*:before,*:after{{animation:none!important;transition:none!important;scroll-behavior:auto!important}}}}
@@ -340,7 +343,7 @@ def header():
     if logo:
         left, right = st.columns([1, 4], gap="large", vertical_alignment="center")
         with left:
-            st.image(str(logo), width=150)
+            st.image(str(logo), width=210)
         with right:
             st.markdown(hero_html, unsafe_allow_html=True)
     else:
@@ -391,6 +394,9 @@ def metric_row():
 
 def login():
     header()
+    if st.button("← Retour au portail public", key="return_public_portal"):
+        st.session_state.show_admin_login = False
+        st.rerun()
     left,right=st.columns([1.1,1])
     with left:
         st.markdown("""<div class="card"><h2 style="color:#123B75">Bienvenue à l'ASC AFRICA</h2>
@@ -560,6 +566,12 @@ def public_page():
 
     bottom_message()
     yam_footer()
+    st.markdown("<div style='margin:28px auto 8px;max-width:760px;text-align:center;padding:20px;border:1px solid #dbe7f2;border-radius:20px;background:linear-gradient(135deg,#ffffff,#f1f6fc)'><div class='eyebrow'>Accès réservé</div><h3 style='color:#123b75;margin:.45rem 0'>Vous faites partie de l’équipe de gestion ?</h3><p style='color:#526176;margin:0 0 12px'>L’espace d’administration se trouve volontairement tout en bas du portail.</p></div>", unsafe_allow_html=True)
+    _, admin_col, _ = st.columns([1, 1.2, 1])
+    with admin_col:
+        if st.button("🔐 Accéder à l’administration", key="bottom_admin_access", type="secondary", use_container_width=True):
+            st.session_state.show_admin_login = True
+            st.rerun()
 
 
 def members_page():
@@ -859,9 +871,10 @@ def main():
     init_db()
     if "authenticated" not in st.session_state: st.session_state.authenticated=False
     if not st.session_state.authenticated:
-        mode=st.radio("Espace",["Portail public","Administration"],horizontal=True,label_visibility="collapsed")
-        if mode=="Portail public": public_page()
-        else: login()
+        if st.session_state.get("show_admin_login", False):
+            login()
+        else:
+            public_page()
         return
     header()
     st.markdown(f"<div class='admin-banner'><div class='kicker'>ASC AFRICA · Administration sécurisée</div><h2>Centre de pilotage du club</h2><p>Connecté : <b>{html.escape(str(st.session_state.actor))}</b> · Les données publiques et administratives sont reliées à la même base locale.</p></div>",unsafe_allow_html=True)
