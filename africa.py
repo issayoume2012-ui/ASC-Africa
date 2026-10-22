@@ -945,7 +945,32 @@ def public_page():
         st.session_state.show_admin_login = True
         st.rerun()
 
-    st.markdown("<style>div[data-testid='stVerticalBlock'] div[data-testid='stElementContainer']:has(.site-footer){margin-top:0!important;padding-top:0!important;} div[data-testid='stVerticalBlock'] div[data-testid='stElementContainer']:has(.site-footer) p{margin-bottom:0!important;} .block-container{padding-bottom:0!important;} </style>", unsafe_allow_html=True)
+    # Bandeau de collaboration placé juste après l'accès réservé pour remplir
+    # visuellement la zone vide sans créer un grand espace artificiel.
+    st.markdown("""
+    <style>
+    .yam-africa-collab{box-sizing:border-box;width:100%;margin:10px auto 12px;padding:clamp(18px,3vw,30px);border-radius:18px;border:1px solid #d7e4f2;background:linear-gradient(120deg,#ffffff 0%,#edf5ff 52%,#e9f8f5 100%);box-shadow:0 8px 24px rgba(18,59,117,.08);text-align:center;overflow:hidden;}
+    .yam-africa-collab .collab-kicker{font-size:.78rem;letter-spacing:.12em;font-weight:900;color:#0b8278;text-transform:uppercase;margin-bottom:7px;}
+    .yam-africa-collab h3{font-size:clamp(1.2rem,2.4vw,1.8rem);line-height:1.2;color:#123b75;font-weight:950;margin:0 auto 10px;}
+    .yam-africa-collab p{max-width:980px;margin:0 auto;color:#40536b;font-size:clamp(.92rem,1.35vw,1.06rem);line-height:1.7;}
+    .yam-africa-pills{display:flex;justify-content:center;align-items:center;gap:8px;flex-wrap:wrap;margin-top:15px;}
+    .yam-africa-pills span{display:inline-flex;align-items:center;justify-content:center;padding:8px 13px;border-radius:999px;background:#123b75;color:white;font-size:.82rem;font-weight:850;}
+    .yam-africa-pills span:nth-child(2){background:#0b8278}.yam-africa-pills span:nth-child(3){background:#a87500}
+    div[data-testid='stVerticalBlock'] div[data-testid='stElementContainer']:has(.yam-africa-collab){margin-top:0!important;margin-bottom:0!important;padding-top:0!important;padding-bottom:0!important;}
+    div[data-testid='stVerticalBlock'] div[data-testid='stElementContainer']:has(.site-footer){margin-top:0!important;padding-top:0!important;}
+    div[data-testid='stVerticalBlock'] div[data-testid='stElementContainer']:has(.site-footer) p{margin-bottom:0!important;}
+    .block-container{padding-bottom:0!important;}
+    @media(max-width:600px){.yam-africa-collab{padding:17px 13px;margin:8px auto 10px;border-radius:14px}.yam-africa-pills{gap:6px}.yam-africa-pills span{font-size:.76rem;padding:7px 10px}}
+    @media(prefers-reduced-motion:no-preference){.yam-africa-collab{animation:collabFadeIn .7s ease both}@keyframes collabFadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}}
+    </style>
+    <section class="yam-africa-collab" aria-label="Collaboration YAM et ASC AFRICA">
+      <div class="collab-kicker">Une collaboration au service de la communauté</div>
+      <h3>YAM × ASC AFRICA : ensemble, accélérons le numérique local</h3>
+      <p>Pour soutenir la vie associative et faciliter l’accès à l’information, <strong>YAM Group, à travers sa filiale YAM Consultancy, offre cette plateforme à l’ASC AFRICA</strong>. Cette initiative illustre une ambition commune : mettre les solutions numériques au service des clubs, des organisations et des communautés, avec une vision tournée vers l’action, la proximité et le développement durable.</p>
+      <div class="yam-africa-pills"><span>⚽ Vie associative</span><span>💻 Solutions numériques</span><span>🤝 Engagement communautaire</span></div>
+    </section>
+    """, unsafe_allow_html=True)
+
     yam_footer()
 
 def members_page():
