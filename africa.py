@@ -637,6 +637,41 @@ def pdf_bytes(title, df, subtitle="ASC AFRICA — Document interne", metrics=Non
     return buf.getvalue()
 
 
+
+def receipt_pdf_bytes(row):
+    """Génère un reçu individuel élégant, lisible sur téléphone et imprimable."""
+    if not REPORTLAB_OK:
+        return None
+    buf = BytesIO()
+    styles = getSampleStyleSheet()
+    styles.add(ParagraphStyle(name="ReceiptBrand", parent=styles["Title"], fontName="Helvetica-Bold", fontSize=22, leading=26, textColor=colors.HexColor(BLUE), alignment=1, spaceAfter=4))
+    styles.add(ParagraphStyle(name="ReceiptSub", parent=styles["Normal"], fontSize=9, leading=13, textColor=colors.HexColor("#526176"), alignment=1))
+    styles.add(ParagraphStyle(name="ReceiptLabel", parent=styles["Normal"], fontSize=9, leading=13, textColor=colors.HexColor("#526176")))
+    styles.add(ParagraphStyle(name="ReceiptValue", parent=styles["Normal"], fontSize=11, leading=15, textColor=colors.HexColor("#172033")))
+    styles.add(ParagraphStyle(name="ReceiptAmount", parent=styles["Title"], fontSize=24, leading=29, textColor=colors.white, alignment=1, spaceAfter=0))
+    doc = SimpleDocTemplate(buf, pagesize=A4, rightMargin=22*mm, leftMargin=22*mm, topMargin=18*mm, bottomMargin=18*mm, title=f"Reçu {row['receipt_no']}", author=CLUB)
+    def decor(canvas, doc):
+        canvas.saveState(); w,h=doc.pagesize
+        canvas.setFillColor(colors.HexColor(BLUE)); canvas.rect(0,h-10*mm,w,10*mm,fill=1,stroke=0)
+        canvas.setFillColor(colors.HexColor(GOLD)); canvas.rect(0,h-11.5*mm,w,1.5*mm,fill=1,stroke=0)
+        canvas.setStrokeColor(colors.HexColor("#D7A62A")); canvas.setLineWidth(1); canvas.roundRect(13*mm,13*mm,w-26*mm,h-28*mm,5*mm,stroke=1,fill=0)
+        canvas.setFont("Helvetica",8); canvas.setFillColor(colors.HexColor("#64748b")); canvas.drawCentredString(w/2,8*mm,"ASC AFRICA · Saint-Louis, Sénégal · Merci pour votre soutien")
+        canvas.restoreState()
+    story = [Spacer(1,5*mm), Paragraph("ASC AFRICA", styles["ReceiptBrand"]), Paragraph(html.escape(SLOGAN), styles["ReceiptSub"]), Spacer(1,8*mm)]
+    header = Table([[Paragraph("REÇU DE PAIEMENT", ParagraphStyle(name="ReceiptType", parent=styles["Heading2"], textColor=colors.white, alignment=1, fontSize=15)), Paragraph("N° <b>"+html.escape(str(row['receipt_no']))+"</b><br/>Date : "+html.escape(fmt_date(row['payment_date'])), ParagraphStyle(name="ReceiptNo", parent=styles["Normal"], textColor=colors.white, alignment=2, fontSize=9, leading=14))]], colWidths=[doc.width*.58,doc.width*.42])
+    header.setStyle(TableStyle([("BACKGROUND",(0,0),(-1,-1),colors.HexColor(BLUE)),("VALIGN",(0,0),(-1,-1),"MIDDLE"),("LEFTPADDING",(0,0),(-1,-1),12),("RIGHTPADDING",(0,0),(-1,-1),12),("TOPPADDING",(0,0),(-1,-1),14),("BOTTOMPADDING",(0,0),(-1,-1),14)])); story += [header,Spacer(1,8*mm)]
+    fields = [("Reçu de", row.get("full_name") or "Membre non renseigné"),("Téléphone",row.get("phone") or "—"),("Objet du paiement",row.get("payment_type") or "—"),("Période concernée",row.get("period") or "—"),("Mode de paiement",row.get("method") or "—"),("Observation",row.get("note") or "—")]
+    rows=[]
+    for label,value in fields:
+        rows.append([Paragraph(html.escape(label),styles["ReceiptLabel"]),Paragraph(html.escape(str(value)),styles["ReceiptValue"])])
+    detail=Table(rows,colWidths=[doc.width*.34,doc.width*.66],hAlign="LEFT")
+    detail.setStyle(TableStyle([("BACKGROUND",(0,0),(-1,-1),colors.white),("LINEBELOW",(0,0),(-1,-1),.5,colors.HexColor("#DCE7F4")),("VALIGN",(0,0),(-1,-1),"TOP"),("LEFTPADDING",(0,0),(-1,-1),10),("RIGHTPADDING",(0,0),(-1,-1),10),("TOPPADDING",(0,0),(-1,-1),11),("BOTTOMPADDING",(0,0),(-1,-1),11)])); story += [detail,Spacer(1,8*mm)]
+    amount=Table([[Paragraph("MONTANT REÇU",ParagraphStyle(name="AmountLabel",parent=styles["Normal"],textColor=colors.HexColor("#FFE49A"),alignment=1,fontSize=10)),Paragraph(html.escape(money(row.get("amount",0))),styles["ReceiptAmount"])]],colWidths=[doc.width*.38,doc.width*.62])
+    amount.setStyle(TableStyle([("BACKGROUND",(0,0),(-1,-1),colors.HexColor(BLUE)),("VALIGN",(0,0),(-1,-1),"MIDDLE"),("LEFTPADDING",(0,0),(-1,-1),12),("RIGHTPADDING",(0,0),(-1,-1),12),("TOPPADDING",(0,0),(-1,-1),16),("BOTTOMPADDING",(0,0),(-1,-1),16)])); story += [amount,Spacer(1,12*mm),Paragraph("Arrêté le : "+datetime.now().strftime("%d/%m/%Y à %H:%M"),styles["ReceiptSub"]),Spacer(1,14*mm)]
+    sign=Table([["Signature / cachet de l’association", "Signature du bénéficiaire"]],colWidths=[doc.width/2]*2,rowHeights=[18*mm]); sign.setStyle(TableStyle([("LINEABOVE",(0,0),(-1,-1),.7,colors.HexColor("#AAB8CA")),("TEXTCOLOR",(0,0),(-1,-1),colors.HexColor("#526176")),("FONTNAME",(0,0),(-1,-1),"Helvetica"),("FONTSIZE",(0,0),(-1,-1),8),("VALIGN",(0,0),(-1,-1),"TOP"),("TOPPADDING",(0,0),(-1,-1),7)])); story.append(sign)
+    doc.build(story,onFirstPage=decor,onLaterPages=decor)
+    return buf.getvalue()
+
 def header():
     """Bandeau XXL animé avec les images im1.png, im2.png et im3.png."""
     slogan = html.escape(SLOGAN)
@@ -1056,44 +1091,67 @@ def members_page():
             st.download_button("Exporter les demandes CSV",pending.drop(columns=["id"]).to_csv(index=False).encode("utf-8-sig"),"asc_africa_demandes_adhesion.csv","text/csv")
 
 def payments_page():
-    st.markdown('<div class="section">💳 Cartes, cotisations & reçus</div>',unsafe_allow_html=True)
-    members=query_df("SELECT id,member_no,full_name,phone FROM members ORDER BY full_name")
-    if members.empty: st.warning("Ajoutez d'abord les membres ou validez les demandes d'adhésion."); return
-    t1,t2=st.tabs(["Nouvel encaissement","Historique & reçus"])
+    st.markdown('<div class="section">💳 Cartes, cotisations & reçus</div>', unsafe_allow_html=True)
+    st.markdown("<div class='admin-banner'><div class='kicker'>Encaissements · justificatifs</div><h2>Centre des paiements</h2><p>Enregistrez un paiement, téléchargez un reçu PDF officiel ou partagez ses détails par WhatsApp. Interface adaptée aux téléphones.</p></div>", unsafe_allow_html=True)
+    members = query_df("SELECT id,member_no,full_name,phone FROM members ORDER BY full_name")
+    t1, t2 = st.tabs(["➕ Nouvel encaissement", "🧾 Historique & reçus"])
     with t1:
-        opts={f"{r.member_no or r.id} — {r.full_name} ({r.phone or 'sans téléphone'})":int(r.id) for _,r in members.iterrows()}
-        with st.form("payment_form"):
-            member_label=st.selectbox("Membre",list(opts)); ptype=st.selectbox("Type de paiement",["Carte membre — 500 FCFA","Carte de soutien — 1 000 FCFA","Cotisation","Don","Contribution événementielle","Autre"])
-            default=500 if ptype.startswith("Carte membre") else 1000 if ptype.startswith("Carte de soutien") else 0
-            amount=st.number_input("Montant encaissé (FCFA)",min_value=0,step=500,value=default)
-            d=st.date_input("Date du paiement",value=date.today()); period=st.text_input("Période concernée",placeholder="Ex. Octobre 2026")
-            method=st.selectbox("Mode de paiement",["Espèces","Wave","Orange Money","Virement","Chèque","Autre"]); note=st.text_input("Observation")
-            save=st.form_submit_button("Valider et générer le reçu",type="primary")
-        if save:
-            if amount<=0: st.error("Le montant doit être supérieur à zéro.")
-            else:
-                rn=receipt_no("ASC")
-                pid=execute("INSERT INTO payments(receipt_no,member_id,payment_date,payment_type,amount,period,method,note,created_by,created_at) VALUES(?,?,?,?,?,?,?,?,?,?)",
-                    (rn,opts[member_label],d.isoformat(),ptype,float(amount),period,method,note,st.session_state.actor,datetime.now().isoformat(timespec="seconds")))
-                execute("INSERT INTO cash_entries(entry_date,direction,category,label,amount,method,reference,note,created_by,created_at) VALUES(?,?,?,?,?,?,?,?,?,?)",
-                    (d.isoformat(),"Entrée",ptype,f"Paiement {rn}",float(amount),method,rn,note,st.session_state.actor,datetime.now().isoformat(timespec="seconds")))
-                audit("Encaissement","paiement",pid,f"{rn} — {member_label} — {money(amount)}")
-                st.success(f"Paiement enregistré. Numéro de reçu : {rn}")
-                phone=members.loc[members.id==opts[member_label],"phone"].iloc[0]
-                msg=f"ASC AFRICA — Reçu {rn}\\nMembre : {member_label}\\nObjet : {ptype}\\nMontant : {money(amount)}\\nDate : {d.strftime('%d/%m/%Y')}\\nMerci pour votre soutien !"
-                url=whatsapp_url(phone,msg)
-                if url: st.link_button("Envoyer le reçu par WhatsApp",url)
+        if members.empty:
+            st.warning("Ajoutez d'abord les membres ou validez les demandes d'adhésion.")
+        else:
+            opts = {f"{r.member_no or r.id} — {r.full_name} ({r.phone or 'sans téléphone'})": int(r.id) for _, r in members.iterrows()}
+            with st.form("payment_form", clear_on_submit=True):
+                member_label = st.selectbox("Membre", list(opts))
+                ptype = st.selectbox("Type de paiement", ["Carte membre — 500 FCFA", "Carte de soutien — 1 000 FCFA", "Cotisation", "Don", "Contribution événementielle", "Autre"])
+                default = 500 if ptype.startswith("Carte membre") else 1000 if ptype.startswith("Carte de soutien") else 0
+                amount = st.number_input("Montant encaissé (FCFA)", min_value=0, step=500, value=default)
+                d = st.date_input("Date du paiement", value=date.today())
+                period = st.text_input("Période concernée", placeholder="Ex. Octobre 2026")
+                method = st.selectbox("Mode de paiement", ["Espèces", "Wave", "Orange Money", "Virement", "Chèque", "Autre"])
+                note = st.text_input("Observation")
+                save = st.form_submit_button("✅ Valider et générer le reçu", type="primary", use_container_width=True)
+            if save:
+                if amount <= 0:
+                    st.error("Le montant doit être supérieur à zéro.")
+                else:
+                    rn = receipt_no("ASC")
+                    pid = execute("INSERT INTO payments(receipt_no,member_id,payment_date,payment_type,amount,period,method,note,created_by,created_at) VALUES(?,?,?,?,?,?,?,?,?,?)", (rn, opts[member_label], d.isoformat(), ptype, float(amount), period, method, note, st.session_state.actor, datetime.now().isoformat(timespec="seconds")))
+                    execute("INSERT INTO cash_entries(entry_date,direction,category,label,amount,method,reference,note,created_by,created_at) VALUES(?,?,?,?,?,?,?,?,?,?)", (d.isoformat(), "Entrée", ptype, f"Paiement {rn}", float(amount), method, rn, note, st.session_state.actor, datetime.now().isoformat(timespec="seconds")))
+                    audit("Encaissement", "paiement", pid, f"{rn} — {member_label} — {money(amount)}")
+                    st.session_state["last_receipt_no"] = rn
+                    st.success(f"Paiement enregistré. Numéro de reçu : {rn}")
+                    st.rerun()
+            last_no = st.session_state.get("last_receipt_no")
+            if last_no:
+                last = query_df("SELECT p.*,m.full_name,m.phone FROM payments p LEFT JOIN members m ON m.id=p.member_id WHERE p.receipt_no=?", (last_no,))
+                if not last.empty:
+                    r = last.iloc[0]
+                    st.markdown(f"<div class='card'><div class='eyebrow'>Paiement confirmé</div><h3 style='color:#123b75'>{html.escape(str(r.full_name or 'Membre'))}</h3><div class='card-value'>{money(r.amount)}</div><p>N° reçu : <b>{html.escape(str(r.receipt_no))}</b> · {fmt_date(r.payment_date)}</p></div>", unsafe_allow_html=True)
+                    pdf = receipt_pdf_bytes(r)
+                    if pdf: st.download_button("📄 Télécharger le reçu PDF officiel", pdf, f"recu_{r.receipt_no}.pdf", "application/pdf", use_container_width=True)
+                    url = whatsapp_url(r.phone, f"ASC AFRICA — Reçu {r.receipt_no}\nMembre : {r.full_name}\nObjet : {r.payment_type}\nMontant : {money(r.amount)}\nDate : {fmt_date(r.payment_date)}\nMode : {r.method}\nMerci pour votre soutien !")
+                    if url: st.link_button("📲 Partager les détails sur WhatsApp", url, use_container_width=True)
     with t2:
-        df=query_df("""SELECT p.id,p.receipt_no,p.payment_date,m.full_name,m.phone,p.payment_type,p.amount,p.period,p.method,p.note
-        FROM payments p LEFT JOIN members m ON m.id=p.member_id ORDER BY p.payment_date DESC,p.id DESC""")
-        st.dataframe(df.rename(columns={"receipt_no":"N° reçu","payment_date":"Date","full_name":"Membre","phone":"Téléphone","payment_type":"Objet","amount":"Montant FCFA","period":"Période","method":"Mode","note":"Observation"}),use_container_width=True,hide_index=True)
-        if not df.empty:
-            chosen=st.selectbox("Reçu à partager",df["receipt_no"].tolist())
-            r=df[df.receipt_no==chosen].iloc[0]
-            message=f"ASC AFRICA — Reçu {r.receipt_no}\\nMembre : {r.full_name}\\nObjet : {r.payment_type}\\nMontant : {money(r.amount)}\\nDate : {fmt_date(r.payment_date)}"
-            url=whatsapp_url(r.phone,message)
-            if url: st.link_button("Relancer / envoyer le reçu sur WhatsApp",url)
-        st.download_button("Exporter l'historique en CSV",df.to_csv(index=False).encode("utf-8-sig"),"asc_africa_paiements.csv","text/csv")
+        df = query_df("SELECT p.id,p.receipt_no,p.payment_date,m.full_name,m.phone,p.payment_type,p.amount,p.period,p.method,p.note FROM payments p LEFT JOIN members m ON m.id=p.member_id ORDER BY p.payment_date DESC,p.id DESC")
+        if df.empty:
+            st.info("Aucun paiement enregistré pour le moment.")
+        else:
+            q = st.text_input("🔎 Rechercher un reçu, un membre ou un numéro", placeholder="Nom, ASC-2026…")
+            view = df[df.astype(str).apply(lambda col: col.str.contains(q, case=False, na=False)).any(axis=1)] if q.strip() else df
+            st.caption(f"{len(view)} reçu(s) affiché(s)")
+            st.dataframe(view.rename(columns={"receipt_no":"N° reçu","payment_date":"Date","full_name":"Membre","phone":"Téléphone","payment_type":"Objet","amount":"Montant FCFA","period":"Période","method":"Mode","note":"Observation"}), use_container_width=True, hide_index=True)
+            chosen = st.selectbox("Choisir le reçu à télécharger ou partager", view["receipt_no"].tolist()) if not view.empty else None
+            if chosen:
+                r = view[view.receipt_no == chosen].iloc[0]
+                st.markdown(f"<div class='card'><div class='eyebrow'>Aperçu du reçu</div><h3 style='color:#123b75'>ASC AFRICA · {html.escape(str(r.receipt_no))}</h3><p><b>Bénéficiaire :</b> {html.escape(str(r.full_name or '—'))}</p><p><b>Objet :</b> {html.escape(str(r.payment_type))}</p><div class='card-value'>{money(r.amount)}</div><p><b>Date :</b> {fmt_date(r.payment_date)} &nbsp; · &nbsp; <b>Mode :</b> {html.escape(str(r.method or '—'))}</p></div>", unsafe_allow_html=True)
+                pdf = receipt_pdf_bytes(r)
+                if pdf: st.download_button("📄 Télécharger le reçu PDF", pdf, f"recu_{r.receipt_no}.pdf", "application/pdf", use_container_width=True)
+                message = f"ASC AFRICA — Reçu {r.receipt_no}\nMembre : {r.full_name}\nObjet : {r.payment_type}\nMontant : {money(r.amount)}\nDate : {fmt_date(r.payment_date)}\nMode : {r.method}"
+                url = whatsapp_url(r.phone, message)
+                if url: st.link_button("📲 Envoyer / relancer sur WhatsApp", url, use_container_width=True)
+            st.download_button("📥 Exporter l'historique en CSV", df.to_csv(index=False).encode("utf-8-sig"), "asc_africa_paiements.csv", "text/csv", use_container_width=True)
+    if not REPORTLAB_OK:
+        st.info("Pour générer les reçus PDF, installez ReportLab : pip install reportlab")
 
 def cash_page():
     st.markdown('<div class="section">💰 Trésorerie & caisse</div>',unsafe_allow_html=True)
@@ -1280,6 +1338,24 @@ def settings_page():
     if DB_PATH.exists():
         st.download_button("Télécharger une copie SQLite",DB_PATH.read_bytes(),"asc_africa_backup.db","application/octet-stream")
 
+
+st.markdown(r"""<style>
+/* Administration XXL : lisibilité et ergonomie renforcées */
+.admin-banner{padding:clamp(22px,3vw,42px)!important;border-radius:clamp(18px,2vw,28px)!important}
+.admin-banner h2{font-size:clamp(1.7rem,3.6vw,3rem)!important;line-height:1.12!important}
+.admin-banner p{font-size:clamp(1rem,1.4vw,1.2rem)!important;line-height:1.6!important}
+[data-testid="stForm"]{padding:clamp(12px,2vw,24px);border:1px solid #dce7f4;border-radius:18px;background:#fff;box-shadow:0 8px 24px #123b750a}
+[data-testid="stTextInput"] label,[data-testid="stNumberInput"] label,[data-testid="stSelectbox"] label,[data-testid="stDateInput"] label,[data-testid="stTextArea"] label{font-weight:800!important;color:#123b75!important}
+[data-testid="stDataFrame"]{border:1px solid #dce7f4;border-radius:14px}
+@media(max-width:700px){
+ .admin-banner{padding:20px 16px!important;margin:8px 0 14px!important}
+ [data-testid="stForm"]{padding:12px!important;border-radius:15px}
+ [data-testid="stSelectbox"] [data-baseweb="select"]{min-height:52px!important}
+ [data-testid="stMetric"]{padding:12px!important}
+ [data-testid="stDataFrame"]{font-size:.85rem!important}
+}
+</style>""",unsafe_allow_html=True)
+
 def main():
     init_db()
     if "authenticated" not in st.session_state: st.session_state.authenticated=False
@@ -1291,7 +1367,9 @@ def main():
         return
     header()
     st.markdown(f"<div class='admin-banner'><div class='kicker'>ASC AFRICA · Administration sécurisée</div><h2>Centre de pilotage du club</h2><p>Connecté : <b>{html.escape(str(st.session_state.actor))}</b> · Les données publiques et administratives sont reliées à la même base locale.</p></div>",unsafe_allow_html=True)
-    nav=st.radio("Navigation",["🏠 Tableau de bord","👥 Membres","💳 Cotisations & cartes","💰 Trésorerie","📅 Activités","📰 Communication","📊 Rapports & exports","🛡️ Audit","⚙️ Paramètres"],horizontal=True,label_visibility="collapsed")
+    admin_sections=["🏠 Tableau de bord","👥 Membres","💳 Cotisations & cartes","💰 Trésorerie","📅 Activités","📰 Communication","📊 Rapports & exports","🛡️ Audit","⚙️ Paramètres"]
+    st.markdown("<div class='public-nav-label'>MENU ADMINISTRATION</div><div class='nav-help-mobile'>Choisissez une rubrique dans le menu pour accéder aux outils de gestion.</div>",unsafe_allow_html=True)
+    nav=st.selectbox("Ouvrir une rubrique d’administration",admin_sections,key="admin_navigation_select",label_visibility="collapsed")
     if st.button("Se déconnecter",key="logout"):
         audit("Déconnexion","administration"); st.session_state.authenticated=False; st.rerun()
     st.divider()
