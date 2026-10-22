@@ -143,10 +143,10 @@ div[data-testid="stImage"] img{{max-height:clamp(150px,18vw,230px);max-width:100
 .report-stat{{border-radius:16px;padding:16px;background:#fff;border:1px solid #dbe5f2;border-top:4px solid #123b75;box-shadow:0 8px 20px #07172e0b;min-height:92px;}}
 .report-stat.green{{border-top-color:#0b8278}}.report-stat.gold{{border-top-color:#d7a62a}}.report-stat.red{{border-top-color:#c2414b}}
 .footer-bottom{{margin:24px -18px 0;padding:18px clamp(12px,3vw,36px);background:#061326;color:#cbd8e8;font-size:.92rem;font-weight:700;}}
-.yam-activity-strip{{position:relative;overflow:hidden;margin:24px auto 0;padding:16px 0;border-top:1px solid #ffffff35;border-bottom:1px solid #ffffff35;background:#061326;color:#fff;}}
-.yam-activity-track{{display:flex;width:max-content;gap:34px;white-space:nowrap;animation:yamMarquee 26s linear infinite;font-weight:900;letter-spacing:.07em;font-size:clamp(.85rem,1.2vw,1rem);}}
+.yam-activity-strip{{position:relative;display:block!important;visibility:visible!important;opacity:1!important;min-height:58px;overflow:hidden;margin:24px auto 0;padding:16px 0;border-top:1px solid #ffffff55;border-bottom:1px solid #ffffff55;background:#061326!important;color:#fff!important;z-index:2;}}
+.yam-activity-track{{display:flex!important;align-items:center;width:max-content;min-width:200%;gap:34px;white-space:nowrap;animation:yamMarquee 26s linear infinite;font-weight:900;letter-spacing:.07em;font-size:clamp(.85rem,1.2vw,1rem);color:#fff!important;will-change:transform;}}
 .yam-activity-track span{{display:inline-flex;align-items:center;gap:12px;}}
-.yam-activity-track b{{color:#f4bd38;}}
+.yam-activity-track span{{flex:0 0 auto;color:#fff!important;}}.yam-activity-track b{{color:#f4bd38!important;}}@media(prefers-reduced-motion:reduce){{.yam-activity-strip{{overflow:visible}}.yam-activity-track{{min-width:0;width:100%;white-space:normal;justify-content:center;flex-wrap:wrap;animation:none!important;padding:0 12px}}}}
 .yam-footer-logo{{max-width:clamp(120px,16vw,190px)!important;max-height:clamp(100px,12vw,150px)!important;padding:12px!important;}}
 @keyframes yamMarquee{{from{{transform:translateX(0)}}to{{transform:translateX(-50%)}}}}
 .site-footer{{padding-top:clamp(30px,5vw,58px);}}
@@ -834,7 +834,6 @@ def public_page():
                 st.success("Votre demande a été enregistrée. Le bureau de l’ASC AFRICA pourra la vérifier.")
 
     bottom_message()
-    yam_footer()
     st.markdown("<div style='margin:28px auto 8px;max-width:760px;text-align:center;padding:20px;border:1px solid #dbe7f2;border-radius:20px;background:linear-gradient(135deg,#ffffff,#f1f6fc)'><div class='eyebrow'>Accès réservé</div><h3 style='color:#123b75;margin:.45rem 0'>Vous faites partie de l’équipe de gestion ?</h3><p style='color:#526176;margin:0 0 12px'>L’espace d’administration se trouve volontairement tout en bas du portail.</p></div>", unsafe_allow_html=True)
     _, admin_col, _ = st.columns([1, 1.2, 1])
     with admin_col:
