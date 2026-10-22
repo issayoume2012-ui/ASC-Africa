@@ -61,7 +61,7 @@ st.markdown(f"""
 :root{{--club-blue:{BLUE};--club-light:{LIGHT_BLUE};--club-gold:{GOLD};}}
 .stApp{{background:linear-gradient(180deg,#fff 0%,#f3f7fb 100%);color:#172033;}}
 [data-testid="stHeader"],[data-testid="stToolbar"],[data-testid="stDecoration"],[data-testid="stStatusWidget"],[data-testid="stAppDeployButton"],#MainMenu,footer{{visibility:hidden;}}
-.block-container{{padding-top:1.2rem;padding-bottom:2.5rem;max-width:1720px;}}
+.block-container{{padding-top:1.2rem;padding-bottom:0!important;max-width:1720px;}}
 .hero{{position:relative;isolation:isolate;padding:clamp(22px,4vw,42px);border-radius:26px;color:#fff;background:radial-gradient(circle at 88% 10%,rgba(79,145,218,.72) 0,transparent 30%),linear-gradient(125deg,#07172e 0%,#123b75 58%,#087e8b 100%);box-shadow:0 18px 45px rgba(18,59,117,.16);margin-bottom:22px;overflow:hidden;border:1px solid rgba(255,255,255,.18);}}
 .hero:before{{content:"";position:absolute;z-index:-1;width:230px;height:230px;right:-75px;bottom:-135px;border:1px solid rgba(255,255,255,.22);border-radius:50%;box-shadow:0 0 0 22px rgba(255,255,255,.035),0 0 0 46px rgba(255,255,255,.025);}}
 .hero h1{{font-size:clamp(2.2rem,5vw,4.6rem);font-weight:950;letter-spacing:-.045em;margin:0;line-height:1.05;}}
@@ -122,7 +122,7 @@ div[data-testid="stRadio"] div[role="radiogroup"] label:has(input:checked){{anim
 .news-card h3{{color:#123b75;margin:.45rem 0 .6rem;font-size:1.25rem;}}
 .pill{{display:inline-block;background:#e7f6f2;color:#087e70;border-radius:30px;padding:5px 10px;font-size:.75rem;font-weight:850;}}
 .feature-card{{background:linear-gradient(140deg,#fff,#eef5fb);border:1px solid #dbe7f2;border-radius:20px;padding:20px;height:100%;}}
-.site-footer{{position:relative;margin-top:34px;padding:clamp(24px,4vw,38px) 18px 0;border-radius:24px 24px 0 0;background:radial-gradient(circle at 50% 0,rgba(58,122,192,.3),transparent 42%),linear-gradient(135deg,#07172e,#123b75 62%,#0b8278);color:#fff;text-align:center;overflow:hidden;border-top:4px solid #d7a62a;box-shadow:0 -8px 28px rgba(18,59,117,.07);}}
+.site-footer{{position:relative;margin-top:4px!important;padding:clamp(20px,3vw,32px) 18px 0;border-radius:24px 24px 0 0;background:radial-gradient(circle at 50% 0,rgba(58,122,192,.3),transparent 42%),linear-gradient(135deg,#07172e,#123b75 62%,#0b8278);color:#fff;text-align:center;overflow:hidden;border-top:4px solid #d7a62a;box-shadow:0 -8px 28px rgba(18,59,117,.07);}}
 .site-footer .credit{{font-size:1.05rem;font-weight:850;line-height:1.6;}}
 .site-footer .subcredit{{color:#d4e1f1;font-size:.88rem;line-height:1.7;}}\n.logo-band{{display:flex;align-items:center;justify-content:center;gap:22px;flex-wrap:wrap;margin:18px auto 8px;}}
 .brand-lockup{{display:flex;align-items:center;gap:clamp(14px,3vw,32px);justify-content:center;flex-wrap:wrap;padding:20px 0 0;}}
@@ -142,14 +142,14 @@ div[data-testid="stImage"] img{{max-height:clamp(150px,18vw,230px);max-width:100
 .report-hero p{{color:#dbe7f6;margin:0;}}
 .report-stat{{border-radius:16px;padding:16px;background:#fff;border:1px solid #dbe5f2;border-top:4px solid #123b75;box-shadow:0 8px 20px #07172e0b;min-height:92px;}}
 .report-stat.green{{border-top-color:#0b8278}}.report-stat.gold{{border-top-color:#d7a62a}}.report-stat.red{{border-top-color:#c2414b}}
-.footer-bottom{{margin:24px -18px 0;padding:18px clamp(12px,3vw,36px);background:#061326;color:#cbd8e8;font-size:.92rem;font-weight:700;}}
-.yam-activity-strip{{position:relative;display:block!important;visibility:visible!important;opacity:1!important;min-height:58px;overflow:hidden;margin:24px auto 0;padding:16px 0;border-top:1px solid #ffffff55;border-bottom:1px solid #ffffff55;background:#061326!important;color:#fff!important;z-index:2;}}
+.footer-bottom{{margin:14px -18px 0;padding:18px clamp(12px,3vw,36px);background:#061326;color:#cbd8e8;font-size:.92rem;font-weight:700;}}
+.yam-activity-strip{{position:relative;display:block!important;visibility:visible!important;opacity:1!important;min-height:58px;overflow:hidden;margin:12px auto 0;padding:16px 0;border-top:1px solid #ffffff55;border-bottom:1px solid #ffffff55;background:#061326!important;color:#fff!important;z-index:2;}}
 .yam-activity-track{{display:flex!important;align-items:center;width:max-content;min-width:200%;gap:34px;white-space:nowrap;animation:yamMarquee 26s linear infinite;font-weight:900;letter-spacing:.07em;font-size:clamp(.85rem,1.2vw,1rem);color:#fff!important;will-change:transform;}}
 .yam-activity-track span{{display:inline-flex;align-items:center;gap:12px;}}
 .yam-activity-track span{{flex:0 0 auto;color:#fff!important;}}.yam-activity-track b{{color:#f4bd38!important;}}@media(prefers-reduced-motion:reduce){{.yam-activity-strip{{overflow:visible}}.yam-activity-track{{min-width:0;width:100%;white-space:normal;justify-content:center;flex-wrap:wrap;animation:none!important;padding:0 12px}}}}
 .yam-footer-logo{{max-width:clamp(120px,16vw,190px)!important;max-height:clamp(100px,12vw,150px)!important;padding:12px!important;}}
 @keyframes yamMarquee{{from{{transform:translateX(0)}}to{{transform:translateX(-50%)}}}}
-.site-footer{{padding-top:clamp(30px,5vw,58px);}}
+.site-footer{{padding-top:clamp(18px,2.5vw,30px)!important;margin-top:0!important;}}
 .site-footer .credit{{font-size:clamp(1.25rem,2.8vw,2.25rem)!important;max-width:1100px;margin:14px auto!important;line-height:1.25!important;}}
 .site-footer .subcredit{{font-size:clamp(.95rem,1.3vw,1.12rem);}}
 @media(max-width:700px){{.yam-activity-track{{animation-duration:19s}}.yam-footer-logo{{max-width:115px!important;max-height:100px!important}}}}
@@ -592,46 +592,69 @@ def _logo_data_uri(path):
 
 
 def yam_footer():
-    """Pied de page XXL dédié à YAM Consultance et aux services numériques."""
+    """Pied de page présentant le don de la plateforme par YAM et ses neuf domaines."""
     club_logo = next((p for p in LOGO_PATHS if p.exists()), None)
     yam_logo = next((p for p in YAM_LOGO_PATHS if p.exists()), None)
     club_uri = _logo_data_uri(club_logo)
     yam_uri = _logo_data_uri(yam_logo)
-    club_img = (
-        f"<img class='yam-footer-logo' src='{club_uri}' alt='Logo ASC AFRICA'>"
-        if club_uri else "<div style='font-size:clamp(3rem,7vw,5rem)'>⚽</div>"
+    club_img = (f"<img class='yam-footer-logo' src='{club_uri}' alt='Logo ASC AFRICA'>"
+                if club_uri else "<div class='yam-brand-fallback'>⚽ ASC AFRICA</div>")
+    yam_img = (f"<img class='yam-footer-logo' src='{yam_uri}' alt='Logo YAM Group'>"
+               if yam_uri else "<div class='yam-brand-fallback yam-gold'>YAM<br>GROUP</div>")
+    domains = [
+        ("🌱", "Agriculture", "Solutions agricoles durables, production et valorisation."),
+        ("🩺", "Santé", "Services de santé, amélioration des soins et bien-être."),
+        ("🎓", "Éducation", "Formation, soutien scolaire et renforcement des compétences."),
+        ("⚡", "Énergie", "Énergies renouvelables et infrastructures de distribution."),
+        ("🏗️", "BTP", "Construction, ingénierie et aménagement des infrastructures."),
+        ("💻", "Information", "Technologies, communication, médias et systèmes numériques."),
+        ("📊", "Consultancy", "Conseil stratégique et accompagnement opérationnel."),
+        ("📈", "Économie", "Ingénierie financière, investissement et gestion de projets."),
+        ("🤝", "Commerce", "Négociation, distribution et commerce général."),
+    ]
+    cards = "".join(
+        f"<article class='yam-domain-card'><div class='yam-domain-icon'>{icon}</div><h4>{html.escape(name)}</h4><p>{html.escape(desc)}</p></article>"
+        for icon, name, desc in domains
     )
-    yam_img = (
-        f"<img class='yam-footer-logo' src='{yam_uri}' alt='Logo YAM Consultance'>"
-        if yam_uri else
-        "<div style='font-size:clamp(1.7rem,4vw,2.5rem);font-weight:950;color:#f4bd38'>YAM<br>CONSULTANCE</div>"
+    ticker_items = "".join(
+        f"<span>{icon} <b>{html.escape(name.upper())}</b> · {html.escape(desc.split(',')[0].rstrip('.').upper())}</span>"
+        for icon, name, desc in domains
     )
     st.markdown(f"""
-    <footer class='site-footer' aria-label='Partenaire numérique YAM Consultance'>
-      <div class='eyebrow' style='color:#f4bd38;font-size:clamp(.78rem,1.2vw,1rem)'>PARTENAIRE NUMÉRIQUE · RÉALISATION & ACCOMPAGNEMENT</div>
-      <div class='credit'>PLATEFORME NUMÉRIQUE OFFERTE GRACIEUSEMENT PAR YAM CONSULTANCE</div>
-      <div class='subcredit' style='max-width:1000px;margin:0 auto'>
-        Filiale de YAM Group · Des solutions numériques au service des organisations,
-        des communautés et du développement.
-      </div>
-      <div style='display:flex;align-items:center;justify-content:center;gap:clamp(22px,6vw,90px);flex-wrap:wrap;margin:clamp(24px,4vw,44px) auto 14px'>
-        {club_img}<span style='color:#f4bd38;font-size:clamp(2rem,4vw,3.4rem);font-weight:950'>×</span>{yam_img}
-      </div>
-      <div class='subcredit' style='margin:14px auto 0;max-width:1000px'>
-        Conception de plateformes web · Applications de gestion · Digitalisation des activités
-        · Accompagnement numérique · Solutions adaptées aux associations et aux entreprises.
-      </div>
-      <div class='yam-activity-strip' aria-label='Services YAM Consultance'>
-        <div class='yam-activity-track'>
-          <span>💻 <b>YAM CONSULTANCE</b> · PLATEFORMES WEB</span><span>✦ APPLICATIONS DE GESTION</span>
-          <span>✦ DIGITALISATION DES ACTIVITÉS</span><span>✦ SOLUTIONS NUMÉRIQUES</span>
-          <span>✦ ACCOMPAGNEMENT & INNOVATION</span>
-          <span>💻 <b>YAM CONSULTANCE</b> · PLATEFORMES WEB</span><span>✦ APPLICATIONS DE GESTION</span>
-          <span>✦ DIGITALISATION DES ACTIVITÉS</span><span>✦ SOLUTIONS NUMÉRIQUES</span>
-          <span>✦ ACCOMPAGNEMENT & INNOVATION</span>
-        </div>
-      </div>
-      <div class='footer-bottom'>© {date.today().year} ASC AFRICA · Saint-Louis, Sénégal · Portail officiel d’information et de vie associative</div>
+    <style>
+    .site-footer{{margin-top:0!important;padding:clamp(18px,2.8vw,32px) clamp(12px,2vw,28px) 0!important;border-radius:18px 18px 0 0!important;background:radial-gradient(circle at 50% 0,rgba(58,122,192,.28),transparent 42%),linear-gradient(135deg,#07172e,#123b75 62%,#0b8278);color:#fff;text-align:center;overflow:hidden;border-top:4px solid #d7a62a;box-shadow:0 -5px 22px rgba(18,59,117,.08);}}
+    .yam-footer-headline{{font-size:clamp(1.35rem,2.8vw,2.3rem);font-weight:950;line-height:1.2;margin:8px auto 10px;max-width:1100px;color:#fff;}}
+    .yam-footer-slogan{{font-size:clamp(1rem,1.8vw,1.3rem);font-weight:850;color:#f4bd38;line-height:1.5;margin:8px auto;max-width:1100px;}}
+    .yam-footer-intro{{max-width:1100px;margin:0 auto;color:#dce8f7;line-height:1.7;font-size:clamp(.9rem,1.25vw,1.05rem);}}
+    .yam-brand-fallback{{font-size:clamp(1.6rem,3vw,2.5rem);font-weight:950;color:#fff;padding:12px;}}
+    .yam-gold{{color:#f4bd38!important;}}
+    .yam-footer-logo{{max-width:clamp(95px,13vw,155px)!important;max-height:clamp(85px,10vw,125px)!important;object-fit:contain;padding:6px!important;}}
+    .yam-domain-grid{{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;max-width:1350px;margin:18px auto 8px;text-align:left;}}
+    .yam-domain-card{{padding:14px 15px;border-radius:15px;border:1px solid #ffffff27;background:linear-gradient(135deg,#ffffff13,#ffffff08);box-shadow:0 8px 22px #00000012;min-height:120px;transition:transform .22s ease,border-color .22s ease,background .22s ease;}}
+    .yam-domain-card:hover{{transform:translateY(-4px);border-color:#f4bd38;background:#ffffff1c;}}
+    .yam-domain-icon{{font-size:1.55rem;margin-bottom:4px;}}
+    .yam-domain-card h4{{color:#f4bd38!important;font-size:1rem;margin:0 0 5px;font-weight:900;}}
+    .yam-domain-card p{{color:#e2ebf7!important;font-size:.86rem;line-height:1.5;margin:0;}}
+    .yam-activity-strip{{position:relative;display:block!important;visibility:visible!important;opacity:1!important;min-height:54px;overflow:hidden;margin:14px -18px 0;padding:15px 0;border-top:1px solid #ffffff55;border-bottom:1px solid #ffffff55;background:#061326!important;color:#fff!important;z-index:2;}}
+    .yam-activity-track{{display:flex!important;align-items:center;width:max-content;min-width:200%;gap:30px;white-space:nowrap;animation:yamMarquee 34s linear infinite;font-weight:900;letter-spacing:.04em;font-size:clamp(.82rem,1.1vw,.98rem);color:#fff!important;will-change:transform;}}
+    .yam-activity-track span{{display:inline-flex;align-items:center;gap:8px;flex:0 0 auto;color:#fff!important;}}
+    .yam-activity-track b{{color:#f4bd38!important;}}
+    .footer-bottom{{margin:0 -18px 0;padding:13px clamp(12px,3vw,36px);background:#041020;color:#cbd8e8;font-size:.86rem;font-weight:700;}}
+    @keyframes yamMarquee{{from{{transform:translateX(0)}}to{{transform:translateX(-50%)}}}}
+    @media(max-width:800px){{.yam-domain-grid{{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;}}.yam-domain-card{{padding:12px;min-height:0;}}.yam-domain-card p{{font-size:.82rem;}}.yam-activity-track{{animation-duration:27s;}}}}
+    @media(max-width:460px){{.yam-domain-grid{{grid-template-columns:1fr;}}.yam-domain-card{{display:grid;grid-template-columns:34px 1fr;column-gap:8px;align-items:start;}}.yam-domain-icon{{grid-row:span 2;}}.yam-domain-card h4{{margin-top:2px;}}}}
+    @media(prefers-reduced-motion:reduce){{.yam-domain-card{{transition:none;}}.yam-domain-card:hover{{transform:none;}}.yam-activity-track{{animation:none;min-width:0;width:100%;white-space:normal;justify-content:center;flex-wrap:wrap;padding:0 12px;}}}}
+    </style>
+    <footer class='site-footer' aria-label='Don de la plateforme par YAM Group'>
+      <div class='eyebrow' style='color:#f4bd38;font-size:.8rem'>UN ENGAGEMENT POUR LE DÉVELOPPEMENT · YAM GROUP</div>
+      <div class='yam-footer-headline'>CE SITE EST OFFERT À L’ASC AFRICA PAR YAM</div>
+      <div class='yam-footer-intro'>La plateforme numérique de l’ASC AFRICA est un don de YAM, pour soutenir la vie associative, faciliter l’accès à l’information et contribuer au développement des communautés.</div>
+      <div class='yam-footer-slogan'>« Ensemble pour un Sénégal plus fort : Agir aujourd’hui, bâtir demain »</div>
+      <div style='display:flex;align-items:center;justify-content:center;gap:clamp(18px,5vw,65px);flex-wrap:wrap;margin:12px auto 8px'>{club_img}<span style='color:#f4bd38;font-size:clamp(1.5rem,3vw,2.5rem);font-weight:950'>×</span>{yam_img}</div>
+      <div style='font-weight:900;color:#fff;font-size:clamp(1rem,1.5vw,1.2rem);margin:8px auto'>YAM intervient dans neuf domaines clés</div>
+      <div class='yam-domain-grid'>{cards}</div>
+      <div class='yam-activity-strip' aria-label='Défilement des domaines de YAM'><div class='yam-activity-track'>{ticker_items}{ticker_items}</div></div>
+      <div class='footer-bottom'>© {date.today().year} ASC AFRICA · Saint-Louis, Sénégal · Portail officiel d’information et de vie associative · Plateforme offerte par YAM</div>
     </footer>
     """, unsafe_allow_html=True)
 
@@ -834,14 +857,14 @@ def public_page():
                 st.success("Votre demande a été enregistrée. Le bureau de l’ASC AFRICA pourra la vérifier.")
 
     bottom_message()
-    st.markdown("<div style='margin:28px auto 8px;max-width:760px;text-align:center;padding:20px;border:1px solid #dbe7f2;border-radius:20px;background:linear-gradient(135deg,#ffffff,#f1f6fc)'><div class='eyebrow'>Accès réservé</div><h3 style='color:#123b75;margin:.45rem 0'>Vous faites partie de l’équipe de gestion ?</h3><p style='color:#526176;margin:0 0 12px'>L’espace d’administration se trouve volontairement tout en bas du portail.</p></div>", unsafe_allow_html=True)
-    _, admin_col, _ = st.columns([1, 1.2, 1])
+    st.markdown("<div style='margin:8px auto 0;max-width:760px;text-align:center;padding:10px 16px 4px;border:1px solid #dbe7f2;border-radius:16px 16px 0 0;background:linear-gradient(135deg,#ffffff,#f1f6fc)'><div class='eyebrow'>Accès réservé</div><h3 style='color:#123b75;margin:.25rem 0'>Vous faites partie de l’équipe de gestion ?</h3><p style='color:#526176;margin:0'>Accès à l’espace d’administration du portail.</p></div>", unsafe_allow_html=True)
+    _, admin_col, _ = st.columns([1, 1.2, 1], gap="small")
     with admin_col:
         if st.button("🔐 Accéder à l’administration", key="bottom_admin_access", type="secondary", use_container_width=True):
             st.session_state.show_admin_login = True
             st.rerun()
 
-
+    st.markdown("<style>div[data-testid='stVerticalBlock'] div[data-testid='stElementContainer']:has(.site-footer){margin-top:0!important;padding-top:0!important;} .block-container{padding-bottom:0!important;} </style>", unsafe_allow_html=True)
     yam_footer()
 
 def members_page():
