@@ -268,6 +268,38 @@ div[data-testid="stDataFrame"]{{overflow-x:auto;}}
 @keyframes africaTopSlide{{0%{{opacity:0;transform:translateY(14px) scale(.97)}}6%,28%{{opacity:1;transform:translateY(0) scale(1)}}34%,100%{{opacity:0;transform:translateY(-10px) scale(1.025)}}}}
 @media(max-width:700px){{.africa-topband{{grid-template-columns:1fr;padding:22px 17px;gap:18px}}.africa-photo-stage{{height:clamp(190px,62vw,290px)}}.africa-topband h1{{font-size:clamp(2.3rem,11vw,3.4rem)}}}}
 @media(prefers-reduced-motion:reduce){{.africa-photo-stage img{{animation:none;opacity:0}}.africa-photo-stage img:first-child{{opacity:1}}}}
+
+/* Défilement XXL : navigation lisible, panneaux dynamiques et contenu révélé au scroll */
+:root{{scroll-padding-top:18px;}}
+[data-testid="stMainBlockContainer"]{{scroll-behavior:smooth;}}
+/* Rubriques publiques : barre de navigation bien visible pendant la lecture */
+div[data-testid="stRadio"]:has(input){{position:relative;z-index:20;}}
+div[data-testid="stRadio"] div[role="radiogroup"]{{backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);}}
+div[data-testid="stRadio"] div[role="radiogroup"] label{{min-height:44px;justify-content:center;}}
+/* Onglets de l'administration : défilement horizontal sur petit écran */
+div[data-testid="stTabs"] [data-baseweb="tab-list"]{{gap:8px;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:thin;scrollbar-color:#8aaedb #eaf2fc;padding:7px 4px 12px;}}
+div[data-testid="stTabs"] [data-baseweb="tab"]{{flex:0 0 auto;border-radius:13px 13px 8px 8px;padding:10px 16px;border:1px solid #d8e5f5;background:linear-gradient(180deg,#fff,#f3f7fc);transition:transform .22s ease,background .22s ease,box-shadow .22s ease;}}
+div[data-testid="stTabs"] [data-baseweb="tab"]:hover{{transform:translateY(-2px);box-shadow:0 8px 18px #123b751a;}}
+div[data-testid="stTabs"] button[aria-selected="true"]{{background:linear-gradient(120deg,#123b75,#087e78)!important;color:#fff!important;border-color:#123b75!important;box-shadow:0 8px 20px #123b7528;}}
+div[data-testid="stTabs"] button[aria-selected="true"] p{{color:#fff!important;}}
+/* Chaque carte entre avec une transition douce ; animation désactivée si l’utilisateur le demande */
+@keyframes scrollLift{{from{{opacity:0;transform:translateY(26px) scale(.99)}}to{{opacity:1;transform:translateY(0) scale(1)}}}}
+.news-card,.feature-card,.club-gallery-card,.report-stat,.card{{transition:transform .28s ease,box-shadow .28s ease,border-color .28s ease;}}
+.news-card:hover,.feature-card:hover,.club-gallery-card:hover,.report-stat:hover,.card:hover{{border-color:#b7cdea;box-shadow:0 16px 36px rgba(18,59,117,.12);}}
+@supports (animation-timeline: view()){{
+  .club-gallery-card{{animation:scrollLift .7s ease both;animation-timeline:view();animation-range:entry 0% entry 35%;}}
+  .about-grid .feature-card{{animation:scrollLift .65s ease both;animation-timeline:view();animation-range:entry 0% entry 40%;}}
+}}
+/* Confort tactile et lisibilité XXL sur téléphone */
+@media(max-width:700px){{
+  div[data-testid="stTabs"] [data-baseweb="tab-list"]{{gap:6px;}}
+  div[data-testid="stTabs"] [data-baseweb="tab"]{{padding:9px 12px;font-size:.88rem;}}
+  div[data-testid="stRadio"] div[role="radiogroup"]{{scrollbar-width:thin;}}
+}}
+@media(prefers-reduced-motion:reduce){{
+  .news-card,.feature-card,.club-gallery-card,.report-stat,.card{{transition:none!important;animation:none!important;}}
+  div[data-testid="stTabs"] [data-baseweb="tab"]{{transition:none!important;}}
+}}
 </style>
 """, unsafe_allow_html=True)
 
