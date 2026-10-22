@@ -971,7 +971,31 @@ def public_page():
     </section>
     """, unsafe_allow_html=True)
 
-    yam_footer()
+    # Bandeau YAM compact, placé immédiatement après le panneau de collaboration.
+    # On évite ici le grand pied de page détaillé qui repoussait la barre au bas de l'écran.
+    st.markdown("""
+    <style>
+      .yam-compact-credit{width:100%;box-sizing:border-box;margin:8px 0 0;padding:11px 12px;background:#07172e;color:#fff;border-top:3px solid #d7a62a;border-radius:8px 8px 0 0;overflow:hidden;text-align:center;}
+      .yam-compact-credit .yam-credit-title{font-size:clamp(.86rem,1.5vw,1.05rem);font-weight:950;line-height:1.45;color:#fff;margin-bottom:4px;}
+      .yam-compact-credit .yam-credit-copy{font-size:clamp(.72rem,1.1vw,.88rem);line-height:1.5;color:#dce8f7;margin-bottom:8px;}
+      .yam-compact-track-window{width:100%;overflow:hidden;background:#041020;border-radius:0 0 8px 8px;padding:10px 0;}
+      .yam-compact-track{display:flex;align-items:center;width:max-content;gap:26px;white-space:nowrap;animation:yamCompactMarquee 34s linear infinite;color:#fff;font-size:clamp(.72rem,1vw,.86rem);font-weight:900;}
+      .yam-compact-track span{flex:0 0 auto;}
+      .yam-compact-track b{color:#f4bd38;}
+      @keyframes yamCompactMarquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+      @media(max-width:600px){.yam-compact-credit{padding:10px 8px}.yam-compact-track{animation-duration:25s;gap:18px}}
+      @media(prefers-reduced-motion:reduce){.yam-compact-track{animation:none;width:100%;white-space:normal;flex-wrap:wrap;justify-content:center;padding:0 8px;box-sizing:border-box}}
+      div[data-testid='stVerticalBlock'] div[data-testid='stElementContainer']:has(.yam-compact-credit){margin-top:0!important;margin-bottom:0!important;padding-top:0!important;padding-bottom:0!important;}
+    </style>
+    <div class="yam-compact-credit">
+      <div class="yam-credit-title">UN DON NUMÉRIQUE DE YAM GROUP À L’ASC AFRICA</div>
+      <div class="yam-credit-copy">Plateforme offerte par <strong>YAM Group, à travers sa filiale YAM Consultancy</strong> — conseil, accompagnement opérationnel et solutions numériques.<br>« Ensemble pour un Sénégal plus fort : Agir aujourd’hui, bâtir demain »</div>
+    </div>
+    <div class="yam-compact-track-window" aria-label="Domaines d’activité de YAM Group"><div class="yam-compact-track">
+      <span>🌱 <b>YAM GROUP</b> · AGRICULTURE</span><span>✦ DON DE <b>YAM GROUP</b> · FILIALE <b>YAM CONSULTANCY</b></span><span>🩺 SANTÉ</span><span>🎓 ÉDUCATION</span><span>⚡ ÉNERGIE</span><span>🏗️ BTP</span><span>💻 INFORMATION</span><span>📊 CONSULTANCY</span><span>📈 ÉCONOMIE</span><span>🤝 COMMERCE</span>
+      <span>🌱 <b>YAM GROUP</b> · AGRICULTURE</span><span>✦ DON DE <b>YAM GROUP</b> · FILIALE <b>YAM CONSULTANCY</b></span><span>🩺 SANTÉ</span><span>🎓 ÉDUCATION</span><span>⚡ ÉNERGIE</span><span>🏗️ BTP</span><span>💻 INFORMATION</span><span>📊 CONSULTANCY</span><span>📈 ÉCONOMIE</span><span>🤝 COMMERCE</span>
+    </div></div>
+    """, unsafe_allow_html=True)
 
 def members_page():
     st.markdown('<div class="section">👥 Membres & adhésions</div>',unsafe_allow_html=True)
