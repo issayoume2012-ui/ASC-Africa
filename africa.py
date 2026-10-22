@@ -150,6 +150,78 @@ a{{overflow-wrap:anywhere}}
 .stDownloadButton>button{{border:1px solid #cbd8e8}}
 @media(prefers-reduced-motion:reduce){{*,*:before,*:after{{animation:none!important;transition:none!important;scroll-behavior:auto!important}}}}
 @media(max-width:700px){{.hero{{padding:22px 18px;border-radius:18px;}}.block-container{{padding-left:.8rem;padding-right:.8rem;}}.news-card{{padding:16px;}}div[data-testid="stRadio"] div[role="radiogroup"]{{gap:5px;}}div[data-testid="stRadio"] div[role="radiogroup"] label{{padding:7px 9px;font-size:.82rem;}}}}
+
+/* Identité visuelle signature : stade nocturne, or et vert, pensée pour toutes les tailles */
+:root{{color-scheme:light;--club-ink:#07172e;--club-teal:#087e78;--club-gold:#f4bd38;--club-line:#dce7f4;}}
+html{{scroll-behavior:smooth;-webkit-text-size-adjust:100%;}}
+.stApp{{background:radial-gradient(ellipse at 4% 0%,rgba(215,166,42,.075),transparent 28%),radial-gradient(ellipse at 96% 18%,rgba(8,126,120,.07),transparent 25%),linear-gradient(180deg,#fff 0%,#f3f7fc 58%,#edf3f9 100%);}}
+.block-container{{width:100%;max-width:1900px;padding-left:clamp(14px,2.4vw,42px);padding-right:clamp(14px,2.4vw,42px);padding-top:clamp(12px,1.8vw,28px);}}
+.hero{{border-radius:clamp(18px,2vw,30px);border-bottom:4px solid var(--club-gold);}}
+.hero h1{{font-size:clamp(2.15rem,5.2vw,5.2rem);overflow-wrap:anywhere;}}
+.hero p{{font-size:clamp(.98rem,1.35vw,1.3rem);}}
+.news-card,.feature-card,.card,.report-stat{{min-width:0;overflow-wrap:anywhere;}}
+.news-card{{border-radius:clamp(15px,1.5vw,24px);box-shadow:0 10px 30px rgba(7,23,46,.055);}}
+.news-card h3{{font-size:clamp(1.2rem,1.8vw,1.85rem);line-height:1.25;overflow-wrap:anywhere;}}
+.news-cover{{width:100%;height:clamp(320px,46vw,760px);object-fit:cover;object-position:center;border-radius:clamp(14px,1.8vw,24px);background:#eaf2fc;}}
+.stButton>button,.stDownloadButton>button{{min-height:44px;padding:.55rem 1rem;border-radius:13px;white-space:normal;line-height:1.25;}}
+input,textarea,[data-baseweb="select"]{{border-radius:10px!important;}}
+div[data-testid="stDataFrame"],div[data-testid="stTable"]{{max-width:100%;}}
+div[data-testid="stDataFrame"]{{overflow-x:auto;}}
+[data-testid="stTabs"] [role="tab"]{{min-height:44px;font-weight:800;}}
+.site-footer{{margin-left:calc(-1 * clamp(14px,2.4vw,42px));margin-right:calc(-1 * clamp(14px,2.4vw,42px));}}
+
+/* Grand écran / ordinateur de bureau */
+@media(min-width:1500px){{
+  .block-container{{max-width:1900px;padding-left:48px;padding-right:48px;}}
+  .news-cover{{height:clamp(560px,40vw,820px);}}
+  .news-card{{padding:clamp(24px,2vw,38px);}}
+  .card,.feature-card{{padding:clamp(22px,1.8vw,34px);}}
+}}
+/* MacBook et petits ordinateurs portables */
+@media(min-width:1024px) and (max-width:1499px){{
+  .block-container{{padding-left:clamp(20px,2.2vw,32px);padding-right:clamp(20px,2.2vw,32px);}}
+  .news-cover{{height:clamp(340px,36vw,560px);}}
+  .hero{{padding:clamp(24px,3vw,38px);}}
+}}
+/* Tablettes en paysage et en portrait */
+@media(min-width:701px) and (max-width:1023px){{
+  .block-container{{padding-left:20px;padding-right:20px;}}
+  .hero{{padding:26px 24px;}}
+  .hero h1{{font-size:clamp(2.2rem,6vw,3.8rem);}}
+  .news-cover{{height:clamp(300px,48vw,480px);}}
+  .news-card,.feature-card,.card{{padding:18px;}}
+  div[data-testid="stRadio"] div[role="radiogroup"]{{gap:6px;}}
+  div[data-testid="stRadio"] div[role="radiogroup"] label{{padding:9px 11px;font-size:.9rem;}}
+}}
+/* Téléphones : zones tactiles généreuses, lecture confortable et aucune largeur débordante */
+@media(max-width:700px){{
+  .block-container{{padding:10px 12px 28px!important;}}
+  .hero{{padding:24px 18px;border-radius:18px;margin-bottom:14px;}}
+  .hero h1{{font-size:clamp(2.15rem,10vw,3.2rem);letter-spacing:-.04em;}}
+  .hero p{{font-size:1rem;line-height:1.55;}}
+  .kicker{{font-size:.68rem;letter-spacing:.12em;line-height:1.5;}}
+  .news-ticker{{font-size:.88rem;padding:12px 13px;}}
+  .news-card{{padding:15px;margin:10px 0;border-radius:16px;}}
+  .news-cover{{height:clamp(250px,72vw,390px);border-radius:13px;margin:12px 0 16px;}}
+  .news-card h3{{font-size:1.3rem;}}
+  .feature-card,.card{{padding:16px;border-radius:16px;}}
+  .section{{font-size:1.28rem;margin:.9rem 0;}}
+  .site-footer{{padding-top:25px;}}
+  div[data-testid="stImage"] img{{max-height:clamp(115px,32vw,170px);max-width:min(72vw,240px);}}
+  div[data-testid="stRadio"] div[role="radiogroup"]{{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;padding:8px;}}
+  div[data-testid="stRadio"] div[role="radiogroup"] label{{width:100%;min-width:0;justify-content:center;padding:10px 7px;font-size:.83rem;text-align:center;}}
+  input,textarea{{font-size:16px!important;}}
+  .stButton>button,.stDownloadButton>button{{width:100%;min-height:46px;}}
+  [data-testid="stTabs"] [role="tab"]{{padding-left:10px;padding-right:10px;font-size:.86rem;}}
+}}
+@media(max-width:380px){{
+  .block-container{{padding-left:8px!important;padding-right:8px!important;}}
+  .hero{{padding:20px 14px;}}
+  .hero h1{{font-size:2rem;}}
+  .news-cover{{height:240px;}}
+  div[data-testid="stRadio"] div[role="radiogroup"]{{grid-template-columns:minmax(0,1fr);}}
+}}
+@media(prefers-reduced-motion:reduce){{html{{scroll-behavior:auto;}}}}
 </style>
 """, unsafe_allow_html=True)
 
