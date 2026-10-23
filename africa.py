@@ -599,6 +599,10 @@ CREATE INDEX IF NOT EXISTS idx_public_messages_status ON public_messages(status,
 CREATE INDEX IF NOT EXISTS idx_payments_date ON payments(payment_date);
 CREATE INDEX IF NOT EXISTS idx_cash_date ON cash_entries(entry_date);
 CREATE INDEX IF NOT EXISTS idx_members_name ON members(full_name);
+CREATE INDEX IF NOT EXISTS idx_payments_member ON payments(member_id);
+CREATE INDEX IF NOT EXISTS idx_payments_date_id ON payments(payment_date DESC, id DESC);
+CREATE INDEX IF NOT EXISTS idx_cash_date_id ON cash_entries(entry_date DESC, id DESC);
+CREATE INDEX IF NOT EXISTS idx_activities_start ON activities(start_date);
 CREATE INDEX IF NOT EXISTS idx_news_public_date ON news(published, publish_date);
 ALTER TABLE payments ADD COLUMN IF NOT EXISTS payer_name TEXT DEFAULT '';
 ALTER TABLE payments ADD COLUMN IF NOT EXISTS payer_phone TEXT DEFAULT '';
@@ -683,8 +687,14 @@ def _auto_migrate_legacy_sqlite(pg_connection):
             source.close()
 
 
+@st.cache_resource(show_spinner="Initialisation de la base ASC AFRICA…")
 def init_db():
-    """Crée le schéma PostgreSQL, importe l'ancien SQLite si sûr, puis initialise l'admin."""
+    """Initialise PostgreSQL une seule fois par processus Streamlit.
+
+    Streamlit réexécute le script à chaque interaction : sans ce cache, chaque clic
+    relançait tous les CREATE/ALTER/INDEX, la vérification de migration SQLite et
+    le hachage PBKDF2 du mot de passe administrateur (180 000 itérations).
+    """
     with connect() as c:
         c.executescript(DATABASE_SCHEMA)
         _auto_migrate_legacy_sqlite(c.raw)
