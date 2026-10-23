@@ -725,14 +725,29 @@ def audit(action, entity="", entity_id=None, details=""):
         c.execute("INSERT INTO audit_logs(created_at,actor,action,entity,entity_id,details) VALUES(?,?,?,?,?,?)",
                   (datetime.now().isoformat(timespec="seconds"), st.session_state.get("actor","Visiteur"),
                    action, entity, entity_id, str(details)[:2000]))
+    _query_df_cached.clear()
 
-def query_df(sql, params=()):
+@st.cache_data(ttl=30, show_spinner=False)
+def _query_df_cached(sql, params):
+    """Cache court les lectures PostgreSQL pour limiter les allers-retours réseau."""
     with connect() as c:
         cur = c.execute(sql, params)
         rows = cur.fetchall()
         columns = [d.name if hasattr(d, "name") else d[0] for d in (cur.description or [])]
         cur.close()
     return pd.DataFrame(rows, columns=columns)
+
+def query_df(sql, params=()):
+    # params devient un tuple hashable pour le cache Streamlit.
+    safe_params = tuple(params or ())
+    try:
+        return _query_df_cached(sql, safe_params)
+    except (psycopg2.errors.UndefinedTable, psycopg2.errors.UndefinedColumn):
+        # Installation neuve ou schéma ancien : on initialise seulement si une
+        # lecture prouve que le schéma manque, jamais systématiquement au portail.
+        init_db()
+        _query_df_cached.clear()
+        return _query_df_cached(sql, safe_params)
 
 def execute(sql, params=()):
     with connect() as c:
@@ -741,11 +756,15 @@ def execute(sql, params=()):
             cur = c.execute(statement + " RETURNING id", params)
             row = cur.fetchone()
             cur.close()
-            return row["id"] if row else None
-        cur = c.execute(statement, params)
-        result = cur.rowcount
-        cur.close()
-        return result
+            result = row["id"] if row else None
+        else:
+            cur = c.execute(statement, params)
+            result = cur.rowcount
+            cur.close()
+    # Toute écriture invalide les lectures mises en cache pour éviter d'afficher
+    # des données anciennes après une modification ou une suppression.
+    _query_df_cached.clear()
+    return result
 
 def money(v):
     try: return f"{float(v or 0):,.0f}".replace(",", " ") + " FCFA"
@@ -1724,14 +1743,19 @@ st.markdown(r"""<style>
 </style>""",unsafe_allow_html=True)
 
 def main():
-    init_db()
     if "authenticated" not in st.session_state: st.session_state.authenticated=False
     if not st.session_state.authenticated:
         if st.session_state.get("show_admin_login", False):
+            # Initialisation complète uniquement à l'ouverture de l'espace admin.
+            # Le portail public ne doit pas attendre les DDL, la migration SQLite
+            # ni la préparation du compte administrateur avant d'afficher son contenu.
+            init_db()
             login()
         else:
             public_page()
         return
+    # Un utilisateur authentifié garde le comportement normal, avec init_db en cache.
+    init_db()
     header()
     st.markdown(f"<div class='admin-banner'><div class='kicker'>ASC AFRICA · Administration sécurisée</div><h2>Centre de pilotage du club</h2><p>Connecté : <b>{html.escape(str(st.session_state.actor))}</b> · Les données publiques et administratives sont reliées à Supabase PostgreSQL.</p></div>",unsafe_allow_html=True)
     role = st.session_state.get("actor_role", "admin")
