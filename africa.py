@@ -278,27 +278,27 @@ div[data-testid="stDataFrame"]{{overflow-x:auto;}}
 
 /* Bandeau signature ASC AFRICA : photos et textes couvrent toute la bannière supérieure */
 .africa-topband{{position:relative;isolation:isolate;overflow:hidden;display:flex;align-items:center;justify-content:center;min-height:clamp(430px,55vw,680px);padding:clamp(30px,5vw,76px) clamp(18px,5vw,72px);border-radius:clamp(18px,2.2vw,32px);color:#fff;background:#061a3b;border:1px solid #b8d7ff;box-shadow:0 20px 50px #092b5b30;margin:0 0 22px;}}
-.africa-topband:before{{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(90deg,#04142be8 0%,#061a3bbd 48%,#061a3b75 100%),linear-gradient(0deg,#061a3bd9 0%,transparent 58%,#061a3b45 100%);}}
+.africa-topband:before{{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(90deg,#04142b88 0%,#061a3b48 48%,#061a3b18 100%),linear-gradient(0deg,#061a3b9c 0%,transparent 52%,#061a3b12 100%);}}
 .africa-top-content{{position:relative;z-index:3;width:min(100%,1100px);text-align:center;margin:auto;padding:clamp(12px,3vw,34px) 0 75px;}}
 .africa-topband h1{{font-size:clamp(3rem,8.5vw,7.5rem);line-height:.96;letter-spacing:-.055em;font-weight:1000;margin:14px 0 20px;color:#fff;text-shadow:0 5px 24px #00132f;}}
 .africa-topband p{{font-size:clamp(1.05rem,2vw,1.55rem);line-height:1.65;color:#f2f7ff;margin:0 auto;max-width:900px;text-shadow:0 2px 12px #00132f;}}
 .africa-topband .top-kicker{{font-size:clamp(.72rem,1.3vw,.95rem);text-transform:uppercase;letter-spacing:.2em;line-height:1.8;font-weight:950;color:#e2eeff;text-shadow:0 2px 10px #00132f;}}
 .africa-topband .top-slogan{{display:inline-block;margin-top:24px;padding:12px 20px;border:1px solid #ffffffb0;border-radius:999px;background:#0b2d5db8;color:#fff;font-weight:950;letter-spacing:.045em;box-shadow:0 8px 28px #00132f55;}}
 .africa-photo-stage{{position:absolute;z-index:0;inset:0;width:100%;height:100%;min-width:0;overflow:hidden;border-radius:inherit;background:#061a3b;isolation:isolate;}}
-.africa-slide{{position:absolute;inset:0;opacity:0;animation:africaTopSlide 35s infinite;}}
-.africa-slide img{{position:absolute;inset:0;display:block;width:100%;height:100%;max-width:100%;object-fit:cover;object-position:center;transform:scale(1.02);animation:africaPhotoZoom 35s infinite;}}
-.africa-slide:after{{content:"";position:absolute;inset:0;background:linear-gradient(180deg,#061a3b22 0%,transparent 35%,#061a3bd9 100%);pointer-events:none;}}
+.africa-slide{{position:absolute;inset:0;opacity:0;animation:africaTopSlide 21s infinite;}}
+.africa-slide img{{position:absolute;inset:0;display:block;width:100%;height:100%;max-width:100%;object-fit:cover;object-position:center;filter:brightness(1.14) contrast(1.08) saturate(1.10);transform:scale(1.015);animation:africaPhotoZoom 21s infinite;}}
+.africa-slide:after{{content:"";position:absolute;inset:0;background:linear-gradient(180deg,#061a3b08 0%,transparent 42%,#061a3b9e 100%);pointer-events:none;}}
 .africa-slide-caption{{position:absolute;z-index:2;left:clamp(12px,2vw,28px);right:clamp(12px,2vw,28px);bottom:clamp(14px,2.2vw,30px);color:#fff;font-size:clamp(.9rem,1.6vw,1.3rem);font-weight:950;line-height:1.35;text-align:center;text-shadow:0 2px 10px #00132f;}}
 .africa-slide-caption small{{display:block;margin-top:5px;font-size:clamp(.72rem,1vw,.88rem);font-weight:650;line-height:1.45;color:#edf5ff;}}
 .africa-slide:nth-child(1){{animation-delay:0s}}.africa-slide:nth-child(1) img{{animation-delay:0s}}
-.africa-slide:nth-child(2){{animation-delay:5s}}.africa-slide:nth-child(2) img{{animation-delay:5s}}
-.africa-slide:nth-child(3){{animation-delay:10s}}.africa-slide:nth-child(3) img{{animation-delay:10s}}
-.africa-slide:nth-child(4){{animation-delay:15s}}.africa-slide:nth-child(4) img{{animation-delay:15s}}
-.africa-slide:nth-child(5){{animation-delay:20s}}.africa-slide:nth-child(5) img{{animation-delay:20s}}
-.africa-slide:nth-child(6){{animation-delay:25s}}.africa-slide:nth-child(6) img{{animation-delay:25s}}
-.africa-slide:nth-child(7){{animation-delay:30s}}.africa-slide:nth-child(7) img{{animation-delay:30s}}
+.africa-slide:nth-child(2){{animation-delay:3s}}.africa-slide:nth-child(2) img{{animation-delay:3s}}
+.africa-slide:nth-child(3){{animation-delay:6s}}.africa-slide:nth-child(3) img{{animation-delay:6s}}
+.africa-slide:nth-child(4){{animation-delay:9s}}.africa-slide:nth-child(4) img{{animation-delay:9s}}
+.africa-slide:nth-child(5){{animation-delay:12s}}.africa-slide:nth-child(5) img{{animation-delay:12s}}
+.africa-slide:nth-child(6){{animation-delay:15s}}.africa-slide:nth-child(6) img{{animation-delay:15s}}
+.africa-slide:nth-child(7){{animation-delay:18s}}.africa-slide:nth-child(7) img{{animation-delay:18s}}
 @keyframes africaTopSlide{{0%{{opacity:0}} 2%,13%{{opacity:1}} 16%,100%{{opacity:0}}}}
-@keyframes africaPhotoZoom{{0%{{transform:scale(1.02)}} 13%{{transform:scale(1.13)}} 16%,100%{{transform:scale(1.13)}}}}
+@keyframes africaPhotoZoom{{0%{{transform:scale(1.015)}} 13%{{transform:scale(1.07)}} 16%,100%{{transform:scale(1.07)}}}}
 @media(max-width:760px){{.africa-topband{{min-height:clamp(500px,120vw,650px);padding:25px 17px;border-radius:18px}}.africa-top-content{{padding:10px 0 95px}}.africa-topband h1{{font-size:clamp(2.8rem,13vw,5rem)}}.africa-topband p{{font-size:1.02rem;line-height:1.6}}.africa-topband .top-kicker{{letter-spacing:.12em}}.africa-topband .top-slogan{{line-height:1.5;border-radius:16px}}.africa-slide-caption{{font-size:1rem;bottom:13px}}}}
 @media(max-width:380px){{.africa-topband{{min-height:520px;padding:20px 13px;border-radius:15px}}.africa-topband .top-slogan{{font-size:.78rem;line-height:1.5;border-radius:15px}}.africa-top-content{{padding-bottom:105px}}}}
 @media(prefers-reduced-motion:reduce){{.africa-slide,.africa-slide img{{animation:none}}.africa-slide{{opacity:0}}.africa-slide:first-child{{opacity:1}}.africa-slide img{{transform:none}}}}
@@ -717,7 +717,7 @@ def header():
         slides.append(
             '<div class="africa-slide">'
             f'<img src="{html.escape(src, quote=True)}" alt="{html.escape(alt, quote=True)}" '
-            f'loading="{"eager" if index == 1 else "lazy"}" referrerpolicy="no-referrer" '
+            f'loading="eager" decoding="async" referrerpolicy="no-referrer" '
             '>'
             f'<div class="africa-slide-caption">{html.escape(title)}'
             f'<small>{html.escape(message)}</small></div></div>'
