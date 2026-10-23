@@ -489,12 +489,17 @@ class PgCompatConnection:
         return cur
 
     def executescript(self, script):
+        """Exécute le schéma en un seul aller-retour réseau PostgreSQL.
+
+        L'ancienne boucle envoyait chaque CREATE/ALTER/INDEX séparément au serveur,
+        ce qui multipliait la latence Supabase au démarrage. Ici le script DDL sans
+        paramètres est envoyé en une seule commande multi-instructions.
+        """
         cur = self.raw.cursor()
-        for statement in script.split(";"):
-            statement = statement.strip()
-            if statement:
-                cur.execute(statement)
-        cur.close()
+        try:
+            cur.execute(script)
+        finally:
+            cur.close()
 
     def table_columns(self, table):
         cur = self.raw.cursor(cursor_factory=RealDictCursor)
@@ -687,7 +692,7 @@ def _auto_migrate_legacy_sqlite(pg_connection):
             source.close()
 
 
-@st.cache_resource(show_spinner="Initialisation de la base ASC AFRICA…")
+@st.cache_resource(show_spinner=False)
 def init_db():
     """Initialise PostgreSQL une seule fois par processus Streamlit.
 
@@ -1388,6 +1393,25 @@ def payments_page():
                 url = whatsapp_url(r.phone, message)
                 if url: st.link_button("📲 Envoyer / relancer sur WhatsApp", url, use_container_width=True)
             st.download_button("📥 Exporter l'historique en CSV", view.to_csv(index=False).encode("utf-8-sig"), "asc_africa_paiements.csv", "text/csv", use_container_width=True)
+            with st.expander("🗑️ Supprimer un paiement", expanded=False):
+                if not view.empty:
+                    delete_receipt = st.selectbox(
+                        "Paiement à supprimer", view["receipt_no"].tolist(), key="payment_delete_receipt",
+                        format_func=lambda value: f"{value} — {view.loc[view.receipt_no == value, 'full_name'].iloc[0]} — {money(view.loc[view.receipt_no == value, 'amount'].iloc[0])}"
+                    )
+                    confirm_payment_delete = st.checkbox("Je confirme la suppression définitive de ce paiement", key="confirm_payment_delete")
+                    if st.button("Confirmer la suppression du paiement", key="delete_payment_btn", type="secondary"):
+                        if not confirm_payment_delete:
+                            st.error("Cochez la confirmation avant de supprimer.")
+                        else:
+                            payment_row = view[view.receipt_no == delete_receipt].iloc[0]
+                            # Supprime aussi l'écriture de caisse créée automatiquement pour ce reçu.
+                            execute("DELETE FROM cash_entries WHERE reference=? AND label LIKE ?", (str(delete_receipt), f"Paiement {delete_receipt} —%"))
+                            execute("DELETE FROM payments WHERE receipt_no=?", (str(delete_receipt),))
+                            audit("Suppression", "paiement", int(payment_row.id), f"{delete_receipt} — {payment_row.full_name} — {money(payment_row.amount)}")
+                            st.session_state.pop("last_receipt_no", None)
+                            st.success("Paiement et écriture de caisse associée supprimés.")
+                            st.rerun()
     if not REPORTLAB_OK:
         st.info("Pour générer les reçus PDF, installez ReportLab : pip install reportlab")
 
@@ -1415,10 +1439,19 @@ def cash_page():
     else:
         st.dataframe(entries.rename(columns={"entry_date":"Date","direction":"Sens","category":"Catégorie","label":"Libellé","amount":"Montant FCFA","method":"Mode","reference":"Référence","note":"Observation","created_by":"Saisi par"}),use_container_width=True,hide_index=True)
         st.download_button("Exporter la caisse en CSV",entries.to_csv(index=False).encode("utf-8-sig"),"asc_africa_caisse.csv","text/csv")
-        if st.button("Supprimer une opération de caisse sélectionnée"):
-            eid=st.selectbox("ID opération",entries.id.tolist(),key="cash_delete_id")
-            if st.checkbox("Je confirme la suppression",key="cash_delete_confirm"):
-                execute("DELETE FROM cash_entries WHERE id=?",(int(eid),)); audit("Suppression","caisse",int(eid),"Suppression opération"); st.rerun()
+        with st.expander("🗑️ Supprimer une opération de caisse", expanded=False):
+            eid=st.selectbox("Opération à supprimer",entries.id.tolist(),key="cash_delete_id",format_func=lambda i:f"#{i} — {entries.loc[entries.id==i,'entry_date'].iloc[0]} — {entries.loc[entries.id==i,'label'].iloc[0]} — {money(entries.loc[entries.id==i,'amount'].iloc[0])}")
+            confirm_cash_delete=st.checkbox("Je confirme la suppression définitive de cette opération",key="cash_delete_confirm")
+            if st.button("Confirmer la suppression de l'opération",key="cash_delete_button",type="secondary"):
+                if not confirm_cash_delete:
+                    st.error("Cochez la confirmation avant de supprimer.")
+                else:
+                    details=query_df("SELECT label,direction,amount FROM cash_entries WHERE id=?",(int(eid),))
+                    execute("DELETE FROM cash_entries WHERE id=?",(int(eid),))
+                    label=str(details.iloc[0].label) if not details.empty else "Opération de caisse"
+                    audit("Suppression","caisse",int(eid),label)
+                    st.success("Opération de caisse supprimée.")
+                    st.rerun()
 
 def activities_page():
     st.markdown('<div class="section">📅 Agenda & activités ASC AFRICA</div>',unsafe_allow_html=True)
@@ -1443,6 +1476,18 @@ def activities_page():
             status=st.selectbox("Nouveau statut",["Prévue","En préparation","En cours","Réalisée","Annulée"])
             if st.button("Mettre à jour le statut"):
                 execute("UPDATE activities SET status=? WHERE id=?",(status,int(aid))); audit("Modification statut","activité",int(aid),status); st.rerun()
+        with st.expander("🗑️ Supprimer une activité", expanded=False):
+            delete_aid=st.selectbox("Activité à supprimer",df.id.tolist(),key="activity_delete_id",format_func=lambda i:f"#{i} — {df.loc[df.id==i,'title'].iloc[0]}")
+            confirm_activity_delete=st.checkbox("Je confirme la suppression définitive de cette activité",key="confirm_activity_delete")
+            if st.button("Confirmer la suppression de l'activité",key="delete_activity_button",type="secondary"):
+                if not confirm_activity_delete:
+                    st.error("Cochez la confirmation avant de supprimer.")
+                else:
+                    title_deleted=str(df.loc[df.id==delete_aid,"title"].iloc[0])
+                    execute("DELETE FROM activities WHERE id=?",(int(delete_aid),))
+                    audit("Suppression","activité",int(delete_aid),title_deleted)
+                    st.success("Activité supprimée.")
+                    st.rerun()
 
 def news_sponsors_page():
     st.markdown('<div class="section">📰 Communication, actualités & partenaires</div>',unsafe_allow_html=True)
@@ -1492,10 +1537,35 @@ def news_sponsors_page():
             nid=st.selectbox("Actualité à publier / dépublier",n.id.tolist())
             if st.button("Basculer publication"):
                 old=int(n.loc[n.id==nid,"published"].iloc[0]); execute("UPDATE news SET published=? WHERE id=?",(0 if old else 1,int(nid))); audit("Publication modifiée","actualité",int(nid)); st.rerun()
+            with st.expander("🗑️ Supprimer une actualité", expanded=False):
+                delete_nid=st.selectbox("Actualité à supprimer",n.id.tolist(),key="news_delete_id",format_func=lambda i:f"#{i} — {n.loc[n.id==i,'title'].iloc[0]}")
+                confirm_news_delete=st.checkbox("Je confirme la suppression définitive de cette actualité",key="confirm_news_delete")
+                if st.button("Confirmer la suppression de l'actualité",key="delete_news_button",type="secondary"):
+                    if not confirm_news_delete:
+                        st.error("Cochez la confirmation avant de supprimer.")
+                    else:
+                        title_deleted=str(n.loc[n.id==delete_nid,"title"].iloc[0])
+                        execute("DELETE FROM news WHERE id=?",(int(delete_nid),))
+                        audit("Suppression","actualité",int(delete_nid),title_deleted)
+                        st.success("Actualité supprimée.")
+                        st.rerun()
         st.subheader("Partenaires")
         sp=query_df("SELECT * FROM sponsors ORDER BY name")
         st.dataframe(sp,use_container_width=True,hide_index=True)
         st.download_button("Exporter les partenaires CSV",sp.to_csv(index=False).encode("utf-8-sig"),"asc_africa_partenaires.csv","text/csv")
+        if not sp.empty:
+            with st.expander("🗑️ Supprimer un partenaire", expanded=False):
+                delete_sid=st.selectbox("Partenaire à supprimer",sp.id.tolist(),key="sponsor_delete_id",format_func=lambda i:f"#{i} — {sp.loc[sp.id==i,'name'].iloc[0]}")
+                confirm_sponsor_delete=st.checkbox("Je confirme la suppression définitive de ce partenaire",key="confirm_sponsor_delete")
+                if st.button("Confirmer la suppression du partenaire",key="delete_sponsor_button",type="secondary"):
+                    if not confirm_sponsor_delete:
+                        st.error("Cochez la confirmation avant de supprimer.")
+                    else:
+                        sponsor_name=str(sp.loc[sp.id==delete_sid,"name"].iloc[0])
+                        execute("DELETE FROM sponsors WHERE id=?",(int(delete_sid),))
+                        audit("Suppression","partenaire",int(delete_sid),sponsor_name)
+                        st.success("Partenaire supprimé.")
+                        st.rerun()
 
     with t4:
         st.markdown("<div class='admin-banner'><div class='kicker'>Espace public → administration</div><h2>Messages reçus</h2><p>Les demandes envoyées depuis Contact sont enregistrées dans la base et consultables ici.</p></div>",unsafe_allow_html=True)
@@ -1515,6 +1585,17 @@ def news_sponsors_page():
                 execute("UPDATE public_messages SET status=?,admin_note=?,handled_by=?,handled_at=? WHERE id=?",(status,note,st.session_state.get("actor","Admin"),datetime.now().isoformat(timespec="seconds"),int(mid)))
                 audit("Suivi message public","message_public",int(mid),status); st.success("Suivi enregistré."); st.rerun()
             st.download_button("Exporter les messages CSV",msgs.to_csv(index=False).encode("utf-8-sig"),"asc_africa_messages_publics.csv","text/csv")
+            with st.expander("🗑️ Supprimer un message public", expanded=False):
+                confirm_message_delete=st.checkbox("Je confirme la suppression définitive de ce message",key="confirm_message_delete")
+                if st.button("Supprimer le message ouvert",key="delete_public_message_button",type="secondary"):
+                    if not confirm_message_delete:
+                        st.error("Cochez la confirmation avant de supprimer.")
+                    else:
+                        message_name=f"{msg.full_name} — {msg.subject}"
+                        execute("DELETE FROM public_messages WHERE id=?",(int(mid),))
+                        audit("Suppression","message_public",int(mid),message_name)
+                        st.success("Message public supprimé.")
+                        st.rerun()
 
 def reports_page():
     st.markdown("<div class='report-hero'><div class='kicker'>Pilotage · Transparence · Assemblée générale</div><h2>Centre de rapports XXL</h2><p>Des documents structurés, identifiables et prêts à être partagés, avec identité graphique ASC AFRICA et signature YAM Consultance.</p></div>",unsafe_allow_html=True)
