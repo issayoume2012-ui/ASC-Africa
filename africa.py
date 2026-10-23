@@ -2,13 +2,17 @@
 """
 ASC AFRICA — Plateforme de gestion associative
 Version corrigée — bannière ASC AFRICA, pied de page YAM et navigation bleu/blanc animée
-Version locale SQLite : adhérents, cartes, cotisations, caisse, activités,
+Version Supabase PostgreSQL : adhérents, cartes, cotisations, caisse, activités,
 actualités, partenaires, rapports, exports et journal d'audit.
 Lancer : streamlit run africa.py
 """
 from pathlib import Path
 from datetime import date, datetime
 import sqlite3
+import psycopg2
+from psycopg2 import IntegrityError, sql as pg_sql
+from psycopg2.extras import RealDictCursor, execute_values
+from psycopg2.pool import ThreadedConnectionPool
 import hashlib
 import secrets
 import urllib.parse
@@ -34,15 +38,16 @@ except Exception:
 APP_DIR = Path(__file__).resolve().parent
 
 # Les images ne sont plus intégrées au code : elles seront ajoutées séparément si nécessaire.
-DB_PATH = APP_DIR / "asc_africa.db"
+LEGACY_DB_PATH = APP_DIR / "asc_africa.db"  # ancienne base SQLite : import automatique et sécurisé au premier démarrage
 LOGO_PATHS = [APP_DIR / "im3.png", APP_DIR / "logo_asc_africa.png", APP_DIR / "africa.png", APP_DIR / "logo.png"]
 YAM_LOGO_PATHS = [APP_DIR / "Logo YAM(1).png", APP_DIR / "logo_yam.png", APP_DIR / "yam_logo.png"]
 CLUB = "ASC AFRICA"
 SLOGAN = "AFRICA KASSÉ, AFRICA REK"
-ADMIN_USER = "Africa"
-# Identifiants fixes demandés pour l’accès partagé.
-# Attention : ce compte ouvre l’espace complet d’administration.
-ADMIN_PASSWORD = "africa2026"
+# Compte principal d’administration : les identifiants restent dans secrets.toml,
+# jamais dans le code source.
+_APP_CONFIG = st.secrets.get("app", {})
+ADMIN_USER = str(_APP_CONFIG.get("initial_admin_username", os.getenv("ASC_ADMIN_USER", "iy@2012")))
+ADMIN_PASSWORD = str(_APP_CONFIG.get("initial_admin_password", os.getenv("ASC_ADMIN_PASSWORD", "")))
 WHATSAPP_COUNTRY = "221"
 CURRENCY = "FCFA"
 BLUE = "#123B75"
@@ -466,11 +471,73 @@ components.html("""
 </script>
 """, height=0, scrolling=False)
 
+class PgCompatConnection:
+    """Adaptateur léger pour conserver les appels SQL existants tout en utilisant PostgreSQL."""
+    def __init__(self, raw, pool):
+        self.raw = raw
+        self.pool = pool
+        self.closed = False
+
+    @staticmethod
+    def _sql(sql):
+        # Les requêtes de l'application utilisent des paramètres DB-API « ? ».
+        return sql.replace("?", "%s")
+
+    def execute(self, sql, params=()):
+        cur = self.raw.cursor(cursor_factory=RealDictCursor)
+        cur.execute(self._sql(sql), tuple(params or ()))
+        return cur
+
+    def executescript(self, script):
+        cur = self.raw.cursor()
+        for statement in script.split(";"):
+            statement = statement.strip()
+            if statement:
+                cur.execute(statement)
+        cur.close()
+
+    def table_columns(self, table):
+        cur = self.raw.cursor(cursor_factory=RealDictCursor)
+        cur.execute("SELECT column_name AS name FROM information_schema.columns WHERE table_schema=current_schema() AND table_name=%s", (table,))
+        rows = cur.fetchall()
+        cur.close()
+        return {row["name"] for row in rows}
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc, tb):
+        try:
+            if exc_type is None:
+                self.raw.commit()
+            else:
+                self.raw.rollback()
+        finally:
+            self.close()
+        return False
+
+    def close(self):
+        if not self.closed:
+            self.closed = True
+            self.pool.putconn(self.raw)
+
+@st.cache_resource
+def _pg_pool():
+    cfg = st.secrets.get("database", {})
+    def setting(key, env_name, default=None):
+        return cfg.get(key, os.getenv(env_name, default))
+    host = setting("host", "SUPABASE_DB_HOST")
+    port = setting("port", "SUPABASE_DB_PORT", "5432")
+    dbname = setting("database", "SUPABASE_DB_NAME", "postgres")
+    user = setting("user", "SUPABASE_DB_USER")
+    password = setting("password", "SUPABASE_DB_PASSWORD")
+    if not all([host, user, password]):
+        raise RuntimeError("Configuration Supabase manquante. Renseignez .streamlit/secrets.toml ou les variables d’environnement.")
+    return ThreadedConnectionPool(1, 10, host=host, port=int(port), dbname=dbname, user=user, password=password, sslmode="require", connect_timeout=8, application_name="ASC-AFRICA")
+
 def connect():
-    con = sqlite3.connect(DB_PATH, timeout=20, check_same_thread=False)
-    con.row_factory = sqlite3.Row
-    con.execute("PRAGMA foreign_keys=ON")
-    return con
+    pool = _pg_pool()
+    return PgCompatConnection(pool.getconn(), pool)
 
 def pw_hash(password, salt=None):
     salt = salt or secrets.token_hex(16)
@@ -484,85 +551,159 @@ def verify_password(password, stored):
     except Exception:
         return False
 
+# Schéma intégré au programme : aucune dépendance à un fichier schema.sql séparé.
+# CREATE TABLE/INDEX IF NOT EXISTS et ALTER TABLE IF NOT EXISTS rendent l'initialisation
+# répétable sans supprimer les données déjà présentes.
+DATABASE_SCHEMA = r"""
+CREATE TABLE IF NOT EXISTS admins(
+ id BIGINT GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY, username TEXT UNIQUE NOT NULL,
+ password_hash TEXT NOT NULL, full_name TEXT NOT NULL, active INTEGER DEFAULT 1,
+ created_at TEXT NOT NULL, role TEXT NOT NULL DEFAULT 'admin');
+CREATE TABLE IF NOT EXISTS members(
+ id BIGINT GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY, member_no TEXT UNIQUE, full_name TEXT NOT NULL,
+ phone TEXT, neighborhood TEXT, birth_date TEXT, membership_date TEXT NOT NULL,
+ role TEXT DEFAULT 'Supporter', status TEXT DEFAULT 'Actif', notes TEXT,
+ created_at TEXT NOT NULL, updated_at TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS payments(
+ id BIGINT GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY, receipt_no TEXT UNIQUE NOT NULL,
+ member_id BIGINT REFERENCES members(id) ON DELETE SET NULL, payment_date TEXT NOT NULL,
+ payment_type TEXT NOT NULL, amount DOUBLE PRECISION NOT NULL CHECK(amount>0), period TEXT,
+ method TEXT DEFAULT 'Espèces', note TEXT, created_by TEXT, created_at TEXT NOT NULL,
+ payer_name TEXT DEFAULT '', payer_phone TEXT DEFAULT '');
+CREATE TABLE IF NOT EXISTS cash_entries(
+ id BIGINT GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY, entry_date TEXT NOT NULL,
+ direction TEXT NOT NULL CHECK(direction IN ('Entrée','Sortie')), category TEXT NOT NULL,
+ label TEXT NOT NULL, amount DOUBLE PRECISION NOT NULL CHECK(amount>0), method TEXT DEFAULT 'Espèces',
+ reference TEXT, note TEXT, created_by TEXT, created_at TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS activities(
+ id BIGINT GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY, title TEXT NOT NULL, activity_type TEXT,
+ start_date TEXT NOT NULL, end_date TEXT, location TEXT, description TEXT, budget DOUBLE PRECISION DEFAULT 0,
+ status TEXT DEFAULT 'Prévue', created_at TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS news(
+ id BIGINT GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY, title TEXT NOT NULL, category TEXT,
+ publish_date TEXT NOT NULL, content TEXT NOT NULL, published INTEGER DEFAULT 1, created_at TEXT NOT NULL,
+ subtitle TEXT DEFAULT '', author TEXT DEFAULT '', cover_url TEXT DEFAULT '', featured INTEGER DEFAULT 0);
+CREATE TABLE IF NOT EXISTS sponsors(
+ id BIGINT GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY, name TEXT NOT NULL, contact TEXT, phone TEXT,
+ contribution DOUBLE PRECISION DEFAULT 0, partnership_type TEXT, start_date TEXT, end_date TEXT,
+ notes TEXT, created_at TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS audit_logs(
+ id BIGINT GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY, created_at TEXT NOT NULL, actor TEXT NOT NULL,
+ action TEXT NOT NULL, entity TEXT, entity_id BIGINT, details TEXT);
+CREATE TABLE IF NOT EXISTS public_messages(
+ id BIGINT GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY, created_at TEXT NOT NULL, full_name TEXT NOT NULL,
+ contact TEXT NOT NULL, subject TEXT NOT NULL, message TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'Nouveau',
+ admin_note TEXT DEFAULT '', handled_by TEXT DEFAULT '', handled_at TEXT DEFAULT '');
+CREATE TABLE IF NOT EXISTS site_settings(setting_key TEXT PRIMARY KEY, setting_value TEXT NOT NULL DEFAULT '');
+CREATE INDEX IF NOT EXISTS idx_public_messages_status ON public_messages(status, created_at);
+CREATE INDEX IF NOT EXISTS idx_payments_date ON payments(payment_date);
+CREATE INDEX IF NOT EXISTS idx_cash_date ON cash_entries(entry_date);
+CREATE INDEX IF NOT EXISTS idx_members_name ON members(full_name);
+CREATE INDEX IF NOT EXISTS idx_news_public_date ON news(published, publish_date);
+ALTER TABLE payments ADD COLUMN IF NOT EXISTS payer_name TEXT DEFAULT '';
+ALTER TABLE payments ADD COLUMN IF NOT EXISTS payer_phone TEXT DEFAULT '';
+ALTER TABLE news ADD COLUMN IF NOT EXISTS subtitle TEXT DEFAULT '';
+ALTER TABLE news ADD COLUMN IF NOT EXISTS author TEXT DEFAULT '';
+ALTER TABLE news ADD COLUMN IF NOT EXISTS cover_url TEXT DEFAULT '';
+ALTER TABLE news ADD COLUMN IF NOT EXISTS featured INTEGER DEFAULT 0;
+ALTER TABLE admins ADD COLUMN IF NOT EXISTS role TEXT NOT NULL DEFAULT 'admin';
+"""
+
+def _auto_migrate_legacy_sqlite(pg_connection):
+    """Importe automatiquement l'ancienne base SQLite une seule fois, si elle est présente.
+
+    La migration ne supprime jamais la base source. Elle s'arrête si les principales
+    tables PostgreSQL contiennent déjà des données afin d'éviter une fusion hasardeuse.
+    Les conflits de clés/contraintes sont ignorés et les séquences d'identifiants sont recalées.
+    """
+    if not LEGACY_DB_PATH.is_file():
+        return
+
+    source = None
+    try:
+        source = sqlite3.connect(f"file:{LEGACY_DB_PATH}?mode=ro", uri=True, timeout=5)
+        source.row_factory = sqlite3.Row
+        source_tables = {row[0] for row in source.execute(
+            "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'")}
+        order = ["admins", "members", "payments", "cash_entries", "activities", "news",
+                 "sponsors", "audit_logs", "public_messages", "site_settings"]
+        marker_key = "legacy_sqlite_migration_v1"
+        with pg_connection.cursor() as cur:
+            cur.execute("SELECT setting_value FROM site_settings WHERE setting_key=%s", (marker_key,))
+            if cur.fetchone():
+                return
+            # Les données administratives existantes ne doivent jamais être mélangées
+            # automatiquement avec une ancienne base : l'utilisateur peut faire une fusion contrôlée.
+            for table in ("members", "payments", "cash_entries", "activities", "news", "sponsors", "public_messages"):
+                cur.execute(pg_sql.SQL("SELECT EXISTS (SELECT 1 FROM {} LIMIT 1)").format(pg_sql.Identifier(table)))
+                if cur.fetchone()[0]:
+                    print(f"ASC AFRICA : migration SQLite ignorée, la table PostgreSQL {table} contient déjà des données.")
+                    return
+
+            imported = {}
+            for table in order:
+                if table not in source_tables:
+                    continue
+                source_info = source.execute(f'PRAGMA table_info("{table}")').fetchall()
+                source_cols = [row[1] for row in source_info]
+                cur.execute("SELECT column_name FROM information_schema.columns WHERE table_schema=current_schema() AND table_name=%s ORDER BY ordinal_position", (table,))
+                target_cols = [row[0] for row in cur.fetchall()]
+                cols = [col for col in source_cols if col in target_cols]
+                if not cols:
+                    continue
+                quoted_cols = ", ".join('"' + col.replace('"', '""') + '"' for col in cols)
+                rows = source.execute(f'SELECT {quoted_cols} FROM "{table}"').fetchall()
+                insert_stmt = pg_sql.SQL("INSERT INTO {} ({}) VALUES %s ON CONFLICT DO NOTHING").format(
+                    pg_sql.Identifier(table), pg_sql.SQL(",").join(map(pg_sql.Identifier, cols)))
+                inserted = 0
+                with pg_connection.cursor() as insert_cur:
+                    for offset in range(0, len(rows), 500):
+                        batch = [tuple(row[col] for col in cols) for row in rows[offset:offset + 500]]
+                        if batch:
+                            execute_values(insert_cur, insert_stmt.as_string(pg_connection), batch, page_size=500)
+                            inserted += max(insert_cur.rowcount, 0)
+                imported[table] = (len(rows), inserted)
+
+            # Recaler les séquences pour que les prochaines insertions n'entrent pas en collision.
+            for table in order:
+                if table == "site_settings" or table not in source_tables:
+                    continue
+                cur.execute("SELECT pg_get_serial_sequence(%s, 'id')", (table,))
+                seq = cur.fetchone()[0]
+                if seq:
+                    cur.execute(pg_sql.SQL("SELECT setval(%s::regclass, COALESCE((SELECT MAX(id) FROM {}), 1), EXISTS (SELECT 1 FROM {}))").format(
+                        pg_sql.Identifier(table), pg_sql.Identifier(table)), (seq,))
+
+            summary = "; ".join(f"{name}: {read} lues/{inserted} importées" for name, (read, inserted) in imported.items())
+            cur.execute("INSERT INTO site_settings(setting_key, setting_value) VALUES(%s, %s) ON CONFLICT(setting_key) DO NOTHING",
+                        (marker_key, f"{datetime.now().isoformat(timespec='seconds')} | {summary}"))
+        print("ASC AFRICA : migration SQLite automatique terminée. " + (summary or "Aucune table source compatible."))
+    finally:
+        if source is not None:
+            source.close()
+
+
 def init_db():
+    """Crée le schéma PostgreSQL, importe l'ancien SQLite si sûr, puis initialise l'admin."""
     with connect() as c:
-        c.executescript("""
-        CREATE TABLE IF NOT EXISTS admins(
-            id INTEGER PRIMARY KEY, username TEXT UNIQUE NOT NULL, password_hash TEXT NOT NULL,
-            full_name TEXT NOT NULL, active INTEGER DEFAULT 1, created_at TEXT NOT NULL,
-            role TEXT NOT NULL DEFAULT 'admin');
-        CREATE TABLE IF NOT EXISTS members(
-            id INTEGER PRIMARY KEY AUTOINCREMENT, member_no TEXT UNIQUE, full_name TEXT NOT NULL,
-            phone TEXT, neighborhood TEXT, birth_date TEXT, membership_date TEXT NOT NULL,
-            role TEXT DEFAULT 'Supporter', status TEXT DEFAULT 'Actif', notes TEXT,
-            created_at TEXT NOT NULL, updated_at TEXT NOT NULL);
-        CREATE TABLE IF NOT EXISTS payments(
-            id INTEGER PRIMARY KEY AUTOINCREMENT, receipt_no TEXT UNIQUE NOT NULL,
-            member_id INTEGER, payment_date TEXT NOT NULL, payment_type TEXT NOT NULL,
-            amount REAL NOT NULL CHECK(amount>0), period TEXT, method TEXT DEFAULT 'Espèces',
-            note TEXT, created_by TEXT, created_at TEXT NOT NULL,
-            FOREIGN KEY(member_id) REFERENCES members(id) ON DELETE SET NULL);
-        CREATE TABLE IF NOT EXISTS cash_entries(
-            id INTEGER PRIMARY KEY AUTOINCREMENT, entry_date TEXT NOT NULL,
-            direction TEXT NOT NULL CHECK(direction IN ('Entrée','Sortie')),
-            category TEXT NOT NULL, label TEXT NOT NULL, amount REAL NOT NULL CHECK(amount>0),
-            method TEXT DEFAULT 'Espèces', reference TEXT, note TEXT, created_by TEXT,
-            created_at TEXT NOT NULL);
-        CREATE TABLE IF NOT EXISTS activities(
-            id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT NOT NULL, activity_type TEXT,
-            start_date TEXT NOT NULL, end_date TEXT, location TEXT, description TEXT,
-            budget REAL DEFAULT 0, status TEXT DEFAULT 'Prévue', created_at TEXT NOT NULL);
-        CREATE TABLE IF NOT EXISTS news(
-            id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT NOT NULL, category TEXT,
-            publish_date TEXT NOT NULL, content TEXT NOT NULL, published INTEGER DEFAULT 1,
-            created_at TEXT NOT NULL);
-        CREATE TABLE IF NOT EXISTS sponsors(
-            id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, contact TEXT,
-            phone TEXT, contribution REAL DEFAULT 0, partnership_type TEXT,
-            start_date TEXT, end_date TEXT, notes TEXT, created_at TEXT NOT NULL);
-        CREATE TABLE IF NOT EXISTS audit_logs(
-            id INTEGER PRIMARY KEY AUTOINCREMENT, created_at TEXT NOT NULL,
-            actor TEXT NOT NULL, action TEXT NOT NULL, entity TEXT, entity_id INTEGER, details TEXT);
-        CREATE TABLE IF NOT EXISTS public_messages(
-            id INTEGER PRIMARY KEY AUTOINCREMENT, created_at TEXT NOT NULL,
-            full_name TEXT NOT NULL, contact TEXT NOT NULL, subject TEXT NOT NULL,
-            message TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'Nouveau',
-            admin_note TEXT DEFAULT '', handled_by TEXT DEFAULT '', handled_at TEXT DEFAULT '');
-        CREATE INDEX IF NOT EXISTS idx_public_messages_status ON public_messages(status, created_at);
-        CREATE TABLE IF NOT EXISTS site_settings(
-            setting_key TEXT PRIMARY KEY, setting_value TEXT NOT NULL DEFAULT '');
-        CREATE INDEX IF NOT EXISTS idx_payments_date ON payments(payment_date);
-        CREATE INDEX IF NOT EXISTS idx_cash_date ON cash_entries(entry_date);
-        CREATE INDEX IF NOT EXISTS idx_members_name ON members(full_name);
-        """)
-        # Migrations additives : conserver les données déjà enregistrées.
-        existing_payment_cols = {row["name"] for row in c.execute("PRAGMA table_info(payments)").fetchall()}
-        for col, definition in {"payer_name": "TEXT DEFAULT ''", "payer_phone": "TEXT DEFAULT ''"}.items():
-            if col not in existing_payment_cols:
-                c.execute(f"ALTER TABLE payments ADD COLUMN {col} {definition}")
-        existing_news_cols = {row["name"] for row in c.execute("PRAGMA table_info(news)").fetchall()}
-        for col, definition in {
-            "subtitle": "TEXT DEFAULT ''",
-            "author": "TEXT DEFAULT ''",
-            "cover_url": "TEXT DEFAULT ''",
-            "featured": "INTEGER DEFAULT 0",
-        }.items():
-            if col not in existing_news_cols:
-                c.execute(f"ALTER TABLE news ADD COLUMN {col} {definition}")
-        c.execute("CREATE INDEX IF NOT EXISTS idx_news_public_date ON news(published, publish_date)")
-        # Migration additive des rôles : les anciens comptes sont conservés.
-        admin_cols = {row["name"] for row in c.execute("PRAGMA table_info(admins)").fetchall()}
-        if "role" not in admin_cols:
-            c.execute("ALTER TABLE admins ADD COLUMN role TEXT NOT NULL DEFAULT 'admin'")
+        c.executescript(DATABASE_SCHEMA)
+        _auto_migrate_legacy_sqlite(c.raw)
         now = datetime.now().isoformat(timespec="seconds")
         current_admin = c.execute("SELECT id FROM admins WHERE username=?", (ADMIN_USER,)).fetchone()
         if current_admin:
-            # Le compte historique conserve son mot de passe actuel et ses accès complets.
-            c.execute("UPDATE admins SET full_name=?, active=1, role='admin' WHERE username=?",
-                      ("Accès ASC AFRICA", ADMIN_USER))
-        else:
+            # Le compte principal demandé est synchronisé avec la configuration sécurisée.
+            if ADMIN_PASSWORD:
+                c.execute("UPDATE admins SET password_hash=?, full_name=?, active=1, role='admin' WHERE username=?",
+                          (pw_hash(ADMIN_PASSWORD), "Administrateur principal ASC AFRICA", ADMIN_USER))
+            else:
+                c.execute("UPDATE admins SET full_name=?, active=1, role='admin' WHERE username=?",
+                          ("Administrateur principal ASC AFRICA", ADMIN_USER))
+        elif ADMIN_PASSWORD:
             c.execute("INSERT INTO admins(username,password_hash,full_name,active,created_at,role) VALUES(?,?,?,?,?,?)",
-                      (ADMIN_USER, pw_hash(ADMIN_PASSWORD), "Accès ASC AFRICA", 1, now, "admin"))
+                      (ADMIN_USER, pw_hash(ADMIN_PASSWORD), "Administrateur principal ASC AFRICA", 1, now, "admin"))
+        else:
+            # Pas de création d'un compte administrateur sans mot de passe configuré.
+            pass
 
 def audit(action, entity="", entity_id=None, details=""):
     with connect() as c:
@@ -572,12 +713,24 @@ def audit(action, entity="", entity_id=None, details=""):
 
 def query_df(sql, params=()):
     with connect() as c:
-        return pd.read_sql_query(sql, c, params=params)
+        cur = c.execute(sql, params)
+        rows = cur.fetchall()
+        columns = [d.name if hasattr(d, "name") else d[0] for d in (cur.description or [])]
+        cur.close()
+    return pd.DataFrame(rows, columns=columns)
 
 def execute(sql, params=()):
     with connect() as c:
-        cur = c.execute(sql, params)
-        return cur.lastrowid
+        statement = sql.strip().rstrip(";")
+        if statement.lstrip().upper().startswith("INSERT INTO ") and " RETURNING " not in statement.upper():
+            cur = c.execute(statement + " RETURNING id", params)
+            row = cur.fetchone()
+            cur.close()
+            return row["id"] if row else None
+        cur = c.execute(statement, params)
+        result = cur.rowcount
+        cur.close()
+        return result
 
 def money(v):
     try: return f"{float(v or 0):,.0f}".replace(",", " ") + " FCFA"
@@ -850,7 +1003,7 @@ def login():
                 audit("Connexion","administration",admin["id"],"Connexion réussie")
                 st.rerun()
             else: st.error("Identifiant ou mot de passe incorrect.")
-        st.caption("Compte historique conservé : Africa. Le mot de passe initial est africa2026 si le compte n’a jamais été modifié.")
+        st.caption("Connexion avec le compte principal configuré dans .streamlit/secrets.toml.")
         st.info("Les responsables disposent désormais d’accès séparés selon leur bureau : Finances globales ou Affaires administratives.")
 
 def public_page():
@@ -1405,8 +1558,7 @@ def audit_page():
 
 def settings_page():
     st.markdown('<div class="section">⚙️ Paramètres, sécurité & gestion des accès</div>',unsafe_allow_html=True)
-    st.warning("La base SQLite est stockée localement dans asc_africa.db. Faites régulièrement une copie de sauvegarde.")
-    st.caption(f"Fichier de base : {DB_PATH}")
+    st.info("La base de données est hébergée sur Supabase PostgreSQL. Configurez des sauvegardes automatiques côté Supabase et testez régulièrement la restauration.")
     st.subheader("Créer ou modifier un accès de bureau")
     st.write("Le compte **Africa** conserve l’accès général. Les autres comptes peuvent être affectés à un bureau et leurs droits peuvent être modifiés ici.")
     roles = {
@@ -1456,12 +1608,11 @@ def settings_page():
                     audit("Modification accès administration","admin",int(current.id),f"{uname} · rôle={role} · actif={active}")
                     st.success("Accès et droits mis à jour.")
                 st.rerun()
-            except sqlite3.IntegrityError:
+            except IntegrityError:
                 st.error("Impossible d’enregistrer : cet identifiant est déjà utilisé.")
     st.caption("Conseil : créez un compte pour le responsable des Finances et un autre pour les Affaires administratives. Vous pourrez modifier leur rôle, leur nom, leur mot de passe ou désactiver leur accès.")
-    st.subheader("Sauvegarde locale")
-    if DB_PATH.exists():
-        st.download_button("Télécharger une copie SQLite",DB_PATH.read_bytes(),"asc_africa_backup.db","application/octet-stream")
+    st.subheader("Sauvegardes")
+    st.caption("La sauvegarde se gère dans Supabase (backups/PITR selon le forfait). Ne stockez pas les mots de passe ni les clés d’accès dans le dépôt Git.")
 
 
 st.markdown(r"""<style>
@@ -1491,7 +1642,7 @@ def main():
             public_page()
         return
     header()
-    st.markdown(f"<div class='admin-banner'><div class='kicker'>ASC AFRICA · Administration sécurisée</div><h2>Centre de pilotage du club</h2><p>Connecté : <b>{html.escape(str(st.session_state.actor))}</b> · Les données publiques et administratives sont reliées à la même base locale.</p></div>",unsafe_allow_html=True)
+    st.markdown(f"<div class='admin-banner'><div class='kicker'>ASC AFRICA · Administration sécurisée</div><h2>Centre de pilotage du club</h2><p>Connecté : <b>{html.escape(str(st.session_state.actor))}</b> · Les données publiques et administratives sont reliées à Supabase PostgreSQL.</p></div>",unsafe_allow_html=True)
     role = st.session_state.get("actor_role", "admin")
     is_admin = role == "admin"
     finance_sections = ["🏠 Tableau de bord financier", "💳 Cotisations & cartes", "💰 Trésorerie", "📊 Rapports & exports"]
@@ -1551,7 +1702,7 @@ def main():
         if is_admin: settings_page()
         else: st.error("Votre compte n’a pas accès à la gestion des paramètres.")
     st.divider()
-    st.caption("ASC AFRICA • Saint-Louis, Sénégal • Plateforme de gestion associative — SQLite local")
+    st.caption("ASC AFRICA • Saint-Louis, Sénégal • Plateforme de gestion associative — Supabase PostgreSQL")
     yam_footer()
 
 if __name__=="__main__":
