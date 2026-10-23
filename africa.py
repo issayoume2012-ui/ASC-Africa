@@ -48,7 +48,7 @@ CURRENCY = "FCFA"
 BLUE = "#123B75"
 LIGHT_BLUE = "#EAF2FC"
 WHITE = "#FFFFFF"
-GOLD = "#FFFFFF"
+GOLD = "#D7A62A"
 
 # Utilise le véritable logo comme icône d’onglet/favori lorsqu’il est présent.
 _FAVICON = next((p for p in LOGO_PATHS if p.exists()), None)
@@ -59,16 +59,16 @@ st.set_page_config(page_title="ASC AFRICA | Gestion & communauté",
 st.markdown(f"""
 <style>
 :root{{--club-blue:{BLUE};--club-light:{LIGHT_BLUE};--club-gold:{GOLD};}}
-.stApp{{background:linear-gradient(180deg,#fff 0%,#F4F8FF 100%);color:#102D53;}}
+.stApp{{background:linear-gradient(180deg,#fff 0%,#f3f7fb 100%);color:#172033;}}
 [data-testid="stHeader"],[data-testid="stToolbar"],[data-testid="stDecoration"],[data-testid="stStatusWidget"],[data-testid="stAppDeployButton"],#MainMenu,footer{{visibility:hidden;}}
 .block-container{{padding-top:1.2rem;padding-bottom:0!important;max-width:1720px;}}
-.hero{{position:relative;isolation:isolate;padding:clamp(28px,4.5vw,58px);border-radius:clamp(22px,2.2vw,34px);color:#fff;background:radial-gradient(circle at 88% 10%,rgba(79,145,218,.72) 0,transparent 30%),linear-gradient(125deg,#08264D 0%,#123b75 58%,#2368B7 100%);box-shadow:0 18px 45px rgba(18,59,117,.16);margin-bottom:22px;overflow:hidden;border:1px solid rgba(255,255,255,.18);}}
+.hero{{position:relative;isolation:isolate;padding:clamp(22px,4vw,42px);border-radius:26px;color:#fff;background:radial-gradient(circle at 88% 10%,rgba(79,145,218,.72) 0,transparent 30%),linear-gradient(125deg,#07172e 0%,#123b75 58%,#087e8b 100%);box-shadow:0 18px 45px rgba(18,59,117,.16);margin-bottom:22px;overflow:hidden;border:1px solid rgba(255,255,255,.18);}}
 .hero:before{{content:"";position:absolute;z-index:-1;width:230px;height:230px;right:-75px;bottom:-135px;border:1px solid rgba(255,255,255,.22);border-radius:50%;box-shadow:0 0 0 22px rgba(255,255,255,.035),0 0 0 46px rgba(255,255,255,.025);}}
 .hero h1{{font-size:clamp(2.2rem,5vw,4.6rem);font-weight:950;letter-spacing:-.045em;margin:0;line-height:1.05;}}
 .hero p{{font-size:clamp(1rem,2vw,1.22rem);margin:.8rem 0 0;max-width:850px;line-height:1.65;}}
-.kicker{{font-size:.76rem;letter-spacing:.18em;text-transform:uppercase;font-weight:850;color:#DCEBFF;margin-bottom:12px;}}
-.card{{padding:20px;border-radius:20px;background:white;border:1px solid #DCE7F4;box-shadow:0 8px 24px #123b750b;}}
-.card-label{{color:#405B7D;font-size:.86rem;font-weight:750;}}
+.kicker{{font-size:.76rem;letter-spacing:.18em;text-transform:uppercase;font-weight:850;color:#f8d77b;margin-bottom:12px;}}
+.card{{padding:20px;border-radius:20px;background:white;border:1px solid #e0e8f2;box-shadow:0 8px 24px #123b750b;}}
+.card-label{{color:#64748b;font-size:.86rem;font-weight:750;}}
 .card-value{{font-size:clamp(1.1rem,2vw,1.7rem);color:{BLUE};font-weight:900;margin-top:5px;}}
 .section{{font-size:clamp(1.25rem,2vw,1.7rem);font-weight:900;color:{BLUE};margin:1rem 0;letter-spacing:-.02em;}}
 .stButton>button,.stDownloadButton>button{{border-radius:12px;font-weight:800;min-height:2.7rem;}}
@@ -78,24 +78,24 @@ div[data-testid="stTabs"] button{{font-weight:800;}}
 /* Navigation bleu & blanc : barre compacte, active visible et animée */
 div[data-testid="stRadio"] div[role="radiogroup"]{{
   display:flex;align-items:stretch;gap:7px;flex-wrap:wrap;
-  padding:8px;background:linear-gradient(110deg,#FFFFFF,#EAF2FC);
-  border:1px solid #BBD4F5;border-radius:18px;
+  padding:8px;background:linear-gradient(110deg,#f7fbff,#e8f1ff);
+  border:1px solid #c8daf4;border-radius:18px;
   box-shadow:0 8px 24px rgba(18,59,117,.10);position:relative;
 }}
 div[data-testid="stRadio"] div[role="radiogroup"] label{{
   position:relative;isolation:isolate;overflow:hidden;
-  background:#fff;color:#123B75;border:1px solid #DCE7F4;
+  background:#fff;color:#123B75;border:1px solid #d5e3f7;
   padding:10px 15px;border-radius:12px;font-weight:850;
   transition:background .22s ease,color .22s ease,transform .22s ease,box-shadow .22s ease,border-color .22s ease;
   box-shadow:0 2px 5px rgba(18,59,117,.04);cursor:pointer;
 }}
 div[data-testid="stRadio"] div[role="radiogroup"] label:before{{
   content:"";position:absolute;z-index:-1;inset:0;
-  background:linear-gradient(115deg,#123B75,#2368B7);
+  background:linear-gradient(115deg,#123B75,#2368b7);
   transform:translateY(105%);transition:transform .24s ease;border-radius:inherit;
 }}
 div[data-testid="stRadio"] div[role="radiogroup"] label:hover{{
-  color:#123B75;border-color:#8BB8F0;transform:translateY(-2px);
+  color:#123B75;border-color:#6f9bd8;transform:translateY(-2px);
   box-shadow:0 7px 15px rgba(18,59,117,.13);
 }}
 div[data-testid="stRadio"] div[role="radiogroup"] label:has(input:checked){{
@@ -116,26 +116,26 @@ div[data-testid="stRadio"] div[role="radiogroup"] label:has(input:checked){{anim
   div[data-testid="stRadio"] div[role="radiogroup"] label,
   div[data-testid="stRadio"] div[role="radiogroup"] label:before{{transition:none;animation:none}}
 }}
-.news-ticker{{background:#123B75;color:#fff;border-left:6px solid #FFFFFF;padding:13px 17px;border-radius:12px;margin:12px 0 20px;font-weight:750;line-height:1.5;}}
-.eyebrow{{text-transform:uppercase;letter-spacing:.13em;font-size:.72rem;font-weight:900;color:#2368B7;}}
-.news-card{{background:#fff;border:1px solid #DCE7F4;border-radius:18px;padding:20px 22px;margin:12px 0;box-shadow:0 8px 22px #123B750a;}}
+.news-ticker{{background:#0c294f;color:#fff;border-left:6px solid #f4bd38;padding:13px 17px;border-radius:12px;margin:12px 0 20px;font-weight:750;line-height:1.5;}}
+.eyebrow{{text-transform:uppercase;letter-spacing:.13em;font-size:.72rem;font-weight:900;color:#0b8278;}}
+.news-card{{background:#fff;border:1px solid #e2eaf3;border-radius:18px;padding:20px 22px;margin:12px 0;box-shadow:0 8px 22px #0c294f0a;}}
 .news-card h3{{color:#123b75;margin:.45rem 0 .6rem;font-size:1.25rem;}}
-.pill{{display:inline-block;background:#EAF2FC;color:#2368B7;border-radius:30px;padding:5px 10px;font-size:.75rem;font-weight:850;}}
-.feature-card{{background:linear-gradient(140deg,#fff,#EAF2FC);border:1px solid #DCE7F4;border-radius:20px;padding:20px;height:100%;}}
-.site-footer{{position:relative;margin-top:4px!important;padding:clamp(20px,3vw,32px) 18px 0;border-radius:24px 24px 0 0;background:radial-gradient(circle at 50% 0,rgba(58,122,192,.3),transparent 42%),linear-gradient(135deg,#08264D,#123b75 62%,#2368B7);color:#fff;text-align:center;overflow:hidden;border-top:4px solid #FFFFFF;box-shadow:0 -8px 28px rgba(18,59,117,.07);}}
+.pill{{display:inline-block;background:#e7f6f2;color:#087e70;border-radius:30px;padding:5px 10px;font-size:.75rem;font-weight:850;}}
+.feature-card{{background:linear-gradient(140deg,#fff,#eef5fb);border:1px solid #dbe7f2;border-radius:20px;padding:20px;height:100%;}}
+.site-footer{{position:relative;margin-top:4px!important;padding:clamp(20px,3vw,32px) 18px 0;border-radius:24px 24px 0 0;background:radial-gradient(circle at 50% 0,rgba(58,122,192,.3),transparent 42%),linear-gradient(135deg,#07172e,#123b75 62%,#0b8278);color:#fff;text-align:center;overflow:hidden;border-top:4px solid #d7a62a;box-shadow:0 -8px 28px rgba(18,59,117,.07);}}
 .site-footer .credit{{font-size:1.05rem;font-weight:850;line-height:1.6;}}
 .site-footer .subcredit{{color:#d4e1f1;font-size:.88rem;line-height:1.7;}}\n.logo-band{{display:flex;align-items:center;justify-content:center;gap:22px;flex-wrap:wrap;margin:18px auto 8px;}}
 .brand-lockup{{display:flex;align-items:center;gap:clamp(14px,3vw,32px);justify-content:center;flex-wrap:wrap;padding:20px 0 0;}}
-.brand-lockup img{{width:auto;height:auto;max-width:min(220px,38vw);max-height:190px;object-fit:contain;filter:drop-shadow(0 10px 24px #08264D3);}}
+.brand-lockup img{{width:auto;height:auto;max-width:min(220px,38vw);max-height:190px;object-fit:contain;filter:drop-shadow(0 10px 24px #0003);}}
 /* Logo d'en-tête aligné sur la hauteur visuelle de la bannière */
 div[data-testid="stImage"]{{display:flex;align-items:center;justify-content:center;height:100%;}}
 div[data-testid="stImage"] img{{max-height:clamp(150px,18vw,230px);max-width:100%;width:auto;object-fit:contain;filter:drop-shadow(0 10px 24px rgba(18,59,117,.20));border-radius:20px;}}
 @media(max-width:760px){{div[data-testid="stImage"] img{{max-height:150px;max-width:42vw}}}}
 
 .brand-seal{{width:clamp(86px,12vw,150px);height:clamp(86px,12vw,150px);object-fit:contain;display:block;margin:0 auto 18px;}}
-.public-nav-label{{font-size:clamp(.78rem,1vw,.95rem);text-transform:uppercase;letter-spacing:.12em;font-weight:950;color:#2368B7;margin:8px 0 8px;}}
-.nav-help-mobile{{display:none;color:#405B7D;font-size:.86rem;line-height:1.45;margin:3px 0 8px;}}
-[data-testid="stSelectbox"] [data-baseweb="select"]{{min-height:52px;border-radius:14px!important;border:2px solid #BBD4F5!important;box-shadow:0 6px 18px rgba(18,59,117,.09);background:linear-gradient(120deg,#fff,#FFFFFF);}}
+.public-nav-label{{font-size:clamp(.78rem,1vw,.95rem);text-transform:uppercase;letter-spacing:.12em;font-weight:950;color:#0b8278;margin:8px 0 8px;}}
+.nav-help-mobile{{display:none;color:#526176;font-size:.86rem;line-height:1.45;margin:3px 0 8px;}}
+[data-testid="stSelectbox"] [data-baseweb="select"]{{min-height:52px;border-radius:14px!important;border:2px solid #c8daf4!important;box-shadow:0 6px 18px rgba(18,59,117,.09);background:linear-gradient(120deg,#fff,#f2f7ff);}}
 [data-testid="stSelectbox"] [data-baseweb="select"] *{{font-weight:850!important;color:#123b75!important;font-size:1rem!important;}}
 @media(max-width:700px){{
  .public-nav-label{{font-size:.8rem;letter-spacing:.08em;margin-top:10px;}}
@@ -143,19 +143,19 @@ div[data-testid="stImage"] img{{max-height:clamp(150px,18vw,230px);max-width:100
  [data-testid="stSelectbox"] [data-baseweb="select"]{{min-height:56px!important;width:100%!important;}}
  [data-testid="stSelectbox"] [data-baseweb="select"] *{{font-size:1rem!important;}}
 }}
-.admin-banner{{border-radius:22px;padding:20px 24px;background:linear-gradient(115deg,#08264D,#123b75 70%,#2368B7);color:white;margin:10px 0 18px;box-shadow:0 18px 40px #123b7522;}}
+.admin-banner{{border-radius:22px;padding:20px 24px;background:linear-gradient(115deg,#07172e,#123b75 70%,#0b8278);color:white;margin:10px 0 18px;box-shadow:0 18px 40px #123b7522;}}
 .admin-banner h2{{margin:0;color:white;font-size:clamp(1.4rem,3vw,2.3rem);font-weight:950;}}
 .admin-banner p{{margin:7px 0 0;color:#dce8f7;}}
-.report-hero{{padding:24px;border-radius:22px;background:linear-gradient(125deg,#08264D,#123b75 65%,#2368B7);color:white;margin:12px 0 20px;border-bottom:5px solid #FFFFFF;}}
+.report-hero{{padding:24px;border-radius:22px;background:linear-gradient(125deg,#07172e,#123b75 65%,#0b8278);color:white;margin:12px 0 20px;border-bottom:5px solid #d7a62a;}}
 .report-hero h2{{font-size:clamp(1.6rem,3vw,2.6rem);font-weight:950;color:#fff;margin:8px 0;}}
 .report-hero p{{color:#dbe7f6;margin:0;}}
-.report-stat{{border-radius:16px;padding:16px;background:#fff;border:1px solid #DCE7F4;border-top:4px solid #123b75;box-shadow:0 8px 20px #08264D0b;min-height:92px;}}
-.report-stat.green{{border-top-color:#2368B7}}.report-stat.gold{{border-top-color:#FFFFFF}}.report-stat.red{{border-top-color:#123B75}}
-.footer-bottom{{margin:14px -18px 0;padding:18px clamp(12px,3vw,36px);background:#08264D;color:#DCE7F4;font-size:.92rem;font-weight:700;}}
-.yam-activity-strip{{position:relative;display:block!important;visibility:visible!important;opacity:1!important;min-height:58px;overflow:hidden;margin:12px auto 0;padding:16px 0;border-top:1px solid #ffffff55;border-bottom:1px solid #ffffff55;background:#08264D!important;color:#fff!important;z-index:2;}}
+.report-stat{{border-radius:16px;padding:16px;background:#fff;border:1px solid #dbe5f2;border-top:4px solid #123b75;box-shadow:0 8px 20px #07172e0b;min-height:92px;}}
+.report-stat.green{{border-top-color:#0b8278}}.report-stat.gold{{border-top-color:#d7a62a}}.report-stat.red{{border-top-color:#c2414b}}
+.footer-bottom{{margin:14px -18px 0;padding:18px clamp(12px,3vw,36px);background:#061326;color:#cbd8e8;font-size:.92rem;font-weight:700;}}
+.yam-activity-strip{{position:relative;display:block!important;visibility:visible!important;opacity:1!important;min-height:58px;overflow:hidden;margin:12px auto 0;padding:16px 0;border-top:1px solid #ffffff55;border-bottom:1px solid #ffffff55;background:#061326!important;color:#fff!important;z-index:2;}}
 .yam-activity-track{{display:flex!important;align-items:center;width:max-content;min-width:200%;gap:34px;white-space:nowrap;animation:yamMarquee 26s linear infinite;font-weight:900;letter-spacing:.07em;font-size:clamp(.85rem,1.2vw,1rem);color:#fff!important;will-change:transform;}}
 .yam-activity-track span{{display:inline-flex;align-items:center;gap:12px;}}
-.yam-activity-track span{{flex:0 0 auto;color:#fff!important;}}.yam-activity-track b{{color:#FFFFFF!important;}}@media(prefers-reduced-motion:reduce){{.yam-activity-strip{{overflow:visible}}.yam-activity-track{{min-width:0;width:100%;white-space:normal;justify-content:center;flex-wrap:wrap;animation:none!important;padding:0 12px}}}}
+.yam-activity-track span{{flex:0 0 auto;color:#fff!important;}}.yam-activity-track b{{color:#f4bd38!important;}}@media(prefers-reduced-motion:reduce){{.yam-activity-strip{{overflow:visible}}.yam-activity-track{{min-width:0;width:100%;white-space:normal;justify-content:center;flex-wrap:wrap;animation:none!important;padding:0 12px}}}}
 .yam-footer-logo{{max-width:clamp(120px,16vw,190px)!important;max-height:clamp(100px,12vw,150px)!important;padding:12px!important;}}
 @keyframes yamMarquee{{from{{transform:translateX(0)}}to{{transform:translateX(-50%)}}}}
 .site-footer{{padding-top:clamp(18px,2.5vw,30px)!important;margin-top:0!important;}}
@@ -165,16 +165,16 @@ div[data-testid="stImage"] img{{max-height:clamp(150px,18vw,230px);max-width:100
 @media(prefers-reduced-motion:reduce){{.yam-activity-track{{animation:none;white-space:normal;justify-content:center;flex-wrap:wrap;width:auto;padding:0 12px}}}}
 @keyframes riseIn{{from{{opacity:0;transform:translateY(12px)}}to{{opacity:1;transform:translateY(0)}}}}
 .hero,.news-card,.feature-card,.report-hero{{animation:riseIn .45s ease both}}\n.about-grid{{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin:14px 0;}}
-.hero:after{{content:"";display:block;height:3px;width:100%;margin-top:22px;background:linear-gradient(90deg,#FFFFFF,rgba(255,255,255,.35),transparent);border-radius:8px}}
+.hero:after{{content:"";display:block;height:3px;width:100%;margin-top:22px;background:linear-gradient(90deg,#f4bd38,rgba(255,255,255,.35),transparent);border-radius:8px}}
 .stApp{{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}}
 .news-card{{transition:transform .18s ease,box-shadow .18s ease}}
 .news-card:hover,.feature-card:hover{{transform:translateY(-2px);box-shadow:0 14px 32px #123b7517}}
-.club-gallery-card{{border-radius:24px;overflow:hidden;background:#fff;border:1px solid #DCE7F4;box-shadow:0 16px 40px rgba(7,23,46,.12);padding:12px;height:100%;transition:transform .35s ease,box-shadow .35s ease;animation:clubRise .8s both;}}
+.club-gallery-card{{border-radius:24px;overflow:hidden;background:#fff;border:1px solid #e1e9f4;box-shadow:0 16px 40px rgba(7,23,46,.12);padding:12px;height:100%;transition:transform .35s ease,box-shadow .35s ease;animation:clubRise .8s both;}}
 .club-gallery-card:hover{{transform:translateY(-7px);box-shadow:0 22px 48px rgba(7,23,46,.19)}}
 .club-gallery-card img{{width:100%;height:clamp(230px,29vw,430px);object-fit:cover;object-position:center;border-radius:17px;display:block;transition:transform .7s ease;}}
 .club-gallery-card:hover img{{transform:scale(1.035)}}
 .club-gallery-message{{padding:14px 8px 7px;color:#123b75;font-weight:850;font-size:clamp(1rem,1.4vw,1.18rem);line-height:1.4}}
-.club-gallery-sub{{padding:0 8px 8px;color:#405B7D;font-size:.94rem;line-height:1.55}}
+.club-gallery-sub{{padding:0 8px 8px;color:#64748b;font-size:.94rem;line-height:1.55}}
 @media(max-width:700px){{.club-gallery-card img{{height:clamp(220px,68vw,360px)}}}}
 @media(prefers-reduced-motion:reduce){{.club-gallery-card,.club-gallery-card img{{animation:none!important;transition:none!important}}}}
 .news-cover{{display:block;width:100%;height:clamp(300px,42vw,620px);max-height:none;object-fit:cover;object-position:center center;border-radius:20px;margin:14px 0 20px;box-shadow:0 14px 34px rgba(7,23,46,.16);border:1px solid rgba(18,59,117,.10);background:#eaf2fc}}
@@ -182,7 +182,7 @@ div[data-testid="stImage"] img{{max-height:clamp(150px,18vw,230px);max-width:100
 .news-card:has(.news-cover) h3{{font-size:clamp(1.35rem,2.4vw,2rem);line-height:1.2}}
 @media(max-width:700px){{.news-cover{{height:clamp(240px,70vw,390px);border-radius:15px}}}}
 a{{overflow-wrap:anywhere}}
-.stDownloadButton>button{{border:1px solid #DCE7F4}}
+.stDownloadButton>button{{border:1px solid #cbd8e8}}
 @media(prefers-reduced-motion:reduce){{*,*:before,*:after{{animation:none!important;transition:none!important;scroll-behavior:auto!important}}}}
 @media(max-width:700px){{.hero{{padding:22px 18px;border-radius:18px;}}.block-container{{padding-left:.8rem;padding-right:.8rem;}}.news-card{{padding:16px;}}div[data-testid="stRadio"] div[role="radiogroup"]{{gap:5px;}}div[data-testid="stRadio"] div[role="radiogroup"] label{{padding:7px 9px;font-size:.82rem;}}}}
 /* ASC AFRICA signature motion: contenus qui entrent progressivement au défilement */
@@ -204,18 +204,18 @@ a{{overflow-wrap:anywhere}}
 @media(prefers-reduced-motion:reduce){{.hero{{animation:none!important}}.news-cover{{transition:none!important}}}}
 
 
-/* Identité visuelle signature : stade nocturne, bleu et blanc, pensée pour toutes les tailles */
-:root{{color-scheme:light;--club-ink:#08264D;--club-teal:#2368B7;--club-gold:#FFFFFF;--club-line:#dce7f4;}}
+/* Identité visuelle signature : stade nocturne, or et vert, pensée pour toutes les tailles */
+:root{{color-scheme:light;--club-ink:#07172e;--club-teal:#087e78;--club-gold:#f4bd38;--club-line:#dce7f4;}}
 html{{scroll-behavior:smooth;-webkit-text-size-adjust:100%;}}
-.stApp{{background:radial-gradient(ellipse at 4% 0%,rgba(215,166,42,.075),transparent 28%),radial-gradient(ellipse at 96% 18%,rgba(8,126,120,.07),transparent 25%),linear-gradient(180deg,#fff 0%,#F4F8FF 58%,#F4F8FF 100%);}}
-.block-container{{width:100%;max-width:2100px;padding-left:clamp(14px,2.4vw,42px);padding-right:clamp(14px,2.4vw,42px);padding-top:clamp(12px,1.8vw,28px);}}
+.stApp{{background:radial-gradient(ellipse at 4% 0%,rgba(215,166,42,.075),transparent 28%),radial-gradient(ellipse at 96% 18%,rgba(8,126,120,.07),transparent 25%),linear-gradient(180deg,#fff 0%,#f3f7fc 58%,#edf3f9 100%);}}
+.block-container{{width:100%;max-width:1900px;padding-left:clamp(14px,2.4vw,42px);padding-right:clamp(14px,2.4vw,42px);padding-top:clamp(12px,1.8vw,28px);}}
 .hero{{border-radius:clamp(18px,2vw,30px);border-bottom:4px solid var(--club-gold);}}
 .hero h1{{font-size:clamp(2.15rem,5.2vw,5.2rem);overflow-wrap:anywhere;}}
 .hero p{{font-size:clamp(.98rem,1.35vw,1.3rem);}}
 .news-card,.feature-card,.card,.report-stat{{min-width:0;overflow-wrap:anywhere;}}
 .news-card{{border-radius:clamp(15px,1.5vw,24px);box-shadow:0 10px 30px rgba(7,23,46,.055);}}
 .news-card h3{{font-size:clamp(1.2rem,1.8vw,1.85rem);line-height:1.25;overflow-wrap:anywhere;}}
-.news-cover{{width:100%;height:clamp(380px,48vw,820px);object-fit:cover;object-position:center;border-radius:clamp(14px,1.8vw,24px);background:#eaf2fc;}}
+.news-cover{{width:100%;height:clamp(320px,46vw,760px);object-fit:cover;object-position:center;border-radius:clamp(14px,1.8vw,24px);background:#eaf2fc;}}
 .stButton>button,.stDownloadButton>button{{min-height:44px;padding:.55rem 1rem;border-radius:13px;white-space:normal;line-height:1.25;}}
 input,textarea,[data-baseweb="select"]{{border-radius:10px!important;}}
 div[data-testid="stDataFrame"],div[data-testid="stTable"]{{max-width:100%;}}
@@ -225,8 +225,8 @@ div[data-testid="stDataFrame"]{{overflow-x:auto;}}
 
 /* Grand écran / ordinateur de bureau */
 @media(min-width:1500px){{
-  .block-container{{max-width:2100px;padding-left:48px;padding-right:48px;}}
-  .news-cover{{height:clamp(620px,42vw,900px);}}
+  .block-container{{max-width:1900px;padding-left:48px;padding-right:48px;}}
+  .news-cover{{height:clamp(560px,40vw,820px);}}
   .news-card{{padding:clamp(24px,2vw,38px);}}
   .card,.feature-card{{padding:clamp(22px,1.8vw,34px);}}
 }}
@@ -277,14 +277,14 @@ div[data-testid="stDataFrame"]{{overflow-x:auto;}}
 @media(prefers-reduced-motion:reduce){{html{{scroll-behavior:auto;}}}}
 
 /* Bandeau signature animé : les trois images sont intégrées dans la bannière */
-.africa-topband{{position:relative;isolation:isolate;overflow:hidden;display:grid;grid-template-columns:minmax(0,1.2fr) minmax(220px,.8fr);align-items:center;gap:clamp(16px,3vw,36px);padding:clamp(20px,3.5vw,44px);border-radius:clamp(18px,2vw,30px);color:#fff;background:radial-gradient(circle at 12% 15%,#2368B7 0,transparent 38%),linear-gradient(125deg,#08264D,#123b75 58%,#2368B7);border-bottom:5px solid #FFFFFF;box-shadow:0 18px 45px #123b7525;margin:0 0 20px;}}
-.africa-topband:before{{content:"";position:absolute;inset:0;z-index:-1;opacity:.24;background:repeating-linear-gradient(135deg,transparent 0 28px,#fff 29px 30px,transparent 31px 60px);mask-image:linear-gradient(90deg,#08264D,transparent 85%);}}
+.africa-topband{{position:relative;isolation:isolate;overflow:hidden;display:grid;grid-template-columns:minmax(0,1.2fr) minmax(220px,.8fr);align-items:center;gap:clamp(16px,3vw,36px);padding:clamp(20px,3.5vw,44px);border-radius:clamp(18px,2vw,30px);color:#fff;background:radial-gradient(circle at 12% 15%,#1760a6 0,transparent 38%),linear-gradient(125deg,#06152c,#123b75 58%,#087e78);border-bottom:5px solid #f4bd38;box-shadow:0 18px 45px #123b7525;margin:0 0 20px;}}
+.africa-topband:before{{content:"";position:absolute;inset:0;z-index:-1;opacity:.24;background:repeating-linear-gradient(135deg,transparent 0 28px,#fff 29px 30px,transparent 31px 60px);mask-image:linear-gradient(90deg,#000,transparent 85%);}}
 .africa-topband h1{{font-size:clamp(2.2rem,5vw,5rem);line-height:1;letter-spacing:-.045em;font-weight:950;margin:10px 0 12px;color:#fff;}}
 .africa-topband p{{font-size:clamp(.98rem,1.5vw,1.22rem);line-height:1.6;color:#eaf3ff;margin:0;}}
-.africa-topband .top-kicker{{font-size:.74rem;text-transform:uppercase;letter-spacing:.18em;font-weight:900;color:#DCEBFF;}}
+.africa-topband .top-kicker{{font-size:.74rem;text-transform:uppercase;letter-spacing:.18em;font-weight:900;color:#ffda76;}}
 .africa-topband .top-slogan{{display:inline-block;margin-top:16px;padding:9px 13px;border:1px solid #ffffff50;border-radius:999px;background:#ffffff12;font-weight:850;letter-spacing:.04em;}}
-.africa-photo-stage{{position:relative;width:100%;height:clamp(190px,25vw,330px);min-width:0;}}
-.africa-photo-stage img{{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:22px;border:2px solid #ffffffa8;box-shadow:0 16px 36px #08264D5;opacity:0;animation:africaTopSlide 12s infinite;}}
+.africa-photo-stage{{position:relative;width:100%;height:clamp(230px,28vw,390px);min-width:0;overflow:hidden;border-radius:22px;background:#eaf2fc;border:2px solid #ffffffa8;box-shadow:0 16px 36px #0005;}}
+.africa-photo-stage img{{position:absolute;inset:0;display:block;width:100%;height:100%;max-width:100%;object-fit:cover;object-position:center;border-radius:20px;opacity:0;animation:africaTopSlide 12s infinite;}}
 .africa-photo-stage img:nth-child(1){{animation-delay:0s}}.africa-photo-stage img:nth-child(2){{animation-delay:4s}}.africa-photo-stage img:nth-child(3){{animation-delay:8s}}
 @keyframes africaTopSlide{{0%{{opacity:0;transform:translateY(14px) scale(.97)}}6%,28%{{opacity:1;transform:translateY(0) scale(1)}}34%,100%{{opacity:0;transform:translateY(-10px) scale(1.025)}}}}
 @media(max-width:700px){{.africa-topband{{grid-template-columns:1fr;padding:22px 17px;gap:18px}}.africa-photo-stage{{height:clamp(190px,62vw,290px)}}.africa-topband h1{{font-size:clamp(2.3rem,11vw,3.4rem)}}}}
@@ -298,15 +298,15 @@ div[data-testid="stRadio"]:has(input){{position:relative;z-index:20;}}
 div[data-testid="stRadio"] div[role="radiogroup"]{{backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);}}
 div[data-testid="stRadio"] div[role="radiogroup"] label{{min-height:44px;justify-content:center;}}
 /* Onglets de l'administration : défilement horizontal sur petit écran */
-div[data-testid="stTabs"] [data-baseweb="tab-list"]{{gap:8px;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:thin;scrollbar-color:#8BB8F0 #eaf2fc;padding:7px 4px 12px;}}
-div[data-testid="stTabs"] [data-baseweb="tab"]{{flex:0 0 auto;border-radius:13px 13px 8px 8px;padding:10px 16px;border:1px solid #DCE7F4;background:linear-gradient(180deg,#fff,#F4F8FF);transition:transform .22s ease,background .22s ease,box-shadow .22s ease;}}
+div[data-testid="stTabs"] [data-baseweb="tab-list"]{{gap:8px;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:thin;scrollbar-color:#8aaedb #eaf2fc;padding:7px 4px 12px;}}
+div[data-testid="stTabs"] [data-baseweb="tab"]{{flex:0 0 auto;border-radius:13px 13px 8px 8px;padding:10px 16px;border:1px solid #d8e5f5;background:linear-gradient(180deg,#fff,#f3f7fc);transition:transform .22s ease,background .22s ease,box-shadow .22s ease;}}
 div[data-testid="stTabs"] [data-baseweb="tab"]:hover{{transform:translateY(-2px);box-shadow:0 8px 18px #123b751a;}}
-div[data-testid="stTabs"] button[aria-selected="true"]{{background:linear-gradient(120deg,#123b75,#2368B7)!important;color:#fff!important;border-color:#123b75!important;box-shadow:0 8px 20px #123b7528;}}
+div[data-testid="stTabs"] button[aria-selected="true"]{{background:linear-gradient(120deg,#123b75,#087e78)!important;color:#fff!important;border-color:#123b75!important;box-shadow:0 8px 20px #123b7528;}}
 div[data-testid="stTabs"] button[aria-selected="true"] p{{color:#fff!important;}}
 /* Chaque carte entre avec une transition douce ; animation désactivée si l’utilisateur le demande */
 @keyframes scrollLift{{from{{opacity:0;transform:translateY(26px) scale(.99)}}to{{opacity:1;transform:translateY(0) scale(1)}}}}
 .news-card,.feature-card,.club-gallery-card,.report-stat,.card{{transition:transform .28s ease,box-shadow .28s ease,border-color .28s ease;}}
-.news-card:hover,.feature-card:hover,.club-gallery-card:hover,.report-stat:hover,.card:hover{{border-color:#9ABDEC;box-shadow:0 16px 36px rgba(18,59,117,.12);}}
+.news-card:hover,.feature-card:hover,.club-gallery-card:hover,.report-stat:hover,.card:hover{{border-color:#b7cdea;box-shadow:0 16px 36px rgba(18,59,117,.12);}}
 @supports (animation-timeline: view()){{
   .club-gallery-card{{animation:scrollLift .7s ease both;animation-timeline:view();animation-range:entry 0% entry 35%;}}
   .about-grid .feature-card{{animation:scrollLift .65s ease both;animation-timeline:view();animation-range:entry 0% entry 40%;}}
@@ -329,7 +329,7 @@ st.markdown(r"""
 <style>
 /* Le contenu utilise réellement la largeur disponible, sans débordement horizontal. */
 .stApp, [data-testid="stAppViewContainer"], section.main { width:100%; max-width:100%; }
-.block-container { width:100%; max-width:2100px!important; padding-left:clamp(12px,2.4vw,42px)!important; padding-right:clamp(12px,2.4vw,42px)!important; }
+.block-container { width:100%; max-width:1900px!important; padding-left:clamp(12px,2.4vw,42px)!important; padding-right:clamp(12px,2.4vw,42px)!important; }
 [data-testid="stHorizontalBlock"] { gap:clamp(10px,1.6vw,26px)!important; align-items:stretch; }
 [data-testid="stVerticalBlock"] { min-width:0; }
 [data-testid="stMarkdownContainer"], [data-testid="stMarkdownContainer"] p,
@@ -395,43 +395,6 @@ st.markdown(r"""
 @media (prefers-reduced-motion:reduce) {
   *, *::before, *::after { scroll-behavior:auto!important; animation-duration:.01ms!important; animation-iteration-count:1!important; transition-duration:.01ms!important; }
 }
-</style>
-""", unsafe_allow_html=True)
-
-
-st.markdown(r"""
-<style>
-/* HERO XXL : diaporama photographique sur toute la largeur du cadre */
-.africa-full-hero{position:relative;isolation:isolate;width:100%;height:clamp(500px,52vw,900px);min-height:500px;overflow:hidden;border-radius:clamp(18px,2vw,32px);background:#08264D;border-bottom:7px solid #FFFFFF;box-shadow:0 24px 65px rgba(7,23,46,.23);margin:0 0 30px}
-.africa-full-slide{position:absolute;inset:0;opacity:0;animation:africaFullFade 18s infinite;animation-delay:var(--slide-delay);overflow:hidden}
-.africa-full-slide img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;transform:scale(1.04);animation:africaKenBurns 18s infinite;animation-delay:var(--slide-delay)}
-.africa-slide-shade{position:absolute;inset:0;background:linear-gradient(90deg,rgba(3,17,38,.91) 0%,rgba(5,28,58,.78) 43%,rgba(5,25,48,.18) 100%),linear-gradient(0deg,rgba(4,17,35,.68),transparent 45%)}
-.africa-slide-copy{position:absolute;inset:0;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;padding:clamp(26px,6vw,100px);max-width:1250px;color:#fff}
-.africa-slide-copy .top-kicker{font-size:clamp(.68rem,1vw,.92rem);letter-spacing:.2em;color:#DCEBFF;font-weight:950;margin-bottom:clamp(15px,2vw,28px)}
-.africa-slide-overline{font-size:clamp(.72rem,1.1vw,1rem);letter-spacing:.16em;font-weight:900;color:#C7DFFF;margin-bottom:14px}
-.africa-slide-copy h1{font-size:clamp(2.5rem,7vw,7.5rem);font-weight:1000;line-height:.98;letter-spacing:-.055em;max-width:1100px;margin:0 0 22px;text-wrap:balance;text-shadow:0 5px 28px #08264D7}
-.africa-slide-copy p{font-size:clamp(1rem,1.55vw,1.42rem);line-height:1.65;max-width:820px;color:#f1f6ff;margin:0}
-.africa-slide-copy .top-slogan{display:inline-block;margin-top:clamp(18px,2.4vw,32px);padding:12px 20px;border:1px solid #ffffff75;border-radius:999px;background:linear-gradient(100deg,#ffffff1c,#ffffff08);font-weight:950;font-size:clamp(.85rem,1.15vw,1.08rem);letter-spacing:.04em;box-shadow:0 8px 24px #08264D2}
-.africa-hero-bottom{position:absolute;z-index:5;bottom:0;left:0;right:0;display:flex;justify-content:space-between;gap:12px;padding:15px clamp(18px,3vw,44px);background:rgba(4,15,31,.78);backdrop-filter:blur(12px);color:#fff;font-size:clamp(.62rem,.85vw,.82rem);font-weight:950;letter-spacing:.12em}
-@keyframes africaFullFade{0%,2%{opacity:0}7%,30%{opacity:1}36%,100%{opacity:0}}
-@keyframes africaKenBurns{0%,100%{transform:scale(1.04)}35%{transform:scale(1.13)}}
-.africa-section-heading{padding:clamp(22px,4vw,54px);margin:22px 0;background:linear-gradient(120deg,#08264D,#123b75 65%,#2368B7);border-radius:24px;border-bottom:5px solid #FFFFFF;color:white;box-shadow:0 18px 40px #123b7520}
-.africa-section-heading>span{color:#DCEBFF;letter-spacing:.18em;font-size:.78rem;font-weight:950}
-.africa-section-heading h2{font-size:clamp(1.8rem,4vw,3.7rem);font-weight:1000;line-height:1.05;color:white;margin:12px 0}
-.africa-section-heading p{font-size:clamp(1rem,1.5vw,1.3rem);line-height:1.65;color:#e4efff;max-width:950px;margin:0}
-.africa-xl-card{height:100%;overflow:hidden;border-radius:24px;background:white;border:1px solid #DCE7F4;box-shadow:0 16px 38px #08264D12;transition:transform .3s ease,box-shadow .3s ease}
-.africa-xl-card:hover{transform:translateY(-7px);box-shadow:0 25px 55px #08264D24}
-.africa-xl-image-wrap{position:relative;height:clamp(300px,31vw,510px);overflow:hidden;background:#DCE7F4}
-.africa-xl-image-wrap img{display:block;width:100%;height:100%;object-fit:cover;transition:transform .7s ease}
-.africa-xl-card:hover .africa-xl-image-wrap img{transform:scale(1.06)}
-.africa-xl-number{position:absolute;top:16px;left:16px;padding:8px 12px;border-radius:10px;background:#FFFFFF;color:#08264D;font-weight:1000;font-size:1.1rem}
-.africa-xl-copy{padding:clamp(18px,2vw,30px)}
-.africa-xl-kicker{font-size:.7rem;letter-spacing:.15em;font-weight:950;color:#2368B7}
-.africa-xl-copy h3{font-size:clamp(1.25rem,1.8vw,2rem);font-weight:1000;line-height:1.12;color:#123b75;margin:12px 0}
-.africa-xl-copy p{font-size:clamp(.98rem,1.1vw,1.12rem);line-height:1.7;color:#405B7D}
-.africa-xl-signature{margin-top:20px;padding-top:14px;border-top:1px solid #dce7f4;color:#123b75;font-size:.82rem;font-weight:1000;letter-spacing:.06em}
-@media(max-width:700px){.africa-full-hero{height:590px;min-height:520px;border-radius:17px}.africa-slide-shade{background:linear-gradient(90deg,rgba(3,17,38,.88),rgba(5,28,58,.54)),linear-gradient(0deg,rgba(4,17,35,.72),transparent 70%)}.africa-slide-copy{padding:24px 19px 68px}.africa-slide-copy h1{font-size:clamp(2.2rem,10vw,3.5rem);line-height:1.02}.africa-slide-copy p{font-size:1rem;line-height:1.58}.africa-hero-bottom{flex-wrap:wrap;justify-content:center;text-align:center;font-size:.62rem;padding:12px 8px}.africa-xl-image-wrap{height:clamp(280px,82vw,430px)}.africa-section-heading{padding:23px 18px;border-radius:17px}}
-@media(prefers-reduced-motion:reduce){.africa-full-slide,.africa-full-slide img{animation:none!important}.africa-full-slide:first-child{opacity:1}.africa-full-slide:not(:first-child){opacity:0}.africa-xl-card,.africa-xl-image-wrap img{transition:none!important}}
 </style>
 """, unsafe_allow_html=True)
 
@@ -624,16 +587,16 @@ def pdf_bytes(title, df, subtitle="ASC AFRICA — Document interne", metrics=Non
     yam_logo = next((p for p in YAM_LOGO_PATHS if p.exists()), None)
     styles = getSampleStyleSheet()
     styles.add(ParagraphStyle(name="ClubTitleXXL", parent=styles["Title"], textColor=colors.HexColor(BLUE), fontSize=25, leading=29, alignment=1, spaceAfter=5))
-    styles.add(ParagraphStyle(name="ClubSubXXL", parent=styles["Normal"], textColor=colors.HexColor("#405B7D"), fontSize=10, leading=14, alignment=1))
+    styles.add(ParagraphStyle(name="ClubSubXXL", parent=styles["Normal"], textColor=colors.HexColor("#526176"), fontSize=10, leading=14, alignment=1))
     styles.add(ParagraphStyle(name="TableHeadXXL", parent=styles["BodyText"], textColor=colors.white, fontSize=8, leading=10, fontName="Helvetica-Bold"))
-    styles.add(ParagraphStyle(name="TableCellXXL", parent=styles["BodyText"], textColor=colors.HexColor("#102D53"), fontSize=7.5, leading=9))
+    styles.add(ParagraphStyle(name="TableCellXXL", parent=styles["BodyText"], textColor=colors.HexColor("#172033"), fontSize=7.5, leading=9))
     def page_decor(canvas, doc):
         canvas.saveState()
         w,h=doc.pagesize
         canvas.setFillColor(colors.HexColor(BLUE)); canvas.rect(0,h-7*mm,w,7*mm,fill=1,stroke=0)
         canvas.setFillColor(colors.HexColor(GOLD)); canvas.rect(0,h-8*mm,w,1.2*mm,fill=1,stroke=0)
-        canvas.setStrokeColor(colors.white); canvas.setLineWidth(.7); canvas.line(12*mm,12*mm,w-12*mm,12*mm)
-        canvas.setFont("Helvetica",7); canvas.setFillColor(colors.HexColor("#405B7D"))
+        canvas.setStrokeColor(colors.HexColor("#D7A62A")); canvas.setLineWidth(.7); canvas.line(12*mm,12*mm,w-12*mm,12*mm)
+        canvas.setFont("Helvetica",7); canvas.setFillColor(colors.HexColor("#526176"))
         canvas.drawString(12*mm,7*mm,"ASC AFRICA · Saint-Louis, Sénégal · Confidentiel si données nominatives")
         canvas.drawRightString(w-12*mm,7*mm,f"Page {doc.page}")
         canvas.restoreState()
@@ -647,7 +610,7 @@ def pdf_bytes(title, df, subtitle="ASC AFRICA — Document interne", metrics=Non
                 logos.append(im)
             except Exception: pass
     if logos:
-        logo_cells=[logos[0], Paragraph("<font color='#123B75'><b>ASC AFRICA</b></font><br/><font color='#FFFFFF'>RAPPORT OFFICIEL</font>",styles["ClubSubXXL"]), logos[1] if len(logos)>1 else ""]
+        logo_cells=[logos[0], Paragraph("<font color='#123B75'><b>ASC AFRICA</b></font><br/><font color='#D7A62A'>RAPPORT OFFICIEL</font>",styles["ClubSubXXL"]), logos[1] if len(logos)>1 else ""]
         head=Table([logo_cells],colWidths=[32*mm,doc.width-64*mm,32*mm],rowHeights=[29*mm])
         head.setStyle(TableStyle([("VALIGN",(0,0),(-1,-1),"MIDDLE"),("ALIGN",(0,0),(-1,-1),"CENTER"),("LEFTPADDING",(0,0),(-1,-1),4),("RIGHTPADDING",(0,0),(-1,-1),4),("BOTTOMPADDING",(0,0),(-1,-1),7)]))
         story.append(head)
@@ -659,7 +622,7 @@ def pdf_bytes(title, df, subtitle="ASC AFRICA — Document interne", metrics=Non
         for label,value,color in metrics:
             cells.append(Paragraph(f"<font color='{color}' size='8'><b>{html.escape(str(label).upper())}</b></font><br/><font color='#123B75' size='15'><b>{html.escape(str(value))}</b></font>",styles["BodyText"]))
         tab=Table([cells],colWidths=[doc.width/max(1,len(cells))]*len(cells))
-        tab.setStyle(TableStyle([("BACKGROUND",(0,0),(-1,-1),colors.HexColor("#F4F8FF")),("BOX",(0,0),(-1,-1),.7,colors.HexColor("#DCE7F4")),("INNERGRID",(0,0),(-1,-1),.5,colors.HexColor("#DCE7F4")),("VALIGN",(0,0),(-1,-1),"MIDDLE"),("ALIGN",(0,0),(-1,-1),"CENTER"),("TOPPADDING",(0,0),(-1,-1),9),("BOTTOMPADDING",(0,0),(-1,-1),9)]))
+        tab.setStyle(TableStyle([("BACKGROUND",(0,0),(-1,-1),colors.HexColor("#F2F6FC")),("BOX",(0,0),(-1,-1),.7,colors.HexColor("#D7E2F0")),("INNERGRID",(0,0),(-1,-1),.5,colors.HexColor("#D7E2F0")),("VALIGN",(0,0),(-1,-1),"MIDDLE"),("ALIGN",(0,0),(-1,-1),"CENTER"),("TOPPADDING",(0,0),(-1,-1),9),("BOTTOMPADDING",(0,0),(-1,-1),9)]))
         story += [tab,Spacer(1,6*mm)]
     story.append(Paragraph("SYNTHÈSE DES DONNÉES",ParagraphStyle(name="SectXXL",parent=styles["Heading2"],textColor=colors.HexColor(BLUE),fontSize=13,leading=16,spaceAfter=6)))
     if df.empty:
@@ -672,7 +635,7 @@ def pdf_bytes(title, df, subtitle="ASC AFRICA — Document interne", metrics=Non
         available=doc.width
         widths=[available/len(safe.columns)]*len(safe.columns)
         table=Table(data,colWidths=widths,repeatRows=1,hAlign="LEFT")
-        table.setStyle(TableStyle([("BACKGROUND",(0,0),(-1,0),colors.HexColor(BLUE)),("TEXTCOLOR",(0,0),(-1,0),colors.white),("GRID",(0,0),(-1,-1),.35,colors.HexColor("#DCE7F4")),("VALIGN",(0,0),(-1,-1),"TOP"),("ROWBACKGROUNDS",(0,1),(-1,-1),[colors.white,colors.HexColor("#F4F8FF")]),("LEFTPADDING",(0,0),(-1,-1),5),("RIGHTPADDING",(0,0),(-1,-1),5),("TOPPADDING",(0,0),(-1,-1),5),("BOTTOMPADDING",(0,0),(-1,-1),5)]))
+        table.setStyle(TableStyle([("BACKGROUND",(0,0),(-1,0),colors.HexColor(BLUE)),("TEXTCOLOR",(0,0),(-1,0),colors.white),("GRID",(0,0),(-1,-1),.35,colors.HexColor("#CBD5E1")),("VALIGN",(0,0),(-1,-1),"TOP"),("ROWBACKGROUNDS",(0,1),(-1,-1),[colors.white,colors.HexColor("#F2F6FC")]),("LEFTPADDING",(0,0),(-1,-1),5),("RIGHTPADDING",(0,0),(-1,-1),5),("TOPPADDING",(0,0),(-1,-1),5),("BOTTOMPADDING",(0,0),(-1,-1),5)]))
         story.append(table)
     story += [Spacer(1,7*mm),Paragraph("Document généré par la plateforme de gestion ASC AFRICA. Vérifier les chiffres et pièces justificatives avant diffusion externe.",styles["Italic"])]
     doc.build(story,onFirstPage=page_decor,onLaterPages=page_decor)
@@ -687,17 +650,17 @@ def receipt_pdf_bytes(row):
     buf = BytesIO()
     styles = getSampleStyleSheet()
     styles.add(ParagraphStyle(name="ReceiptBrand", parent=styles["Title"], fontName="Helvetica-Bold", fontSize=22, leading=26, textColor=colors.HexColor(BLUE), alignment=1, spaceAfter=4))
-    styles.add(ParagraphStyle(name="ReceiptSub", parent=styles["Normal"], fontSize=9, leading=13, textColor=colors.HexColor("#405B7D"), alignment=1))
-    styles.add(ParagraphStyle(name="ReceiptLabel", parent=styles["Normal"], fontSize=9, leading=13, textColor=colors.HexColor("#405B7D")))
-    styles.add(ParagraphStyle(name="ReceiptValue", parent=styles["Normal"], fontSize=11, leading=15, textColor=colors.HexColor("#102D53")))
+    styles.add(ParagraphStyle(name="ReceiptSub", parent=styles["Normal"], fontSize=9, leading=13, textColor=colors.HexColor("#526176"), alignment=1))
+    styles.add(ParagraphStyle(name="ReceiptLabel", parent=styles["Normal"], fontSize=9, leading=13, textColor=colors.HexColor("#526176")))
+    styles.add(ParagraphStyle(name="ReceiptValue", parent=styles["Normal"], fontSize=11, leading=15, textColor=colors.HexColor("#172033")))
     styles.add(ParagraphStyle(name="ReceiptAmount", parent=styles["Title"], fontSize=24, leading=29, textColor=colors.white, alignment=1, spaceAfter=0))
     doc = SimpleDocTemplate(buf, pagesize=A4, rightMargin=22*mm, leftMargin=22*mm, topMargin=18*mm, bottomMargin=18*mm, title=f"Reçu {row['receipt_no']}", author=CLUB)
     def decor(canvas, doc):
         canvas.saveState(); w,h=doc.pagesize
         canvas.setFillColor(colors.HexColor(BLUE)); canvas.rect(0,h-10*mm,w,10*mm,fill=1,stroke=0)
         canvas.setFillColor(colors.HexColor(GOLD)); canvas.rect(0,h-11.5*mm,w,1.5*mm,fill=1,stroke=0)
-        canvas.setStrokeColor(colors.white); canvas.setLineWidth(1); canvas.roundRect(13*mm,13*mm,w-26*mm,h-28*mm,5*mm,stroke=1,fill=0)
-        canvas.setFont("Helvetica",8); canvas.setFillColor(colors.HexColor("#405B7D")); canvas.drawCentredString(w/2,8*mm,"ASC AFRICA · Saint-Louis, Sénégal · Merci pour votre soutien")
+        canvas.setStrokeColor(colors.HexColor("#D7A62A")); canvas.setLineWidth(1); canvas.roundRect(13*mm,13*mm,w-26*mm,h-28*mm,5*mm,stroke=1,fill=0)
+        canvas.setFont("Helvetica",8); canvas.setFillColor(colors.HexColor("#64748b")); canvas.drawCentredString(w/2,8*mm,"ASC AFRICA · Saint-Louis, Sénégal · Merci pour votre soutien")
         canvas.restoreState()
     story = [Spacer(1,5*mm), Paragraph("ASC AFRICA", styles["ReceiptBrand"]), Paragraph(html.escape(SLOGAN), styles["ReceiptSub"]), Spacer(1,8*mm)]
     header = Table([[Paragraph("REÇU DE PAIEMENT", ParagraphStyle(name="ReceiptType", parent=styles["Heading2"], textColor=colors.white, alignment=1, fontSize=15)), Paragraph("N° <b>"+html.escape(str(row['receipt_no']))+"</b><br/>Date : "+html.escape(fmt_date(row['payment_date'])), ParagraphStyle(name="ReceiptNo", parent=styles["Normal"], textColor=colors.white, alignment=2, fontSize=9, leading=14))]], colWidths=[doc.width*.58,doc.width*.42])
@@ -708,46 +671,35 @@ def receipt_pdf_bytes(row):
         rows.append([Paragraph(html.escape(label),styles["ReceiptLabel"]),Paragraph(html.escape(str(value)),styles["ReceiptValue"])])
     detail=Table(rows,colWidths=[doc.width*.34,doc.width*.66],hAlign="LEFT")
     detail.setStyle(TableStyle([("BACKGROUND",(0,0),(-1,-1),colors.white),("LINEBELOW",(0,0),(-1,-1),.5,colors.HexColor("#DCE7F4")),("VALIGN",(0,0),(-1,-1),"TOP"),("LEFTPADDING",(0,0),(-1,-1),10),("RIGHTPADDING",(0,0),(-1,-1),10),("TOPPADDING",(0,0),(-1,-1),11),("BOTTOMPADDING",(0,0),(-1,-1),11)])); story += [detail,Spacer(1,8*mm)]
-    amount=Table([[Paragraph("MONTANT REÇU",ParagraphStyle(name="AmountLabel",parent=styles["Normal"],textColor=colors.HexColor("#DCEBFF"),alignment=1,fontSize=10)),Paragraph(html.escape(money(row.get("amount",0))),styles["ReceiptAmount"])]],colWidths=[doc.width*.38,doc.width*.62])
+    amount=Table([[Paragraph("MONTANT REÇU",ParagraphStyle(name="AmountLabel",parent=styles["Normal"],textColor=colors.HexColor("#FFE49A"),alignment=1,fontSize=10)),Paragraph(html.escape(money(row.get("amount",0))),styles["ReceiptAmount"])]],colWidths=[doc.width*.38,doc.width*.62])
     amount.setStyle(TableStyle([("BACKGROUND",(0,0),(-1,-1),colors.HexColor(BLUE)),("VALIGN",(0,0),(-1,-1),"MIDDLE"),("LEFTPADDING",(0,0),(-1,-1),12),("RIGHTPADDING",(0,0),(-1,-1),12),("TOPPADDING",(0,0),(-1,-1),16),("BOTTOMPADDING",(0,0),(-1,-1),16)])); story += [amount,Spacer(1,12*mm),Paragraph("Arrêté le : "+datetime.now().strftime("%d/%m/%Y à %H:%M"),styles["ReceiptSub"]),Spacer(1,14*mm)]
-    sign=Table([["Signature / cachet de l’association", "Signature du bénéficiaire"]],colWidths=[doc.width/2]*2,rowHeights=[18*mm]); sign.setStyle(TableStyle([("LINEABOVE",(0,0),(-1,-1),.7,colors.HexColor("#A8BEDB")),("TEXTCOLOR",(0,0),(-1,-1),colors.HexColor("#405B7D")),("FONTNAME",(0,0),(-1,-1),"Helvetica"),("FONTSIZE",(0,0),(-1,-1),8),("VALIGN",(0,0),(-1,-1),"TOP"),("TOPPADDING",(0,0),(-1,-1),7)])); story.append(sign)
+    sign=Table([["Signature / cachet de l’association", "Signature du bénéficiaire"]],colWidths=[doc.width/2]*2,rowHeights=[18*mm]); sign.setStyle(TableStyle([("LINEABOVE",(0,0),(-1,-1),.7,colors.HexColor("#AAB8CA")),("TEXTCOLOR",(0,0),(-1,-1),colors.HexColor("#526176")),("FONTNAME",(0,0),(-1,-1),"Helvetica"),("FONTSIZE",(0,0),(-1,-1),8),("VALIGN",(0,0),(-1,-1),"TOP"),("TOPPADDING",(0,0),(-1,-1),7)])); story.append(sign)
     doc.build(story,onFirstPage=decor,onLaterPages=decor)
     return buf.getvalue()
 
 def header():
-    """Bannière XXL plein cadre : diaporama immersif avec slogans galvanisants."""
-    slides = [
-        ("https://ascafrica.streamlit.app/~/+/media/33733a2315e25a96fe358d9fa825e7c7.png",
-         "NOTRE FIERTÉ, NOTRE FAMILLE, NOTRE HISTOIRE",
-         "Des tribunes au terrain, nous partageons la même histoire et la même fierté. Chaque génération porte nos couleurs."),
-        ("https://ascafrica.streamlit.app/~/+/media/18111d99c568fbdb39115fa1aefd7542.png",
-         "LA PASSION NOUS RASSEMBLE",
-         "Chaque supporter compte. Ensemble, faisons vibrer Saint-Louis et poussons notre équipe toujours plus loin."),
-        ("https://ascafrica.streamlit.app/~/+/media/0e88e77cba6179f735a05cf91ba9537e.jpg",
-         "UN GROUPE, UNE FAMILLE",
-         "Sur le terrain comme dans la vie, l’unité fait notre force. Un groupe, une famille, un seul objectif."),
+    """Bannière XXL : utilise les images locales si disponibles, sinon les liens officiels fournis."""
+    slogan = html.escape(SLOGAN)
+    images = [
+        (APP_DIR / "im1.png", "https://ascafrica.streamlit.app/~/+/media/33733a2315e25a96fe358d9fa825e7c7.png", "Supporters de l’ASC AFRICA"),
+        (APP_DIR / "im2.png", "https://ascafrica.streamlit.app/~/+/media/18111d99c568fbdb39115fa1aefd7542.png", "Équipe et supporters de l’ASC AFRICA"),
+        (APP_DIR / "im3.png", "https://ascafrica.streamlit.app/~/+/media/0e88e77cba6179f735a05cf91ba9537e.jpg", "Identité et fierté de l’ASC AFRICA"),
     ]
-    slides_html = []
-    for i, (url, title, message) in enumerate(slides):
-        slides_html.append(
-            f'<article class="africa-full-slide slide-{i+1}" style="--slide-delay:{i*6}s">'
-            f'<img src="{html.escape(url, quote=True)}" alt="{html.escape(title, quote=True)}" '
-            f'loading="{"eager" if i == 0 else "lazy"}">'
-            f'<div class="africa-slide-shade"></div><div class="africa-slide-copy">'
-            f'<div class="top-kicker">SAINT-LOUIS • SÉNÉGAL • LA PASSION DU CLUB</div>'
-            f'<div class="africa-slide-overline">UNE ÉQUIPE. UN PEUPLE. UNE FIERTÉ.</div>'
-            f'<h1>{html.escape(title)}</h1><p>{html.escape(message)}</p>'
-            f'<span class="top-slogan">⚽ AFRICA KASSÉ, AFRICA REK</span>'
-            f'</div></article>'
+    image_tags = []
+    for path, fallback_url, alt in images:
+        uri = _logo_data_uri(path) if path.exists() else ""
+        src = uri or fallback_url
+        image_tags.append(
+            f'<img src="{html.escape(src, quote=True)}" alt="{html.escape(alt, quote=True)}" '
+            f'loading="eager" referrerpolicy="no-referrer" '
+            f'onerror="this.style.display=\'none\'">'
         )
-    st.markdown(
-        '<section class="africa-full-hero" aria-label="Diaporama de l’ASC AFRICA">'
-        + ''.join(slides_html)
-        + '<div class="africa-hero-bottom"><span>BLEU • BLANC • OR</span>'
-          '<span>ENSEMBLE, PLUS FORTS</span><span>ASC AFRICA · SAINT-LOUIS</span></div>'
-        '</section>',
-        unsafe_allow_html=True
-    )
+    stage = '<div class="africa-photo-stage" aria-label="Galerie animée ASC AFRICA">' + ''.join(image_tags) + '</div>'
+    st.markdown(f'''<section class="africa-topband" role="banner" aria-label="Présentation de l’ASC AFRICA">
+      <div><div class="top-kicker">Saint-Louis • Sénégal • La passion du club</div>
+      <h1>ASC AFRICA</h1>
+      <p>Une équipe, une famille, une fierté. Suivez les actualités, les activités et les initiatives de notre communauté.</p>
+      <span class="top-slogan">{slogan}</span></div>{stage}</section>''', unsafe_allow_html=True)
 
 
 def bottom_message():
@@ -796,39 +748,39 @@ def yam_footer():
     )
     st.markdown(f"""
     <style>
-    .site-footer{{margin-top:0!important;margin-bottom:0!important;padding:clamp(18px,2.8vw,32px) clamp(12px,2vw,28px) 0!important;border-radius:18px 18px 0 0!important;background:radial-gradient(circle at 50% 0,rgba(58,122,192,.28),transparent 42%),linear-gradient(135deg,#08264D,#123b75 62%,#2368B7);color:#fff;text-align:center;overflow:hidden;border-top:4px solid #FFFFFF;box-shadow:0 -5px 22px rgba(18,59,117,.08);}}
+    .site-footer{{margin-top:0!important;margin-bottom:0!important;padding:clamp(18px,2.8vw,32px) clamp(12px,2vw,28px) 0!important;border-radius:18px 18px 0 0!important;background:radial-gradient(circle at 50% 0,rgba(58,122,192,.28),transparent 42%),linear-gradient(135deg,#07172e,#123b75 62%,#0b8278);color:#fff;text-align:center;overflow:hidden;border-top:4px solid #d7a62a;box-shadow:0 -5px 22px rgba(18,59,117,.08);}}
     .yam-footer-headline{{font-size:clamp(1.35rem,2.8vw,2.3rem);font-weight:950;line-height:1.2;margin:8px auto 10px;max-width:1100px;color:#fff;}}
-    .yam-footer-slogan{{font-size:clamp(1rem,1.8vw,1.3rem);font-weight:850;color:#FFFFFF;line-height:1.5;margin:8px auto;max-width:1100px;}}
+    .yam-footer-slogan{{font-size:clamp(1rem,1.8vw,1.3rem);font-weight:850;color:#f4bd38;line-height:1.5;margin:8px auto;max-width:1100px;}}
     .yam-footer-intro{{max-width:1100px;margin:0 auto;color:#dce8f7;line-height:1.7;font-size:clamp(.9rem,1.25vw,1.05rem);}}
     .yam-brand-fallback{{font-size:clamp(1.6rem,3vw,2.5rem);font-weight:950;color:#fff;padding:12px;}}
-    .yam-gold{{color:#FFFFFF!important;}}
+    .yam-gold{{color:#f4bd38!important;}}
     .yam-footer-logo{{max-width:clamp(95px,13vw,155px)!important;max-height:clamp(85px,10vw,125px)!important;object-fit:contain;padding:6px!important;}}
     .yam-domain-grid{{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;max-width:1350px;margin:18px auto 8px;text-align:left;}}
-    .yam-domain-card{{padding:14px 15px;border-radius:15px;border:1px solid #ffffff27;background:linear-gradient(135deg,#ffffff13,#ffffff08);box-shadow:0 8px 22px #08264D00012;min-height:120px;transition:transform .22s ease,border-color .22s ease,background .22s ease;}}
-    .yam-domain-card:hover{{transform:translateY(-4px);border-color:#FFFFFF;background:#ffffff1c;}}
+    .yam-domain-card{{padding:14px 15px;border-radius:15px;border:1px solid #ffffff27;background:linear-gradient(135deg,#ffffff13,#ffffff08);box-shadow:0 8px 22px #00000012;min-height:120px;transition:transform .22s ease,border-color .22s ease,background .22s ease;}}
+    .yam-domain-card:hover{{transform:translateY(-4px);border-color:#f4bd38;background:#ffffff1c;}}
     .yam-domain-icon{{font-size:1.55rem;margin-bottom:4px;}}
-    .yam-domain-card h4{{color:#FFFFFF!important;font-size:1rem;margin:0 0 5px;font-weight:900;}}
+    .yam-domain-card h4{{color:#f4bd38!important;font-size:1rem;margin:0 0 5px;font-weight:900;}}
     .yam-domain-card p{{color:#e2ebf7!important;font-size:.86rem;line-height:1.5;margin:0;}}
-    .yam-activity-strip{{position:relative;display:block!important;visibility:visible!important;opacity:1!important;min-height:54px;overflow:hidden;margin:14px -18px 0;padding:15px 0;border-top:1px solid #ffffff55;border-bottom:1px solid #ffffff55;background:#08264D!important;color:#fff!important;z-index:2;}}
+    .yam-activity-strip{{position:relative;display:block!important;visibility:visible!important;opacity:1!important;min-height:54px;overflow:hidden;margin:14px -18px 0;padding:15px 0;border-top:1px solid #ffffff55;border-bottom:1px solid #ffffff55;background:#061326!important;color:#fff!important;z-index:2;}}
     .yam-activity-track{{display:flex!important;align-items:center;width:max-content;min-width:200%;gap:30px;white-space:nowrap;animation:yamMarquee 38s linear infinite;font-weight:900;letter-spacing:.04em;font-size:clamp(.82rem,1.1vw,.98rem);color:#fff!important;will-change:transform;}}
     .yam-activity-track span{{display:inline-flex;align-items:center;gap:8px;flex:0 0 auto;color:#fff!important;}}
-    .yam-activity-track b{{color:#FFFFFF!important;}}
-    .footer-bottom{{margin:0 -18px 0;padding:13px clamp(12px,3vw,36px);background:#08264D;color:#DCE7F4;font-size:.86rem;font-weight:700;}}
+    .yam-activity-track b{{color:#f4bd38!important;}}
+    .footer-bottom{{margin:0 -18px 0;padding:13px clamp(12px,3vw,36px);background:#041020;color:#cbd8e8;font-size:.86rem;font-weight:700;}}
     @keyframes yamMarquee{{from{{transform:translateX(0)}}to{{transform:translateX(-50%)}}}}
     @media(max-width:800px){{.yam-domain-grid{{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;}}.yam-domain-card{{padding:12px;min-height:0;}}.yam-domain-card p{{font-size:.82rem;}}.yam-activity-track{{animation-duration:27s;}}}}
     @media(max-width:460px){{.yam-domain-grid{{grid-template-columns:1fr;}}.yam-domain-card{{display:grid;grid-template-columns:34px 1fr;column-gap:8px;align-items:start;}}.yam-domain-icon{{grid-row:span 2;}}.yam-domain-card h4{{margin-top:2px;}}}}
     @media(prefers-reduced-motion:reduce){{.yam-domain-card{{transition:none;}}.yam-domain-card:hover{{transform:none;}}.yam-activity-track{{animation:none;min-width:0;width:100%;white-space:normal;justify-content:center;flex-wrap:wrap;padding:0 12px;}}}}
     </style>
     <footer class='site-footer' aria-label='Don de la plateforme par YAM Group'>
-      <div class='eyebrow' style='color:#FFFFFF;font-size:.8rem'>UN ENGAGEMENT POUR LE DÉVELOPPEMENT · YAM GROUP</div>
+      <div class='eyebrow' style='color:#f4bd38;font-size:.8rem'>UN ENGAGEMENT POUR LE DÉVELOPPEMENT · YAM GROUP</div>
       <div class='yam-footer-headline'>UN DON NUMÉRIQUE DE YAM GROUP À L’ASC AFRICA</div>
-      <div class='yam-footer-intro'>Cette plateforme a été offerte à l’ASC AFRICA par <strong style='color:#FFFFFF'>YAM Group, à travers sa filiale YAM Consultancy</strong>, pour soutenir la vie associative, améliorer l’accès à l’information et accompagner la transformation numérique des organisations. YAM Consultancy met son savoir-faire au service des projets, des entreprises et des communautés.</div>
+      <div class='yam-footer-intro'>Cette plateforme a été offerte à l’ASC AFRICA par <strong style='color:#f4bd38'>YAM Group, à travers sa filiale YAM Consultancy</strong>, pour soutenir la vie associative, améliorer l’accès à l’information et accompagner la transformation numérique des organisations. YAM Consultancy met son savoir-faire au service des projets, des entreprises et des communautés.</div>
       <div class='yam-footer-slogan'>« Ensemble pour un Sénégal plus fort : Agir aujourd’hui, bâtir demain »</div>
-      <div style='display:flex;align-items:center;justify-content:center;gap:clamp(18px,5vw,65px);flex-wrap:wrap;margin:12px auto 8px'>{club_img}<span style='color:#FFFFFF;font-size:clamp(1.5rem,3vw,2.5rem);font-weight:950'>×</span>{yam_img}</div>
+      <div style='display:flex;align-items:center;justify-content:center;gap:clamp(18px,5vw,65px);flex-wrap:wrap;margin:12px auto 8px'>{club_img}<span style='color:#f4bd38;font-size:clamp(1.5rem,3vw,2.5rem);font-weight:950'>×</span>{yam_img}</div>
       <div style='font-weight:900;color:#fff;font-size:clamp(1rem,1.5vw,1.2rem);margin:8px auto'>YAM intervient dans neuf domaines clés</div>
       <div class='yam-domain-grid'>{cards}</div>
       <div class='yam-activity-strip' aria-label='Défilement des domaines de YAM'><div class='yam-activity-track'>{ticker_items}{ticker_items}</div></div>
-      <div class='footer-bottom'>© {date.today().year} ASC AFRICA · Saint-Louis, Sénégal · Portail officiel d’information et de vie associative<br><strong style='color:#FFFFFF'>Une réalisation offerte par YAM Group · Filiale YAM Consultancy</strong> — Conseil, accompagnement opérationnel et solutions numériques.</div>
+      <div class='footer-bottom'>© {date.today().year} ASC AFRICA · Saint-Louis, Sénégal · Portail officiel d’information et de vie associative<br><strong style='color:#f4bd38'>Une réalisation offerte par YAM Group · Filiale YAM Consultancy</strong> — Conseil, accompagnement opérationnel et solutions numériques.</div>
     </footer>
     """, unsafe_allow_html=True)
 
@@ -877,16 +829,28 @@ def public_page():
     menu_options = ["🏠 Accueil", "📰 Actualités", "📖 À propos", "🏛️ Bureau", "🕰️ Historique", "📅 Agenda", "🤝 Partenaires", "📄 Documents utiles", "📍 Contact", "📝 Rejoindre le club"]
     # Menu explicite et accessible : la liste déroulante évite les onglets serrés sur téléphone.
     menu = st.selectbox("Ouvrir une rubrique", menu_options, index=0, key="public_navigation_select", label_visibility="collapsed")
-    st.markdown("<div class='nav-help-mobile'>👇 Touchez le menu ci-dessus pour choisir Accueil, Actualités, Agenda, Contact ou une autre rubrique.</div><div style='height:4px;background:linear-gradient(90deg,#123b75,#2368B7,#FFFFFF);border-radius:5px;margin:8px 0 18px'></div>", unsafe_allow_html=True)
+    st.markdown("<div class='nav-help-mobile'>👇 Touchez le menu ci-dessus pour choisir Accueil, Actualités, Agenda, Contact ou une autre rubrique.</div><div style='height:4px;background:linear-gradient(90deg,#123b75,#0b8278,#f4bd38);border-radius:5px;margin:8px 0 18px'></div>", unsafe_allow_html=True)
 
     if menu == "🏠 Accueil":
         latest = query_df("SELECT title,subtitle,author,cover_url,featured,category,publish_date,content FROM news WHERE published=1 ORDER BY featured DESC,publish_date DESC,id DESC LIMIT 4")
         activities = query_df("SELECT title,activity_type,start_date,end_date,location,description,status FROM activities WHERE status!='Annulée' AND start_date>=? ORDER BY start_date LIMIT 4", (date.today().isoformat(),))
         members = int(query_df("SELECT COUNT(*) n FROM members WHERE status='Actif'").iloc[0,0])
         partners = int(query_df("SELECT COUNT(*) n FROM sponsors").iloc[0,0])
-        st.markdown("<div class='eyebrow'>Le journal de la vie associative</div><h2 style='font-size:clamp(1.8rem,4vw,3rem);font-weight:950;color:#123b75;line-height:1.1'>L’actualité du club,<br>la vie de notre communauté.</h2><p style='font-size:1.08rem;max-width:850px;color:#405B7D;line-height:1.7'>Retrouvez les informations, annonces, événements et actions communautaires de l’ASC AFRICA dans un espace clair, vivant et accessible à tous.</p>", unsafe_allow_html=True)
-        # Le diaporama photographique est présenté dans la bannière ci-dessus.
-        # On conserve ensuite les indicateurs et toutes les rubriques existantes du site.
+        st.markdown("<div class='eyebrow'>Le journal de la vie associative</div><h2 style='font-size:clamp(1.8rem,4vw,3rem);font-weight:950;color:#123b75;line-height:1.1'>L’actualité du club,<br>la vie de notre communauté.</h2><p style='font-size:1.08rem;max-width:850px;color:#526176;line-height:1.7'>Retrouvez les informations, annonces, événements et actions communautaires de l’ASC AFRICA dans un espace clair, vivant et accessible à tous.</p>", unsafe_allow_html=True)
+        # Galerie officielle : portraits de supporters, équipe et emblème du club.
+        gallery_items = [
+            (APP_DIR / "im1.png", "LA PASSION NOUS RASSEMBLE", "Chaque supporter fait battre le cœur de l’ASC AFRICA."),
+            (APP_DIR / "im2.png", "UN GROUPE, UNE FAMILLE", "Ensemble sur le terrain, unis dans la vie."),
+            (APP_DIR / "im3.png", "UNE IDENTITÉ, UNE FIERTÉ", "AFRICA KASSÉ, AFRICA REK — Saint-Louis, Sénégal."),
+        ]
+        st.markdown("<div class='section'>💙 Notre fierté, notre famille, notre histoire</div><p style='color:#526176;line-height:1.7'>Des tribunes au terrain, l’ASC AFRICA vit grâce à celles et ceux qui portent ses couleurs.</p>", unsafe_allow_html=True)
+        gcols = st.columns(3, gap="large")
+        for col, (img_path, title, message) in zip(gcols, gallery_items):
+            with col:
+                if img_path.exists():
+                    st.markdown("<div class='club-gallery-card'>", unsafe_allow_html=True)
+                    st.image(str(img_path), use_container_width=True)
+                    st.markdown(f"<div class='club-gallery-message'>{html.escape(title)}</div><div class='club-gallery-sub'>{html.escape(message)}</div></div>", unsafe_allow_html=True)
         c1,c2,c3=st.columns(3)
         c1.metric("Membres actifs", members); c2.metric("Activités à venir", len(activities)); c3.metric("Partenaires", partners)
         left,right=st.columns([1.5,1], gap="large")
@@ -902,7 +866,7 @@ def public_page():
                     subtitle = f"<p><b>{html.escape(str(r.get('subtitle') or ''))}</b></p>" if r.get("subtitle") else ""
                     author = f"<span> • {html.escape(str(r.get('author') or ''))}</span>" if r.get("author") else ""
                     body = html.escape(str(r['content'])[:650])
-                    st.markdown(f"<div class='news-card'>{badge}<span class='pill'>{html.escape(str(r['category'] or 'Actualité'))}</span>{cover_html}<div style='color:#405B7D;font-size:.82rem;margin-top:10px'>{fmt_date(r['publish_date'])}{author}</div><h3>{html.escape(str(r['title']))}</h3>{subtitle}<p style='white-space:pre-wrap;line-height:1.65'>{body}{'…' if len(str(r['content']))>650 else ''}</p></div>", unsafe_allow_html=True)
+                    st.markdown(f"<div class='news-card'>{badge}<span class='pill'>{html.escape(str(r['category'] or 'Actualité'))}</span>{cover_html}<div style='color:#718096;font-size:.82rem;margin-top:10px'>{fmt_date(r['publish_date'])}{author}</div><h3>{html.escape(str(r['title']))}</h3>{subtitle}<p style='white-space:pre-wrap;line-height:1.65'>{body}{'…' if len(str(r['content']))>650 else ''}</p></div>", unsafe_allow_html=True)
         with right:
             st.markdown("<div class='section'>📅 Prochains rendez-vous</div>", unsafe_allow_html=True)
             if activities.empty: st.info("Les prochaines activités seront annoncées ici.")
@@ -928,7 +892,7 @@ def public_page():
                 badge = "<span class='pill'>À LA UNE</span> " if int(r.get("featured") or 0) else ""
                 subtitle = f"<p><b>{html.escape(str(r.get('subtitle') or ''))}</b></p>" if r.get("subtitle") else ""
                 author = f"<span> • {html.escape(str(r.get('author') or ''))}</span>" if r.get("author") else ""
-                st.markdown(f"<div class='news-card'>{badge}<span class='pill'>{html.escape(str(r['category'] or 'Actualité'))}</span>{cover_html}<div style='color:#405B7D;font-size:.82rem;margin-top:10px'>{fmt_date(r['publish_date'])}{author}</div><h3>{html.escape(str(r['title']))}</h3>{subtitle}<p style='white-space:pre-wrap;line-height:1.75'>{html.escape(str(r['content']))}</p></div>", unsafe_allow_html=True)
+                st.markdown(f"<div class='news-card'>{badge}<span class='pill'>{html.escape(str(r['category'] or 'Actualité'))}</span>{cover_html}<div style='color:#718096;font-size:.82rem;margin-top:10px'>{fmt_date(r['publish_date'])}{author}</div><h3>{html.escape(str(r['title']))}</h3>{subtitle}<p style='white-space:pre-wrap;line-height:1.75'>{html.escape(str(r['content']))}</p></div>", unsafe_allow_html=True)
 
     elif menu == "📖 À propos":
         st.markdown("<div class='section'>📖 À propos de l’ASC AFRICA</div>", unsafe_allow_html=True)
@@ -1019,7 +983,7 @@ def public_page():
                 st.success("Votre demande a été enregistrée. Le bureau de l’ASC AFRICA pourra la vérifier.")
 
     bottom_message()
-    st.markdown("<div style='margin:2px auto 0;max-width:900px;text-align:center;padding:12px 16px 5px;border:1px solid #DCE7F4;border-radius:16px 16px 0 0;background:linear-gradient(135deg,#ffffff,#F4F8FF)'><div class='eyebrow'>Accès réservé</div><h3 style='color:#123b75;margin:.25rem 0'>Vous faites partie de l’équipe de gestion ?</h3><p style='color:#405B7D;margin:0'>Accès à l’espace d’administration du portail.</p></div>", unsafe_allow_html=True)
+    st.markdown("<div style='margin:2px auto 0;max-width:900px;text-align:center;padding:12px 16px 5px;border:1px solid #dbe7f2;border-radius:16px 16px 0 0;background:linear-gradient(135deg,#ffffff,#f1f6fc)'><div class='eyebrow'>Accès réservé</div><h3 style='color:#123b75;margin:.25rem 0'>Vous faites partie de l’équipe de gestion ?</h3><p style='color:#526176;margin:0'>Accès à l’espace d’administration du portail.</p></div>", unsafe_allow_html=True)
     if st.button("🔐 Accéder à l’administration", key="bottom_admin_access", type="secondary", use_container_width=True):
         st.session_state.show_admin_login = True
         st.rerun()
@@ -1028,13 +992,13 @@ def public_page():
     # visuellement la zone vide sans créer un grand espace artificiel.
     st.markdown("""
     <style>
-    .yam-africa-collab{box-sizing:border-box;width:100%;margin:10px auto 12px;padding:clamp(18px,3vw,30px);border-radius:18px;border:1px solid #d7e4f2;background:linear-gradient(120deg,#ffffff 0%,#edf5ff 52%,#EAF2FC 100%);box-shadow:0 8px 24px rgba(18,59,117,.08);text-align:center;overflow:hidden;}
-    .yam-africa-collab .collab-kicker{font-size:.78rem;letter-spacing:.12em;font-weight:900;color:#2368B7;text-transform:uppercase;margin-bottom:7px;}
+    .yam-africa-collab{box-sizing:border-box;width:100%;margin:10px auto 12px;padding:clamp(18px,3vw,30px);border-radius:18px;border:1px solid #d7e4f2;background:linear-gradient(120deg,#ffffff 0%,#edf5ff 52%,#e9f8f5 100%);box-shadow:0 8px 24px rgba(18,59,117,.08);text-align:center;overflow:hidden;}
+    .yam-africa-collab .collab-kicker{font-size:.78rem;letter-spacing:.12em;font-weight:900;color:#0b8278;text-transform:uppercase;margin-bottom:7px;}
     .yam-africa-collab h3{font-size:clamp(1.2rem,2.4vw,1.8rem);line-height:1.2;color:#123b75;font-weight:950;margin:0 auto 10px;}
-    .yam-africa-collab p{max-width:980px;margin:0 auto;color:#405B7D;font-size:clamp(.92rem,1.35vw,1.06rem);line-height:1.7;}
+    .yam-africa-collab p{max-width:980px;margin:0 auto;color:#40536b;font-size:clamp(.92rem,1.35vw,1.06rem);line-height:1.7;}
     .yam-africa-pills{display:flex;justify-content:center;align-items:center;gap:8px;flex-wrap:wrap;margin-top:15px;}
     .yam-africa-pills span{display:inline-flex;align-items:center;justify-content:center;padding:8px 13px;border-radius:999px;background:#123b75;color:white;font-size:.82rem;font-weight:850;}
-    .yam-africa-pills span:nth-child(2){background:#2368B7}.yam-africa-pills span:nth-child(3){background:#123B75}
+    .yam-africa-pills span:nth-child(2){background:#0b8278}.yam-africa-pills span:nth-child(3){background:#a87500}
     div[data-testid='stVerticalBlock'] div[data-testid='stElementContainer']:has(.yam-africa-collab){margin-top:0!important;margin-bottom:0!important;padding-top:0!important;padding-bottom:0!important;}
     div[data-testid='stVerticalBlock'] div[data-testid='stElementContainer']:has(.site-footer){margin-top:0!important;padding-top:0!important;}
     div[data-testid='stVerticalBlock'] div[data-testid='stElementContainer']:has(.site-footer) p{margin-bottom:0!important;}
@@ -1054,13 +1018,13 @@ def public_page():
     # On évite ici le grand pied de page détaillé qui repoussait la barre au bas de l'écran.
     st.markdown("""
     <style>
-      .yam-compact-credit{width:100%;box-sizing:border-box;margin:8px 0 0;padding:11px 12px;background:#08264D;color:#fff;border-top:3px solid #FFFFFF;border-radius:8px 8px 0 0;overflow:hidden;text-align:center;}
+      .yam-compact-credit{width:100%;box-sizing:border-box;margin:8px 0 0;padding:11px 12px;background:#07172e;color:#fff;border-top:3px solid #d7a62a;border-radius:8px 8px 0 0;overflow:hidden;text-align:center;}
       .yam-compact-credit .yam-credit-title{font-size:clamp(.86rem,1.5vw,1.05rem);font-weight:950;line-height:1.45;color:#fff;margin-bottom:4px;}
       .yam-compact-credit .yam-credit-copy{font-size:clamp(.72rem,1.1vw,.88rem);line-height:1.5;color:#dce8f7;margin-bottom:8px;}
-      .yam-compact-track-window{width:100%;overflow:hidden;background:#08264D;border-radius:0 0 8px 8px;padding:10px 0;}
+      .yam-compact-track-window{width:100%;overflow:hidden;background:#041020;border-radius:0 0 8px 8px;padding:10px 0;}
       .yam-compact-track{display:flex;align-items:center;width:max-content;gap:26px;white-space:nowrap;animation:yamCompactMarquee 34s linear infinite;color:#fff;font-size:clamp(.72rem,1vw,.86rem);font-weight:900;}
       .yam-compact-track span{flex:0 0 auto;}
-      .yam-compact-track b{color:#FFFFFF;}
+      .yam-compact-track b{color:#f4bd38;}
       @keyframes yamCompactMarquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
       @media(max-width:600px){.yam-compact-credit{padding:10px 8px}.yam-compact-track{animation-duration:25s;gap:18px}}
       @media(prefers-reduced-motion:reduce){.yam-compact-track{animation:none;width:100%;white-space:normal;flex-wrap:wrap;justify-content:center;padding:0 8px;box-sizing:border-box}}
@@ -1374,7 +1338,7 @@ def reports_page():
     st.download_button("📥 Exporter paiements Excel",excel_bytes({"Paiements":p,"Caisse":cash}),"rapport_asc_africa.xlsx","application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
     st.download_button("📥 Exporter paiements CSV",p.to_csv(index=False).encode("utf-8-sig"),"rapport_paiements.csv","text/csv")
     if REPORTLAB_OK:
-        pdf=pdf_bytes(f"Rapport financier ASC AFRICA — {start:%d/%m/%Y} au {end:%d/%m/%Y}",cash,"Trésorerie et encaissements consolidés",[("Paiements",len(p),BLUE),("Total paiements",money(p.amount.sum() if not p.empty else 0),"#2368B7"),("Entrées caisse",money(inc),"#FFFFFF"),("Sorties caisse",money(out),"#123B75")])
+        pdf=pdf_bytes(f"Rapport financier ASC AFRICA — {start:%d/%m/%Y} au {end:%d/%m/%Y}",cash,"Trésorerie et encaissements consolidés",[("Paiements",len(p),BLUE),("Total paiements",money(p.amount.sum() if not p.empty else 0),"#0B8278"),("Entrées caisse",money(inc),"#D7A62A"),("Sorties caisse",money(out),"#C2414B")])
         if pdf: st.download_button("📄 Télécharger le rapport PDF",pdf,"rapport_financier_asc_africa.pdf","application/pdf")
         news_period=query_df("SELECT title,category,publish_date,author,published,featured FROM news WHERE publish_date BETWEEN ? AND ? ORDER BY publish_date DESC",(start.isoformat(),end.isoformat()))
         activities_period=query_df("SELECT title,activity_type,start_date,end_date,location,status,budget FROM activities WHERE start_date BETWEEN ? AND ? ORDER BY start_date",(start.isoformat(),end.isoformat()))
@@ -1385,7 +1349,7 @@ def reports_page():
             with col:
                 st.markdown(f"<div class='feature-card'><h3>{label}</h3><p>{len(data)} enregistrement(s) sur la période.</p></div>",unsafe_allow_html=True)
                 if REPORTLAB_OK:
-                    payload=pdf_bytes(label,data,f"Période du {start:%d/%m/%Y} au {end:%d/%m/%Y}",[("Enregistrements",len(data),BLUE),("Du",start.strftime("%d/%m/%Y"),"#2368B7"),("Au",end.strftime("%d/%m/%Y"),"#FFFFFF")])
+                    payload=pdf_bytes(label,data,f"Période du {start:%d/%m/%Y} au {end:%d/%m/%Y}",[("Enregistrements",len(data),BLUE),("Du",start.strftime("%d/%m/%Y"),"#0B8278"),("Au",end.strftime("%d/%m/%Y"),"#D7A62A")])
                     st.download_button(f"📄 Télécharger",payload,filename,"application/pdf",key=f"download_{filename}",use_container_width=True)
                 st.download_button("Excel / CSV",data.to_csv(index=False).encode("utf-8-sig"),filename.replace(".pdf",".csv"),"text/csv",key=f"csv_{filename}",use_container_width=True)
     else: st.info("Pour les PDF : installez reportlab avec pip install reportlab")
