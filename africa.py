@@ -306,18 +306,20 @@ div[data-testid="stDataFrame"]{{overflow-x:auto;}}
 }}
 @media(prefers-reduced-motion:reduce){{html{{scroll-behavior:auto;}}}}
 
-/* Bandeau signature animé : les trois images sont intégrées dans la bannière */
-.africa-topband{{position:relative;isolation:isolate;overflow:hidden;display:grid;grid-template-columns:minmax(0,1.2fr) minmax(220px,.8fr);align-items:center;gap:clamp(16px,3vw,36px);padding:clamp(20px,3.5vw,44px);border-radius:clamp(18px,2vw,30px);color:#fff;background:radial-gradient(circle at 12% 15%,#1760a6 0,transparent 38%),linear-gradient(125deg,#06152c,#123b75 58%,#087e78);border-bottom:5px solid #f4bd38;box-shadow:0 18px 45px #123b7525;margin:0 0 20px;}}
+/* Bannière supérieure XXL : diaporama de 7 images, adaptée aux grands et petits écrans */
+.africa-topband{{box-sizing:border-box;width:100%;position:relative;isolation:isolate;overflow:hidden;display:grid;grid-template-columns:minmax(0,1.15fr) minmax(300px,.85fr);align-items:center;gap:clamp(18px,3vw,42px);padding:clamp(22px,3.5vw,48px);border-radius:clamp(18px,2vw,30px);color:#fff;background:radial-gradient(circle at 12% 15%,#1760a6 0,transparent 38%),linear-gradient(125deg,#06152c,#123b75 58%,#087e78);border-bottom:5px solid #f4bd38;box-shadow:0 18px 45px #123b7525;margin:0 0 20px;}}
 .africa-topband:before{{content:"";position:absolute;inset:0;z-index:-1;opacity:.24;background:repeating-linear-gradient(135deg,transparent 0 28px,#fff 29px 30px,transparent 31px 60px);mask-image:linear-gradient(90deg,#000,transparent 85%);}}
 .africa-topband h1{{font-size:clamp(2.2rem,5vw,5rem);line-height:1;letter-spacing:-.045em;font-weight:950;margin:10px 0 12px;color:#fff;}}
 .africa-topband p{{font-size:clamp(.98rem,1.5vw,1.22rem);line-height:1.6;color:#eaf3ff;margin:0;}}
 .africa-topband .top-kicker{{font-size:.74rem;text-transform:uppercase;letter-spacing:.18em;font-weight:900;color:#ffda76;}}
 .africa-topband .top-slogan{{display:inline-block;margin-top:16px;padding:9px 13px;border:1px solid #ffffff50;border-radius:999px;background:#ffffff12;font-weight:850;letter-spacing:.04em;}}
-.africa-photo-stage{{position:relative;width:100%;height:clamp(190px,25vw,330px);min-width:0;}}
-.africa-photo-stage img{{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:22px;border:2px solid #ffffffa8;box-shadow:0 16px 36px #0005;opacity:0;animation:africaTopSlide 42s infinite;}}
+.africa-photo-stage{{position:relative;width:100%;height:clamp(250px,28vw,430px);min-width:0;min-height:0;overflow:hidden;border-radius:clamp(15px,1.8vw,24px);background:#0a2548;border:2px solid #ffffff8c;box-shadow:0 16px 36px #0005;}}
+.africa-photo-stage img{{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;border-radius:inherit;opacity:0;animation:africaTopSlide 42s infinite;will-change:opacity,transform;}}
 .africa-photo-stage img:nth-child(1){{animation-delay:0s}}.africa-photo-stage img:nth-child(2){{animation-delay:6s}}.africa-photo-stage img:nth-child(3){{animation-delay:12s}}.africa-photo-stage img:nth-child(4){{animation-delay:18s}}.africa-photo-stage img:nth-child(5){{animation-delay:24s}}.africa-photo-stage img:nth-child(6){{animation-delay:30s}}.africa-photo-stage img:nth-child(7){{animation-delay:36s}}
 @keyframes africaTopSlide{{0%{{opacity:0;transform:translateY(14px) scale(.97)}}2%,14.2%{{opacity:1;transform:translateY(0) scale(1)}}16.7%,100%{{opacity:0;transform:translateY(-10px) scale(1.025)}}}}
-@media(max-width:700px){{.africa-topband{{grid-template-columns:1fr;padding:22px 17px;gap:18px}}.africa-photo-stage{{height:clamp(190px,62vw,290px)}}.africa-topband h1{{font-size:clamp(2.3rem,11vw,3.4rem)}}}}
+@media(min-width:701px) and (max-width:1050px){{.africa-topband{{grid-template-columns:minmax(0,1fr) minmax(260px,.9fr);gap:20px;padding:clamp(20px,3vw,30px)}}.africa-photo-stage{{height:clamp(240px,31vw,340px)}}.africa-topband h1{{font-size:clamp(2.4rem,5vw,3.7rem)}}}}
+@media(max-width:700px){{.africa-topband{{grid-template-columns:minmax(0,1fr);padding:clamp(19px,5vw,26px) clamp(14px,4vw,20px);gap:18px;border-radius:18px;margin-bottom:16px}}.africa-photo-stage{{height:clamp(210px,64vw,340px);width:100%;border-radius:16px}}.africa-topband h1{{font-size:clamp(2.35rem,11vw,3.6rem);overflow-wrap:anywhere}}.africa-topband p{{font-size:1rem;line-height:1.5}}.africa-topband .top-kicker{{font-size:.67rem;letter-spacing:.12em;line-height:1.5}}.africa-topband .top-slogan{{font-size:.78rem;line-height:1.35;max-width:100%;white-space:normal}}}}
+@media(max-width:380px){{.africa-topband{{padding:18px 12px}}.africa-photo-stage{{height:205px}}.africa-topband h1{{font-size:2.15rem}}}}
 @media(prefers-reduced-motion:reduce){{.africa-photo-stage img{{animation:none;opacity:0}}.africa-photo-stage img:first-child{{opacity:1}}}}
 
 /* Défilement XXL : navigation lisible, panneaux dynamiques et contenu révélé au scroll */
@@ -955,8 +957,8 @@ def public_page():
         members = int(query_df("SELECT COUNT(*) n FROM members WHERE status='Actif'").iloc[0,0])
         partners = int(query_df("SELECT COUNT(*) n FROM sponsors").iloc[0,0])
         st.markdown("<div class='eyebrow'>Le journal de la vie associative</div><h2 style='font-size:clamp(1.8rem,4vw,3rem);font-weight:950;color:#123b75;line-height:1.1'>L’actualité du club,<br>la vie de notre communauté.</h2><p style='font-size:1.08rem;max-width:850px;color:#526176;line-height:1.7'>Retrouvez les informations, annonces, événements et actions communautaires de l’ASC AFRICA dans un espace clair, vivant et accessible à tous.</p>", unsafe_allow_html=True)
-        # Carrousel communautaire XXL : trois images en plein cadre, texte court et animation automatique.
-        render_club_story_carousel()
+        # La galerie photographique défile uniquement dans la bannière supérieure.
+        # La zone Actualités ci-dessous reste consacrée aux textes des publications.
         c1,c2,c3=st.columns(3)
         c1.metric("Membres actifs", members); c2.metric("Activités à venir", len(activities)); c3.metric("Partenaires", partners)
         left,right=st.columns([1.5,1], gap="large")
@@ -966,13 +968,11 @@ def public_page():
                 st.markdown("<div class='news-card'><span class='pill'>Bienvenue</span><h3>La rubrique actualités démarre ici</h3><p>Les annonces et articles publiés par l’équipe de communication apparaîtront dans cet espace.</p></div>", unsafe_allow_html=True)
             else:
                 for _,r in latest.iterrows():
-                    cover = str(r.get("cover_url") or "").strip()
-                    cover_html = f"<img class='news-cover' src='{html.escape(cover, quote=True)}' alt='Illustration de l’actualité' loading='lazy'>" if cover.startswith(("https://", "http://")) else ""
                     badge = "<span class='pill'>À LA UNE</span> " if int(r.get("featured") or 0) else ""
                     subtitle = f"<p><b>{html.escape(str(r.get('subtitle') or ''))}</b></p>" if r.get("subtitle") else ""
                     author = f"<span> • {html.escape(str(r.get('author') or ''))}</span>" if r.get("author") else ""
                     body = html.escape(str(r['content'])[:650])
-                    st.markdown(f"<div class='news-card'>{badge}<span class='pill'>{html.escape(str(r['category'] or 'Actualité'))}</span>{cover_html}<div style='color:#718096;font-size:.82rem;margin-top:10px'>{fmt_date(r['publish_date'])}{author}</div><h3>{html.escape(str(r['title']))}</h3>{subtitle}<p style='white-space:pre-wrap;line-height:1.65'>{body}{'…' if len(str(r['content']))>650 else ''}</p></div>", unsafe_allow_html=True)
+                    st.markdown(f"<div class='news-card'>{badge}<span class='pill'>{html.escape(str(r['category'] or 'Actualité'))}</span><div style='color:#718096;font-size:.82rem;margin-top:10px'>{fmt_date(r['publish_date'])}{author}</div><h3>{html.escape(str(r['title']))}</h3>{subtitle}<p style='white-space:pre-wrap;line-height:1.65'>{body}{'…' if len(str(r['content']))>650 else ''}</p></div>", unsafe_allow_html=True)
         with right:
             st.markdown("<div class='section'>📅 Prochains rendez-vous</div>", unsafe_allow_html=True)
             if activities.empty: st.info("Les prochaines activités seront annoncées ici.")
@@ -993,12 +993,10 @@ def public_page():
             if search: news=news[news.astype(str).apply(lambda col:col.str.contains(search,case=False,na=False)).any(axis=1)]
             st.caption(f"{len(news)} publication(s)")
             for _,r in news.iterrows():
-                cover = str(r.get("cover_url") or "").strip()
-                cover_html = f"<img class='news-cover' src='{html.escape(cover, quote=True)}' alt='Illustration de l’actualité' loading='lazy'>" if cover.startswith(("https://", "http://")) else ""
                 badge = "<span class='pill'>À LA UNE</span> " if int(r.get("featured") or 0) else ""
                 subtitle = f"<p><b>{html.escape(str(r.get('subtitle') or ''))}</b></p>" if r.get("subtitle") else ""
                 author = f"<span> • {html.escape(str(r.get('author') or ''))}</span>" if r.get("author") else ""
-                st.markdown(f"<div class='news-card'>{badge}<span class='pill'>{html.escape(str(r['category'] or 'Actualité'))}</span>{cover_html}<div style='color:#718096;font-size:.82rem;margin-top:10px'>{fmt_date(r['publish_date'])}{author}</div><h3>{html.escape(str(r['title']))}</h3>{subtitle}<p style='white-space:pre-wrap;line-height:1.75'>{html.escape(str(r['content']))}</p></div>", unsafe_allow_html=True)
+                st.markdown(f"<div class='news-card'>{badge}<span class='pill'>{html.escape(str(r['category'] or 'Actualité'))}</span><div style='color:#718096;font-size:.82rem;margin-top:10px'>{fmt_date(r['publish_date'])}{author}</div><h3>{html.escape(str(r['title']))}</h3>{subtitle}<p style='white-space:pre-wrap;line-height:1.75'>{html.escape(str(r['content']))}</p></div>", unsafe_allow_html=True)
 
     elif menu == "📖 À propos":
         st.markdown("<div class='section'>📖 À propos de l’ASC AFRICA</div>", unsafe_allow_html=True)
