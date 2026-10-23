@@ -398,6 +398,43 @@ st.markdown(r"""
 </style>
 """, unsafe_allow_html=True)
 
+
+st.markdown(r"""
+<style>
+/* HERO XXL : diaporama photographique sur toute la largeur du cadre */
+.africa-full-hero{position:relative;isolation:isolate;width:100%;height:clamp(440px,47vw,760px);min-height:440px;overflow:hidden;border-radius:clamp(18px,2vw,32px);background:#06152c;border-bottom:7px solid #f4bd38;box-shadow:0 24px 65px rgba(7,23,46,.23);margin:0 0 30px}
+.africa-full-slide{position:absolute;inset:0;opacity:0;animation:africaFullFade 18s infinite;animation-delay:var(--slide-delay);overflow:hidden}
+.africa-full-slide img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;transform:scale(1.04);animation:africaKenBurns 18s infinite;animation-delay:var(--slide-delay)}
+.africa-slide-shade{position:absolute;inset:0;background:linear-gradient(90deg,rgba(3,17,38,.91) 0%,rgba(5,28,58,.78) 43%,rgba(5,25,48,.18) 100%),linear-gradient(0deg,rgba(4,17,35,.68),transparent 45%)}
+.africa-slide-copy{position:absolute;inset:0;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;padding:clamp(26px,6vw,100px);max-width:1250px;color:#fff}
+.africa-slide-copy .top-kicker{font-size:clamp(.68rem,1vw,.92rem);letter-spacing:.2em;color:#ffda76;font-weight:950;margin-bottom:clamp(15px,2vw,28px)}
+.africa-slide-overline{font-size:clamp(.72rem,1.1vw,1rem);letter-spacing:.16em;font-weight:900;color:#80e3d6;margin-bottom:14px}
+.africa-slide-copy h1{font-size:clamp(2.25rem,6.3vw,6.5rem);font-weight:1000;line-height:.98;letter-spacing:-.055em;max-width:1100px;margin:0 0 22px;text-wrap:balance;text-shadow:0 5px 28px #0007}
+.africa-slide-copy p{font-size:clamp(1rem,1.55vw,1.42rem);line-height:1.65;max-width:820px;color:#f1f6ff;margin:0}
+.africa-slide-copy .top-slogan{display:inline-block;margin-top:clamp(18px,2.4vw,32px);padding:12px 20px;border:1px solid #ffffff75;border-radius:999px;background:linear-gradient(100deg,#ffffff1c,#ffffff08);font-weight:950;font-size:clamp(.85rem,1.15vw,1.08rem);letter-spacing:.04em;box-shadow:0 8px 24px #0002}
+.africa-hero-bottom{position:absolute;z-index:5;bottom:0;left:0;right:0;display:flex;justify-content:space-between;gap:12px;padding:15px clamp(18px,3vw,44px);background:rgba(4,15,31,.78);backdrop-filter:blur(12px);color:#fff;font-size:clamp(.62rem,.85vw,.82rem);font-weight:950;letter-spacing:.12em}
+@keyframes africaFullFade{0%,2%{opacity:0}7%,30%{opacity:1}36%,100%{opacity:0}}
+@keyframes africaKenBurns{0%,100%{transform:scale(1.04)}35%{transform:scale(1.13)}}
+.africa-section-heading{padding:clamp(22px,4vw,54px);margin:22px 0;background:linear-gradient(120deg,#07172e,#123b75 65%,#087e78);border-radius:24px;border-bottom:5px solid #f4bd38;color:white;box-shadow:0 18px 40px #123b7520}
+.africa-section-heading>span{color:#ffda76;letter-spacing:.18em;font-size:.78rem;font-weight:950}
+.africa-section-heading h2{font-size:clamp(1.8rem,4vw,3.7rem);font-weight:1000;line-height:1.05;color:white;margin:12px 0}
+.africa-section-heading p{font-size:clamp(1rem,1.5vw,1.3rem);line-height:1.65;color:#e4efff;max-width:950px;margin:0}
+.africa-xl-card{height:100%;overflow:hidden;border-radius:24px;background:white;border:1px solid #d9e5f3;box-shadow:0 16px 38px #07172e12;transition:transform .3s ease,box-shadow .3s ease}
+.africa-xl-card:hover{transform:translateY(-7px);box-shadow:0 25px 55px #07172e24}
+.africa-xl-image-wrap{position:relative;height:clamp(300px,31vw,510px);overflow:hidden;background:#dce9f8}
+.africa-xl-image-wrap img{display:block;width:100%;height:100%;object-fit:cover;transition:transform .7s ease}
+.africa-xl-card:hover .africa-xl-image-wrap img{transform:scale(1.06)}
+.africa-xl-number{position:absolute;top:16px;left:16px;padding:8px 12px;border-radius:10px;background:#f4bd38;color:#07172e;font-weight:1000;font-size:1.1rem}
+.africa-xl-copy{padding:clamp(18px,2vw,30px)}
+.africa-xl-kicker{font-size:.7rem;letter-spacing:.15em;font-weight:950;color:#087e78}
+.africa-xl-copy h3{font-size:clamp(1.25rem,1.8vw,2rem);font-weight:1000;line-height:1.12;color:#123b75;margin:12px 0}
+.africa-xl-copy p{font-size:clamp(.98rem,1.1vw,1.12rem);line-height:1.7;color:#526176}
+.africa-xl-signature{margin-top:20px;padding-top:14px;border-top:1px solid #dce7f4;color:#123b75;font-size:.82rem;font-weight:1000;letter-spacing:.06em}
+@media(max-width:700px){.africa-full-hero{height:590px;min-height:520px;border-radius:17px}.africa-slide-shade{background:linear-gradient(90deg,rgba(3,17,38,.88),rgba(5,28,58,.54)),linear-gradient(0deg,rgba(4,17,35,.72),transparent 70%)}.africa-slide-copy{padding:24px 19px 68px}.africa-slide-copy h1{font-size:clamp(2.2rem,10vw,3.5rem);line-height:1.02}.africa-slide-copy p{font-size:1rem;line-height:1.58}.africa-hero-bottom{flex-wrap:wrap;justify-content:center;text-align:center;font-size:.62rem;padding:12px 8px}.africa-xl-image-wrap{height:clamp(280px,82vw,430px)}.africa-section-heading{padding:23px 18px;border-radius:17px}}
+@media(prefers-reduced-motion:reduce){.africa-full-slide,.africa-full-slide img{animation:none!important}.africa-full-slide:first-child{opacity:1}.africa-full-slide:not(:first-child){opacity:0}.africa-xl-card,.africa-xl-image-wrap img{transition:none!important}}
+</style>
+""", unsafe_allow_html=True)
+
 components.html("""
 <script>
 (function () {
@@ -678,25 +715,39 @@ def receipt_pdf_bytes(row):
     return buf.getvalue()
 
 def header():
-    """Bandeau XXL animé avec les images im1.png, im2.png et im3.png."""
-    slogan = html.escape(SLOGAN)
-    images = [
-        (APP_DIR / "im1.png", "Supporters de l’ASC AFRICA"),
-        (APP_DIR / "im2.png", "Équipe de l’ASC AFRICA"),
-        (APP_DIR / "im3.png", "Logo officiel de l’ASC AFRICA"),
+    """Bannière XXL plein cadre : diaporama immersif avec slogans galvanisants."""
+    slides = [
+        ("https://ascafrica.streamlit.app/~/+/media/33733a2315e25a96fe358d9fa825e7c7.png",
+         "NOTRE FIERTÉ, NOTRE FAMILLE, NOTRE HISTOIRE",
+         "Des tribunes au terrain, des anciens aux nouvelles générations : chaque Africaine et chaque Africain écrit une page de notre histoire. Nos couleurs nous rassemblent, notre engagement nous fait avancer."),
+        ("https://ascafrica.streamlit.app/~/+/media/18111d99c568fbdb39115fa1aefd7542.png",
+         "LA PASSION NOUS RASSEMBLE",
+         "Chaque supporter est une voix, chaque encouragement une force. Quand Saint-Louis pousse derrière l’ASC AFRICA, c’est tout un peuple qui fait battre le même cœur."),
+        ("https://ascafrica.streamlit.app/~/+/media/0e88e77cba6179f735a05cf91ba9537e.jpg",
+         "UN GROUPE, UNE FAMILLE",
+         "Sur le terrain, nous combattons ensemble. Dans la vie, nous nous soutenons. La solidarité fait notre force, le travail forge notre caractère, et l’ambition guide nos pas."),
     ]
-    image_tags = []
-    for path, alt in images:
-        if path.exists():
-            uri = _logo_data_uri(path)
-            if uri:
-                image_tags.append(f'<img src="{uri}" alt="{html.escape(alt, quote=True)}">')
-    stage = '<div class="africa-photo-stage" aria-label="Galerie animée ASC AFRICA">' + ''.join(image_tags) + '</div>' if image_tags else ''
-    st.markdown(f'''<section class="africa-topband" role="banner" aria-label="Présentation de l’ASC AFRICA">
-      <div><div class="top-kicker">Saint-Louis • Sénégal • La passion du club</div>
-      <h1>ASC AFRICA</h1>
-      <p>Une équipe, une famille, une fierté. Suivez les actualités, les activités et les initiatives de notre communauté.</p>
-      <span class="top-slogan">{slogan}</span></div>{stage}</section>''', unsafe_allow_html=True)
+    slides_html = []
+    for i, (url, title, message) in enumerate(slides):
+        slides_html.append(
+            f'<article class="africa-full-slide slide-{i+1}" style="--slide-delay:{i*6}s">'
+            f'<img src="{html.escape(url, quote=True)}" alt="{html.escape(title, quote=True)}" '
+            f'loading="{"eager" if i == 0 else "lazy"}">'
+            f'<div class="africa-slide-shade"></div><div class="africa-slide-copy">'
+            f'<div class="top-kicker">SAINT-LOUIS • SÉNÉGAL • LA PASSION DU CLUB</div>'
+            f'<div class="africa-slide-overline">UNE ÉQUIPE. UN PEUPLE. UNE FIERTÉ.</div>'
+            f'<h1>{html.escape(title)}</h1><p>{html.escape(message)}</p>'
+            f'<span class="top-slogan">⚽ AFRICA KASSÉ, AFRICA REK</span>'
+            f'</div></article>'
+        )
+    st.markdown(
+        '<section class="africa-full-hero" aria-label="Diaporama de l’ASC AFRICA">'
+        + ''.join(slides_html)
+        + '<div class="africa-hero-bottom"><span>BLEU • BLANC • OR</span>'
+          '<span>ENSEMBLE, PLUS FORTS</span><span>ASC AFRICA · SAINT-LOUIS</span></div>'
+        '</section>',
+        unsafe_allow_html=True
+    )
 
 
 def bottom_message():
@@ -834,20 +885,31 @@ def public_page():
         members = int(query_df("SELECT COUNT(*) n FROM members WHERE status='Actif'").iloc[0,0])
         partners = int(query_df("SELECT COUNT(*) n FROM sponsors").iloc[0,0])
         st.markdown("<div class='eyebrow'>Le journal de la vie associative</div><h2 style='font-size:clamp(1.8rem,4vw,3rem);font-weight:950;color:#123b75;line-height:1.1'>L’actualité du club,<br>la vie de notre communauté.</h2><p style='font-size:1.08rem;max-width:850px;color:#526176;line-height:1.7'>Retrouvez les informations, annonces, événements et actions communautaires de l’ASC AFRICA dans un espace clair, vivant et accessible à tous.</p>", unsafe_allow_html=True)
-        # Galerie officielle : portraits de supporters, équipe et emblème du club.
+        # Galerie XXL : images plein cadre, textes fédérateurs et identitaires.
         gallery_items = [
-            (APP_DIR / "im1.png", "LA PASSION NOUS RASSEMBLE", "Chaque supporter fait battre le cœur de l’ASC AFRICA."),
-            (APP_DIR / "im2.png", "UN GROUPE, UNE FAMILLE", "Ensemble sur le terrain, unis dans la vie."),
-            (APP_DIR / "im3.png", "UNE IDENTITÉ, UNE FIERTÉ", "AFRICA KASSÉ, AFRICA REK — Saint-Louis, Sénégal."),
+            ("https://ascafrica.streamlit.app/~/+/media/33733a2315e25a96fe358d9fa825e7c7.png",
+             "NOTRE FIERTÉ, NOTRE FAMILLE, NOTRE HISTOIRE",
+             "Des tribunes au terrain, chaque génération apporte sa pierre. Nous honorons nos anciens, nous encourageons nos joueurs et nous préparons l’avenir avec courage."),
+            ("https://ascafrica.streamlit.app/~/+/media/18111d99c568fbdb39115fa1aefd7542.png",
+             "LA PASSION NOUS RASSEMBLE",
+             "Un chant, un maillot, un même cœur. Chaque supporter compte : votre énergie pousse l’équipe à se dépasser et fait rayonner l’ASC AFRICA dans tout Saint-Louis."),
+            ("https://ascafrica.streamlit.app/~/+/media/0e88e77cba6179f735a05cf91ba9537e.jpg",
+             "UN GROUPE, UNE FAMILLE",
+             "La victoire se construit dans l’effort, la discipline et la solidarité. Sur le terrain comme en dehors, nous avançons ensemble et nous ne laissons personne derrière."),
         ]
-        st.markdown("<div class='section'>💙 Notre fierté, notre famille, notre histoire</div><p style='color:#526176;line-height:1.7'>Des tribunes au terrain, l’ASC AFRICA vit grâce à celles et ceux qui portent ses couleurs.</p>", unsafe_allow_html=True)
+        st.markdown("<div class='africa-section-heading'><span>LA FORCE D’UN CLUB, L’ÂME D’UNE VILLE</span><h2>Notre fierté. Notre famille. Notre histoire.</h2><p>Une seule passion nous unit : faire grandir l’ASC AFRICA et porter haut les couleurs de Saint-Louis.</p></div>", unsafe_allow_html=True)
         gcols = st.columns(3, gap="large")
-        for col, (img_path, title, message) in zip(gcols, gallery_items):
-            with col:
-                if img_path.exists():
-                    st.markdown("<div class='club-gallery-card'>", unsafe_allow_html=True)
-                    st.image(str(img_path), use_container_width=True)
-                    st.markdown(f"<div class='club-gallery-message'>{html.escape(title)}</div><div class='club-gallery-sub'>{html.escape(message)}</div></div>", unsafe_allow_html=True)
+        for idx, (img_url, title, message) in enumerate(gallery_items):
+            with gcols[idx]:
+                st.markdown(
+                    f'<article class="africa-xl-card"><div class="africa-xl-image-wrap">'
+                    f'<img src="{html.escape(img_url, quote=True)}" alt="{html.escape(title, quote=True)}" loading="lazy">'
+                    f'<span class="africa-xl-number">0{idx+1}</span></div>'
+                    f'<div class="africa-xl-copy"><span class="africa-xl-kicker">ASC AFRICA • SAINT-LOUIS</span>'
+                    f'<h3>{html.escape(title)}</h3><p>{html.escape(message)}</p>'
+                    f'<div class="africa-xl-signature">AFRICA KASSÉ, AFRICA REK ✊🏾</div></div></article>',
+                    unsafe_allow_html=True
+                )
         c1,c2,c3=st.columns(3)
         c1.metric("Membres actifs", members); c2.metric("Activités à venir", len(activities)); c3.metric("Partenaires", partners)
         left,right=st.columns([1.5,1], gap="large")
