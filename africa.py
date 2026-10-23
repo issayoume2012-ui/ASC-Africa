@@ -170,6 +170,36 @@ div[data-testid="stImage"] img{{max-height:clamp(150px,18vw,230px);max-width:100
 .news-card{{transition:transform .18s ease,box-shadow .18s ease}}
 .news-card:hover,.feature-card:hover{{transform:translateY(-2px);box-shadow:0 14px 32px #123b7517}}
 .club-gallery-card{{border-radius:24px;overflow:hidden;background:#fff;border:1px solid #e1e9f4;box-shadow:0 16px 40px rgba(7,23,46,.12);padding:12px;height:100%;transition:transform .35s ease,box-shadow .35s ease;animation:clubRise .8s both;}}
+/* Carrousel XXL de la communauté — section située sur l'accueil, sous l'introduction */
+.club-story-wrap{{position:relative;width:100%;margin:20px 0 28px;}}
+.club-story-kicker{{display:flex;align-items:center;gap:10px;color:#0b8278;font-weight:950;letter-spacing:.16em;text-transform:uppercase;font-size:.76rem;margin:0 0 10px;}}
+.club-story-kicker:before{{content:"";width:34px;height:4px;background:#f4bd38;border-radius:8px;}}
+.club-story-carousel{{position:relative;isolation:isolate;overflow:hidden;width:100%;height:clamp(340px,48vw,610px);min-height:340px;border-radius:clamp(20px,2.5vw,34px);background:#07172e;box-shadow:0 24px 65px rgba(7,23,46,.24);border:1px solid #ffffff80;}}
+.club-story-slide{{position:absolute;inset:0;opacity:0;overflow:hidden;animation:clubStoryFade 18s infinite;}}
+.club-story-slide:nth-child(1){{animation-delay:0s}}.club-story-slide:nth-child(2){{animation-delay:6s}}.club-story-slide:nth-child(3){{animation-delay:12s}}
+.club-story-slide img{{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;animation:clubStoryZoom 18s infinite;filter:saturate(1.12) contrast(1.04);}}
+.club-story-slide:nth-child(2) img{{animation-delay:6s}}.club-story-slide:nth-child(3) img{{animation-delay:12s}}
+.club-story-slide:after{{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(4,19,48,.94) 0%,rgba(8,38,84,.79) 42%,rgba(7,23,46,.18) 100%),linear-gradient(0deg,rgba(4,19,48,.45),transparent 55%);}}
+.club-story-copy{{position:absolute;z-index:2;left:clamp(22px,5vw,76px);right:clamp(20px,5vw,70px);bottom:clamp(26px,5vw,68px);max-width:820px;color:#fff;animation:clubStoryText .9s both;}}
+.club-story-number{{display:inline-flex;align-items:center;gap:10px;color:#ffdc72;font-weight:950;font-size:.8rem;letter-spacing:.18em;text-transform:uppercase;margin-bottom:15px;}}
+.club-story-number:before{{content:"";height:3px;width:34px;background:#ffca3a;border-radius:8px;}}
+.club-story-copy h3{{font-size:clamp(2rem,5.3vw,5rem);line-height:.99;letter-spacing:-.045em;font-weight:1000;color:#fff;margin:0 0 18px;text-transform:uppercase;text-shadow:0 4px 25px #0005;max-width:850px;}}
+.club-story-copy p{{font-size:clamp(1rem,1.7vw,1.35rem);line-height:1.5;color:#f2f7ff;margin:0 0 22px;max-width:650px;font-weight:550;}}
+.club-story-tag{{display:inline-flex;align-items:center;gap:9px;border:1px solid #ffffff70;background:#ffffff17;backdrop-filter:blur(10px);padding:11px 17px;border-radius:999px;color:#fff;font-size:.82rem;font-weight:950;letter-spacing:.08em;}}
+.club-story-tag b{{color:#ffcf42;}}
+.club-story-progress{{position:absolute;z-index:4;left:clamp(22px,5vw,76px);bottom:18px;display:flex;gap:7px;}}
+.club-story-progress span{{width:26px;height:4px;border-radius:10px;background:#ffffff70;overflow:hidden;}}
+.club-story-progress span:after{{content:"";display:block;height:100%;width:0;background:#ffca3a;animation:clubStoryProgress 18s linear infinite;}}
+.club-story-progress span:nth-child(2):after{{animation-delay:6s}}.club-story-progress span:nth-child(3):after{{animation-delay:12s}}
+.club-story-bottom{{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin:12px 4px 0;color:#64748b;font-size:.78rem;font-weight:900;letter-spacing:.1em;text-transform:uppercase;}}
+.club-story-bottom strong{{color:#123b75;}}
+@keyframes clubStoryFade{{0%,100%{{opacity:0}}4%,30%{{opacity:1}}36%,99%{{opacity:0}}}}
+@keyframes clubStoryZoom{{0%,100%{{transform:scale(1.08)}}36%{{transform:scale(1)}}}}
+@keyframes clubStoryText{{from{{opacity:0;transform:translateY(18px)}}to{{opacity:1;transform:translateY(0)}}}}
+@keyframes clubStoryProgress{{0%{{width:0}}33.33%{{width:100%}}100%{{width:100%}}}}
+@media(max-width:700px){{.club-story-carousel{{height:clamp(390px,112vw,520px);min-height:390px;border-radius:20px}}.club-story-slide:after{{background:linear-gradient(0deg,rgba(4,19,48,.94) 0%,rgba(8,38,84,.64) 56%,rgba(7,23,46,.08) 100%)}}.club-story-copy{{left:20px;right:20px;bottom:48px}}.club-story-copy h3{{font-size:clamp(2rem,9vw,3.3rem);margin-bottom:12px}}.club-story-copy p{{font-size:.98rem;line-height:1.45;margin-bottom:15px}}.club-story-tag{{font-size:.72rem;padding:9px 13px}}.club-story-progress{{left:20px;bottom:17px}}.club-story-bottom{{font-size:.68rem;letter-spacing:.06em}}}}
+@media(prefers-reduced-motion:reduce){{.club-story-slide,.club-story-slide img,.club-story-progress span:after{{animation:none!important}}.club-story-slide{{opacity:0}}.club-story-slide:first-child{{opacity:1}}}}
+
 .club-gallery-card:hover{{transform:translateY(-7px);box-shadow:0 22px 48px rgba(7,23,46,.19)}}
 .club-gallery-card img{{width:100%;height:clamp(230px,29vw,430px);object-fit:cover;object-position:center;border-radius:17px;display:block;transition:transform .7s ease;}}
 .club-gallery-card:hover img{{transform:scale(1.035)}}
@@ -395,43 +425,6 @@ st.markdown(r"""
 @media (prefers-reduced-motion:reduce) {
   *, *::before, *::after { scroll-behavior:auto!important; animation-duration:.01ms!important; animation-iteration-count:1!important; transition-duration:.01ms!important; }
 }
-</style>
-""", unsafe_allow_html=True)
-
-
-st.markdown(r"""
-<style>
-/* HERO XXL : diaporama photographique sur toute la largeur du cadre */
-.africa-full-hero{position:relative;isolation:isolate;width:100%;height:clamp(440px,47vw,760px);min-height:440px;overflow:hidden;border-radius:clamp(18px,2vw,32px);background:#06152c;border-bottom:7px solid #f4bd38;box-shadow:0 24px 65px rgba(7,23,46,.23);margin:0 0 30px}
-.africa-full-slide{position:absolute;inset:0;opacity:0;animation:africaFullFade 18s infinite;animation-delay:var(--slide-delay);overflow:hidden}
-.africa-full-slide img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;transform:scale(1.04);animation:africaKenBurns 18s infinite;animation-delay:var(--slide-delay)}
-.africa-slide-shade{position:absolute;inset:0;background:linear-gradient(90deg,rgba(3,17,38,.91) 0%,rgba(5,28,58,.78) 43%,rgba(5,25,48,.18) 100%),linear-gradient(0deg,rgba(4,17,35,.68),transparent 45%)}
-.africa-slide-copy{position:absolute;inset:0;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;padding:clamp(26px,6vw,100px);max-width:1250px;color:#fff}
-.africa-slide-copy .top-kicker{font-size:clamp(.68rem,1vw,.92rem);letter-spacing:.2em;color:#ffda76;font-weight:950;margin-bottom:clamp(15px,2vw,28px)}
-.africa-slide-overline{font-size:clamp(.72rem,1.1vw,1rem);letter-spacing:.16em;font-weight:900;color:#80e3d6;margin-bottom:14px}
-.africa-slide-copy h1{font-size:clamp(2.25rem,6.3vw,6.5rem);font-weight:1000;line-height:.98;letter-spacing:-.055em;max-width:1100px;margin:0 0 22px;text-wrap:balance;text-shadow:0 5px 28px #0007}
-.africa-slide-copy p{font-size:clamp(1rem,1.55vw,1.42rem);line-height:1.65;max-width:820px;color:#f1f6ff;margin:0}
-.africa-slide-copy .top-slogan{display:inline-block;margin-top:clamp(18px,2.4vw,32px);padding:12px 20px;border:1px solid #ffffff75;border-radius:999px;background:linear-gradient(100deg,#ffffff1c,#ffffff08);font-weight:950;font-size:clamp(.85rem,1.15vw,1.08rem);letter-spacing:.04em;box-shadow:0 8px 24px #0002}
-.africa-hero-bottom{position:absolute;z-index:5;bottom:0;left:0;right:0;display:flex;justify-content:space-between;gap:12px;padding:15px clamp(18px,3vw,44px);background:rgba(4,15,31,.78);backdrop-filter:blur(12px);color:#fff;font-size:clamp(.62rem,.85vw,.82rem);font-weight:950;letter-spacing:.12em}
-@keyframes africaFullFade{0%,2%{opacity:0}7%,30%{opacity:1}36%,100%{opacity:0}}
-@keyframes africaKenBurns{0%,100%{transform:scale(1.04)}35%{transform:scale(1.13)}}
-.africa-section-heading{padding:clamp(22px,4vw,54px);margin:22px 0;background:linear-gradient(120deg,#07172e,#123b75 65%,#087e78);border-radius:24px;border-bottom:5px solid #f4bd38;color:white;box-shadow:0 18px 40px #123b7520}
-.africa-section-heading>span{color:#ffda76;letter-spacing:.18em;font-size:.78rem;font-weight:950}
-.africa-section-heading h2{font-size:clamp(1.8rem,4vw,3.7rem);font-weight:1000;line-height:1.05;color:white;margin:12px 0}
-.africa-section-heading p{font-size:clamp(1rem,1.5vw,1.3rem);line-height:1.65;color:#e4efff;max-width:950px;margin:0}
-.africa-xl-card{height:100%;overflow:hidden;border-radius:24px;background:white;border:1px solid #d9e5f3;box-shadow:0 16px 38px #07172e12;transition:transform .3s ease,box-shadow .3s ease}
-.africa-xl-card:hover{transform:translateY(-7px);box-shadow:0 25px 55px #07172e24}
-.africa-xl-image-wrap{position:relative;height:clamp(300px,31vw,510px);overflow:hidden;background:#dce9f8}
-.africa-xl-image-wrap img{display:block;width:100%;height:100%;object-fit:cover;transition:transform .7s ease}
-.africa-xl-card:hover .africa-xl-image-wrap img{transform:scale(1.06)}
-.africa-xl-number{position:absolute;top:16px;left:16px;padding:8px 12px;border-radius:10px;background:#f4bd38;color:#07172e;font-weight:1000;font-size:1.1rem}
-.africa-xl-copy{padding:clamp(18px,2vw,30px)}
-.africa-xl-kicker{font-size:.7rem;letter-spacing:.15em;font-weight:950;color:#087e78}
-.africa-xl-copy h3{font-size:clamp(1.25rem,1.8vw,2rem);font-weight:1000;line-height:1.12;color:#123b75;margin:12px 0}
-.africa-xl-copy p{font-size:clamp(.98rem,1.1vw,1.12rem);line-height:1.7;color:#526176}
-.africa-xl-signature{margin-top:20px;padding-top:14px;border-top:1px solid #dce7f4;color:#123b75;font-size:.82rem;font-weight:1000;letter-spacing:.06em}
-@media(max-width:700px){.africa-full-hero{height:590px;min-height:520px;border-radius:17px}.africa-slide-shade{background:linear-gradient(90deg,rgba(3,17,38,.88),rgba(5,28,58,.54)),linear-gradient(0deg,rgba(4,17,35,.72),transparent 70%)}.africa-slide-copy{padding:24px 19px 68px}.africa-slide-copy h1{font-size:clamp(2.2rem,10vw,3.5rem);line-height:1.02}.africa-slide-copy p{font-size:1rem;line-height:1.58}.africa-hero-bottom{flex-wrap:wrap;justify-content:center;text-align:center;font-size:.62rem;padding:12px 8px}.africa-xl-image-wrap{height:clamp(280px,82vw,430px)}.africa-section-heading{padding:23px 18px;border-radius:17px}}
-@media(prefers-reduced-motion:reduce){.africa-full-slide,.africa-full-slide img{animation:none!important}.africa-full-slide:first-child{opacity:1}.africa-full-slide:not(:first-child){opacity:0}.africa-xl-card,.africa-xl-image-wrap img{transition:none!important}}
 </style>
 """, unsafe_allow_html=True)
 
@@ -715,39 +708,25 @@ def receipt_pdf_bytes(row):
     return buf.getvalue()
 
 def header():
-    """Bannière XXL plein cadre : diaporama immersif avec slogans galvanisants."""
-    slides = [
-        ("https://ascafrica.streamlit.app/~/+/media/33733a2315e25a96fe358d9fa825e7c7.png",
-         "NOTRE FIERTÉ, NOTRE FAMILLE, NOTRE HISTOIRE",
-         "Des tribunes au terrain, des anciens aux nouvelles générations : chaque Africaine et chaque Africain écrit une page de notre histoire. Nos couleurs nous rassemblent, notre engagement nous fait avancer."),
-        ("https://ascafrica.streamlit.app/~/+/media/18111d99c568fbdb39115fa1aefd7542.png",
-         "LA PASSION NOUS RASSEMBLE",
-         "Chaque supporter est une voix, chaque encouragement une force. Quand Saint-Louis pousse derrière l’ASC AFRICA, c’est tout un peuple qui fait battre le même cœur."),
-        ("https://ascafrica.streamlit.app/~/+/media/0e88e77cba6179f735a05cf91ba9537e.jpg",
-         "UN GROUPE, UNE FAMILLE",
-         "Sur le terrain, nous combattons ensemble. Dans la vie, nous nous soutenons. La solidarité fait notre force, le travail forge notre caractère, et l’ambition guide nos pas."),
+    """Bandeau XXL animé avec les images im1.png, im2.png et im3.png."""
+    slogan = html.escape(SLOGAN)
+    images = [
+        (APP_DIR / "im1.png", "Supporters de l’ASC AFRICA"),
+        (APP_DIR / "im2.png", "Équipe de l’ASC AFRICA"),
+        (APP_DIR / "im3.png", "Logo officiel de l’ASC AFRICA"),
     ]
-    slides_html = []
-    for i, (url, title, message) in enumerate(slides):
-        slides_html.append(
-            f'<article class="africa-full-slide slide-{i+1}" style="--slide-delay:{i*6}s">'
-            f'<img src="{html.escape(url, quote=True)}" alt="{html.escape(title, quote=True)}" '
-            f'loading="{"eager" if i == 0 else "lazy"}">'
-            f'<div class="africa-slide-shade"></div><div class="africa-slide-copy">'
-            f'<div class="top-kicker">SAINT-LOUIS • SÉNÉGAL • LA PASSION DU CLUB</div>'
-            f'<div class="africa-slide-overline">UNE ÉQUIPE. UN PEUPLE. UNE FIERTÉ.</div>'
-            f'<h1>{html.escape(title)}</h1><p>{html.escape(message)}</p>'
-            f'<span class="top-slogan">⚽ AFRICA KASSÉ, AFRICA REK</span>'
-            f'</div></article>'
-        )
-    st.markdown(
-        '<section class="africa-full-hero" aria-label="Diaporama de l’ASC AFRICA">'
-        + ''.join(slides_html)
-        + '<div class="africa-hero-bottom"><span>BLEU • BLANC • OR</span>'
-          '<span>ENSEMBLE, PLUS FORTS</span><span>ASC AFRICA · SAINT-LOUIS</span></div>'
-        '</section>',
-        unsafe_allow_html=True
-    )
+    image_tags = []
+    for path, alt in images:
+        if path.exists():
+            uri = _logo_data_uri(path)
+            if uri:
+                image_tags.append(f'<img src="{uri}" alt="{html.escape(alt, quote=True)}">')
+    stage = '<div class="africa-photo-stage" aria-label="Galerie animée ASC AFRICA">' + ''.join(image_tags) + '</div>' if image_tags else ''
+    st.markdown(f'''<section class="africa-topband" role="banner" aria-label="Présentation de l’ASC AFRICA">
+      <div><div class="top-kicker">Saint-Louis • Sénégal • La passion du club</div>
+      <h1>ASC AFRICA</h1>
+      <p>Une équipe, une famille, une fierté. Suivez les actualités, les activités et les initiatives de notre communauté.</p>
+      <span class="top-slogan">{slogan}</span></div>{stage}</section>''', unsafe_allow_html=True)
 
 
 def bottom_message():
@@ -870,6 +849,61 @@ def login():
         st.caption("Compte historique conservé : Africa. Le mot de passe initial est africa2026 si le compte n’a jamais été modifié.")
         st.info("Les responsables disposent désormais d’accès séparés selon leur bureau : Finances globales ou Affaires administratives.")
 
+def render_club_story_carousel():
+    """Carrousel XXL animé : peu de texte, photos plein cadre et slogans courts."""
+    slides = [
+        {
+            "path": APP_DIR / "im1.png",
+            "fallback": "https://ascafrica.streamlit.app/~/+/media/33733a2315e25a96fe358d9fa825e7c7.png",
+            "alt": "La fierté et l'histoire de l'ASC AFRICA",
+            "number": "01 · NOTRE HISTOIRE",
+            "title": "UNE FIERTÉ.\nUNE FAMILLE.",
+            "message": "Une ville, un maillot, une passion qui nous unit.",
+        },
+        {
+            "path": APP_DIR / "im2.png",
+            "fallback": "https://ascafrica.streamlit.app/~/+/media/18111d99c568fbdb39115fa1aefd7542.png",
+            "alt": "Les supporters de l'ASC AFRICA",
+            "number": "02 · NOS SUPPORTERS",
+            "title": "NOTRE FORCE,\nC'EST VOUS.",
+            "message": "Chaque voix compte. Chaque soutien nous pousse plus haut.",
+        },
+        {
+            "path": APP_DIR / "im3.png",
+            "fallback": "https://ascafrica.streamlit.app/~/+/media/0e88e77cba6179f735a05cf91ba9537e.jpg",
+            "alt": "L'équipe et l'identité de l'ASC AFRICA",
+            "number": "03 · UN SEUL AFRICA",
+            "title": "UN GROUPE.\nUN MÊME COMBAT.",
+            "message": "Solidaires dans l'effort. Unis dans la victoire.",
+        },
+    ]
+    slide_html = []
+    for item in slides:
+        image_src = _logo_data_uri(item["path"]) if item["path"].exists() else item["fallback"]
+        # Si un fichier local est présent mais illisible, utiliser quand même l'URL fournie.
+        if not image_src:
+            image_src = item["fallback"]
+        slide_html.append(
+            "<article class='club-story-slide'>"
+            f"<img src='{html.escape(image_src, quote=True)}' alt='{html.escape(item['alt'], quote=True)}' loading='eager'>"
+            "<div class='club-story-copy'>"
+            f"<div class='club-story-number'>{html.escape(item['number'])}</div>"
+            f"<h3>{html.escape(item['title']).replace(chr(10), '<br>')}</h3>"
+            f"<p>{html.escape(item['message'])}</p>"
+            "<div class='club-story-tag'>⚽ <b>ASC AFRICA</b> · SAINT-LOUIS</div>"
+            "</div></article>"
+        )
+    progress = "<div class='club-story-progress'><span></span><span></span><span></span></div>"
+    st.markdown(
+        "<div class='club-story-wrap'>"
+        "<div class='club-story-kicker'>La force d'un club · L'âme d'une ville</div>"
+        "<div class='club-story-carousel'>" + "".join(slide_html) + progress + "</div>"
+        "<div class='club-story-bottom'><span><strong>AFRICA KASSÉ</strong>, AFRICA REK ✊🏾</span>"
+        "<span>Saint-Louis · Sénégal</span></div></div>",
+        unsafe_allow_html=True,
+    )
+
+
 def public_page():
     header()
     bottom_message()
@@ -885,31 +919,8 @@ def public_page():
         members = int(query_df("SELECT COUNT(*) n FROM members WHERE status='Actif'").iloc[0,0])
         partners = int(query_df("SELECT COUNT(*) n FROM sponsors").iloc[0,0])
         st.markdown("<div class='eyebrow'>Le journal de la vie associative</div><h2 style='font-size:clamp(1.8rem,4vw,3rem);font-weight:950;color:#123b75;line-height:1.1'>L’actualité du club,<br>la vie de notre communauté.</h2><p style='font-size:1.08rem;max-width:850px;color:#526176;line-height:1.7'>Retrouvez les informations, annonces, événements et actions communautaires de l’ASC AFRICA dans un espace clair, vivant et accessible à tous.</p>", unsafe_allow_html=True)
-        # Galerie XXL : images plein cadre, textes fédérateurs et identitaires.
-        gallery_items = [
-            ("https://ascafrica.streamlit.app/~/+/media/33733a2315e25a96fe358d9fa825e7c7.png",
-             "NOTRE FIERTÉ, NOTRE FAMILLE, NOTRE HISTOIRE",
-             "Des tribunes au terrain, chaque génération apporte sa pierre. Nous honorons nos anciens, nous encourageons nos joueurs et nous préparons l’avenir avec courage."),
-            ("https://ascafrica.streamlit.app/~/+/media/18111d99c568fbdb39115fa1aefd7542.png",
-             "LA PASSION NOUS RASSEMBLE",
-             "Un chant, un maillot, un même cœur. Chaque supporter compte : votre énergie pousse l’équipe à se dépasser et fait rayonner l’ASC AFRICA dans tout Saint-Louis."),
-            ("https://ascafrica.streamlit.app/~/+/media/0e88e77cba6179f735a05cf91ba9537e.jpg",
-             "UN GROUPE, UNE FAMILLE",
-             "La victoire se construit dans l’effort, la discipline et la solidarité. Sur le terrain comme en dehors, nous avançons ensemble et nous ne laissons personne derrière."),
-        ]
-        st.markdown("<div class='africa-section-heading'><span>LA FORCE D’UN CLUB, L’ÂME D’UNE VILLE</span><h2>Notre fierté. Notre famille. Notre histoire.</h2><p>Une seule passion nous unit : faire grandir l’ASC AFRICA et porter haut les couleurs de Saint-Louis.</p></div>", unsafe_allow_html=True)
-        gcols = st.columns(3, gap="large")
-        for idx, (img_url, title, message) in enumerate(gallery_items):
-            with gcols[idx]:
-                st.markdown(
-                    f'<article class="africa-xl-card"><div class="africa-xl-image-wrap">'
-                    f'<img src="{html.escape(img_url, quote=True)}" alt="{html.escape(title, quote=True)}" loading="lazy">'
-                    f'<span class="africa-xl-number">0{idx+1}</span></div>'
-                    f'<div class="africa-xl-copy"><span class="africa-xl-kicker">ASC AFRICA • SAINT-LOUIS</span>'
-                    f'<h3>{html.escape(title)}</h3><p>{html.escape(message)}</p>'
-                    f'<div class="africa-xl-signature">AFRICA KASSÉ, AFRICA REK ✊🏾</div></div></article>',
-                    unsafe_allow_html=True
-                )
+        # Carrousel communautaire XXL : trois images en plein cadre, texte court et animation automatique.
+        render_club_story_carousel()
         c1,c2,c3=st.columns(3)
         c1.metric("Membres actifs", members); c2.metric("Activités à venir", len(activities)); c3.metric("Partenaires", partners)
         left,right=st.columns([1.5,1], gap="large")
