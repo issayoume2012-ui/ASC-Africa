@@ -276,18 +276,19 @@ div[data-testid="stDataFrame"]{{overflow-x:auto;}}
 }}
 @media(prefers-reduced-motion:reduce){{html{{scroll-behavior:auto;}}}}
 
-/* Bandeau signature ASC AFRICA : carrousel XXL à sept diapositives, bleu et blanc */
-.africa-topband{{position:relative;isolation:isolate;overflow:hidden;display:grid;grid-template-columns:minmax(0,1fr) minmax(280px,.95fr);align-items:center;gap:clamp(18px,3vw,38px);padding:clamp(22px,3.6vw,48px);border-radius:clamp(20px,2.2vw,32px);color:#fff;background:radial-gradient(circle at 8% 10%,#2868b5 0,transparent 40%),linear-gradient(130deg,#061a3b 0%,#0d3670 58%,#174f91 100%);border:1px solid #b8d7ff;box-shadow:0 20px 50px #092b5b30;margin:0 0 22px;}}
-.africa-topband:before{{content:"";position:absolute;inset:0;z-index:-1;opacity:.16;background:repeating-linear-gradient(135deg,transparent 0 28px,#fff 29px 30px,transparent 31px 60px);mask-image:linear-gradient(90deg,#000,transparent 88%);}}
-.africa-topband h1{{font-size:clamp(2.4rem,5.4vw,5.2rem);line-height:.98;letter-spacing:-.05em;font-weight:950;margin:12px 0 16px;color:#fff;text-shadow:0 5px 20px #001a3b55;}}
-.africa-topband p{{font-size:clamp(1rem,1.55vw,1.24rem);line-height:1.7;color:#edf5ff;margin:0;max-width:720px;}}
-.africa-topband .top-kicker{{font-size:.75rem;text-transform:uppercase;letter-spacing:.17em;line-height:1.7;font-weight:900;color:#dcecff;}}
-.africa-topband .top-slogan{{display:inline-block;margin-top:18px;padding:10px 15px;border:1px solid #ffffff70;border-radius:999px;background:#ffffff12;color:#fff;font-weight:900;letter-spacing:.035em;}}
-.africa-photo-stage{{position:relative;width:100%;height:clamp(270px,31vw,430px);min-width:0;overflow:hidden;border-radius:24px;background:#eaf2fc;border:2px solid #ffffffd9;box-shadow:0 18px 42px #00132f55;isolation:isolate;}}
+/* Bandeau signature ASC AFRICA : photos et textes couvrent toute la bannière supérieure */
+.africa-topband{{position:relative;isolation:isolate;overflow:hidden;display:flex;align-items:center;justify-content:center;min-height:clamp(430px,55vw,680px);padding:clamp(30px,5vw,76px) clamp(18px,5vw,72px);border-radius:clamp(18px,2.2vw,32px);color:#fff;background:#061a3b;border:1px solid #b8d7ff;box-shadow:0 20px 50px #092b5b30;margin:0 0 22px;}}
+.africa-topband:before{{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(90deg,#04142be8 0%,#061a3bbd 48%,#061a3b75 100%),linear-gradient(0deg,#061a3bd9 0%,transparent 58%,#061a3b45 100%);}}
+.africa-top-content{{position:relative;z-index:3;width:min(100%,1100px);text-align:center;margin:auto;padding:clamp(12px,3vw,34px) 0 75px;}}
+.africa-topband h1{{font-size:clamp(3rem,8.5vw,7.5rem);line-height:.96;letter-spacing:-.055em;font-weight:1000;margin:14px 0 20px;color:#fff;text-shadow:0 5px 24px #00132f;}}
+.africa-topband p{{font-size:clamp(1.05rem,2vw,1.55rem);line-height:1.65;color:#f2f7ff;margin:0 auto;max-width:900px;text-shadow:0 2px 12px #00132f;}}
+.africa-topband .top-kicker{{font-size:clamp(.72rem,1.3vw,.95rem);text-transform:uppercase;letter-spacing:.2em;line-height:1.8;font-weight:950;color:#e2eeff;text-shadow:0 2px 10px #00132f;}}
+.africa-topband .top-slogan{{display:inline-block;margin-top:24px;padding:12px 20px;border:1px solid #ffffffb0;border-radius:999px;background:#0b2d5db8;color:#fff;font-weight:950;letter-spacing:.045em;box-shadow:0 8px 28px #00132f55;}}
+.africa-photo-stage{{position:absolute;z-index:0;inset:0;width:100%;height:100%;min-width:0;overflow:hidden;border-radius:inherit;background:#061a3b;isolation:isolate;}}
 .africa-slide{{position:absolute;inset:0;opacity:0;animation:africaTopSlide 35s infinite;}}
 .africa-slide img{{position:absolute;inset:0;display:block;width:100%;height:100%;max-width:100%;object-fit:cover;object-position:center;transform:scale(1.02);animation:africaPhotoZoom 35s infinite;}}
-.africa-slide:after{{content:"";position:absolute;inset:30% 0 0;background:linear-gradient(180deg,transparent 0%,#061a3be8 100%);pointer-events:none;}}
-.africa-slide-caption{{position:absolute;z-index:2;left:clamp(12px,2vw,24px);right:clamp(12px,2vw,24px);bottom:clamp(14px,2vw,25px);color:#fff;font-size:clamp(.9rem,1.45vw,1.18rem);font-weight:900;line-height:1.35;text-shadow:0 2px 8px #00132f;}}
+.africa-slide:after{{content:"";position:absolute;inset:0;background:linear-gradient(180deg,#061a3b22 0%,transparent 35%,#061a3bd9 100%);pointer-events:none;}}
+.africa-slide-caption{{position:absolute;z-index:2;left:clamp(12px,2vw,28px);right:clamp(12px,2vw,28px);bottom:clamp(14px,2.2vw,30px);color:#fff;font-size:clamp(.9rem,1.6vw,1.3rem);font-weight:950;line-height:1.35;text-align:center;text-shadow:0 2px 10px #00132f;}}
 .africa-slide-caption small{{display:block;margin-top:5px;font-size:clamp(.72rem,1vw,.88rem);font-weight:650;line-height:1.45;color:#edf5ff;}}
 .africa-slide:nth-child(1){{animation-delay:0s}}.africa-slide:nth-child(1) img{{animation-delay:0s}}
 .africa-slide:nth-child(2){{animation-delay:5s}}.africa-slide:nth-child(2) img{{animation-delay:5s}}
@@ -298,8 +299,8 @@ div[data-testid="stDataFrame"]{{overflow-x:auto;}}
 .africa-slide:nth-child(7){{animation-delay:30s}}.africa-slide:nth-child(7) img{{animation-delay:30s}}
 @keyframes africaTopSlide{{0%{{opacity:0}} 2%,13%{{opacity:1}} 16%,100%{{opacity:0}}}}
 @keyframes africaPhotoZoom{{0%{{transform:scale(1.02)}} 13%{{transform:scale(1.13)}} 16%,100%{{transform:scale(1.13)}}}}
-@media(max-width:760px){{.africa-topband{{grid-template-columns:1fr;padding:24px 18px;gap:20px}}.africa-photo-stage{{height:clamp(250px,72vw,370px)}}.africa-topband h1{{font-size:clamp(2.55rem,12vw,4rem)}}.africa-slide-caption{{font-size:1rem}}}}
-@media(max-width:380px){{.africa-topband{{padding:20px 14px}}.africa-photo-stage{{height:245px;border-radius:17px}}.africa-topband .top-slogan{{font-size:.78rem;line-height:1.5;border-radius:15px}}}}
+@media(max-width:760px){{.africa-topband{{min-height:clamp(500px,120vw,650px);padding:25px 17px;border-radius:18px}}.africa-top-content{{padding:10px 0 95px}}.africa-topband h1{{font-size:clamp(2.8rem,13vw,5rem)}}.africa-topband p{{font-size:1.02rem;line-height:1.6}}.africa-topband .top-kicker{{letter-spacing:.12em}}.africa-topband .top-slogan{{line-height:1.5;border-radius:16px}}.africa-slide-caption{{font-size:1rem;bottom:13px}}}}
+@media(max-width:380px){{.africa-topband{{min-height:520px;padding:20px 13px;border-radius:15px}}.africa-topband .top-slogan{{font-size:.78rem;line-height:1.5;border-radius:15px}}.africa-top-content{{padding-bottom:105px}}}}
 @media(prefers-reduced-motion:reduce){{.africa-slide,.africa-slide img{{animation:none}}.africa-slide{{opacity:0}}.africa-slide:first-child{{opacity:1}}.africa-slide img{{transform:none}}}}
 
 /* Défilement XXL : navigation lisible, panneaux dynamiques et contenu révélé au scroll */
@@ -723,10 +724,10 @@ def header():
         )
     stage = '<div class="africa-photo-stage" aria-label="Carrousel de sept diapositives ASC AFRICA">' + ''.join(slides) + '</div>'
     st.markdown(f'''<section class="africa-topband" role="banner" aria-label="Présentation de l’ASC AFRICA">
-      <div><div class="top-kicker">SAINT-LOUIS • SÉNÉGAL • CLUB • SOLIDARITÉ</div>
+      {stage}<div class="africa-top-content"><div class="top-kicker">SAINT-LOUIS • SÉNÉGAL • CLUB • SOLIDARITÉ</div>
       <h1>ASC AFRICA</h1>
       <p>Plus qu’un club, une famille et une fierté partagée. Retrouvez les actualités, les activités et les initiatives de celles et ceux qui font vivre l’ASC AFRICA.</p>
-      <span class="top-slogan">{slogan}</span></div>{stage}</section>''', unsafe_allow_html=True)
+      <span class="top-slogan">{slogan}</span></div></section>''', unsafe_allow_html=True)
 
 
 def bottom_message():
