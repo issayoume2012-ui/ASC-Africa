@@ -188,7 +188,7 @@ a{{overflow-wrap:anywhere}}
 /* ASC AFRICA signature motion: contenus qui entrent progressivement au défilement */
 @keyframes africaReveal{{from{{opacity:0;transform:translateY(34px) scale(.985);filter:blur(3px)}}to{{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}}}}
 @keyframes africaShimmer{{0%{{background-position:0% 50%}}100%{{background-position:200% 50%}}}}
-.hero{{background-size:160% 160%;animation:africaReveal .75s cubic-bezier(.2,.75,.2,1) both,africaShimmer 12s ease-in-out infinite alternate;}}
+.hero{{background-size:160% 160%;animation:africaReveal .45s cubic-bezier(.2,.75,.2,1) both;}}
 .stButton>button{{transition:transform .22s ease,box-shadow .22s ease,filter .22s ease;}}
 .stButton>button:hover{{transform:translateY(-2px);box-shadow:0 10px 24px rgba(18,59,117,.18);filter:saturate(1.12);}}
 .news-cover{{transition:transform .65s cubic-bezier(.2,.7,.2,1),filter .5s ease;}}
@@ -286,7 +286,7 @@ div[data-testid="stDataFrame"]{{overflow-x:auto;}}
 .africa-topband .top-slogan{{display:inline-block;margin-top:24px;padding:12px 20px;border:1px solid #ffffffb0;border-radius:999px;background:#0b2d5db8;color:#fff;font-weight:950;letter-spacing:.045em;box-shadow:0 8px 28px #00132f55;}}
 .africa-photo-stage{{position:absolute;z-index:0;inset:0;width:100%;height:100%;min-width:0;overflow:hidden;border-radius:inherit;background:#061a3b;isolation:isolate;}}
 .africa-slide{{position:absolute;inset:0;opacity:0;animation:africaTopSlide 21s infinite;}}
-.africa-slide img{{position:absolute;inset:0;display:block;width:100%;height:100%;max-width:100%;object-fit:cover;object-position:center;filter:brightness(1.14) contrast(1.08) saturate(1.10);transform:scale(1.015);animation:africaPhotoZoom 21s infinite;}}
+.africa-slide img{{position:absolute;inset:0;display:block;width:100%;height:100%;max-width:100%;object-fit:cover;object-position:center;filter:brightness(1.08) contrast(1.04) saturate(1.06);transform:scale(1.015);animation:africaPhotoZoom 21s infinite;}}
 .africa-slide:after{{content:"";position:absolute;inset:0;background:linear-gradient(180deg,#061a3b08 0%,transparent 42%,#061a3b9e 100%);pointer-events:none;}}
 .africa-slide-caption{{position:absolute;z-index:2;left:clamp(12px,2vw,28px);right:clamp(12px,2vw,28px);bottom:clamp(14px,2.2vw,30px);color:#fff;font-size:clamp(.9rem,1.6vw,1.3rem);font-weight:950;line-height:1.35;text-align:center;text-shadow:0 2px 10px #00132f;}}
 .africa-slide-caption small{{display:block;margin-top:5px;font-size:clamp(.72rem,1vw,.88rem);font-weight:650;line-height:1.45;color:#edf5ff;}}
@@ -422,9 +422,8 @@ components.html("""
       const style = doc.createElement("style");
       style.textContent = `
         .asc-scroll-reveal { opacity: 0; transform: translateY(34px) scale(.985);
-          filter: blur(2px); transition: opacity .72s cubic-bezier(.2,.7,.2,1),
-          transform .72s cubic-bezier(.2,.7,.2,1), filter .72s ease; }
-        .asc-scroll-reveal.asc-visible { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+          filter: none; transition: opacity .35s ease, transform .35s ease; }
+        .asc-scroll-reveal.asc-visible { opacity: 1; transform: translateY(0) scale(1); filter: none; }
         .asc-scroll-reveal.asc-visible:hover { transform: translateY(-4px); }
         @media (prefers-reduced-motion: reduce) {
           .asc-scroll-reveal, .asc-scroll-reveal.asc-visible { opacity: 1; transform: none;
@@ -454,7 +453,12 @@ components.html("""
         });
       }
       scan();
-      new window.parent.MutationObserver(scan).observe(doc.body, {childList:true,subtree:true});
+      let scanQueued = false;
+      new window.parent.MutationObserver(() => {
+        if (scanQueued) return;
+        scanQueued = true;
+        window.parent.requestAnimationFrame(() => { scanQueued = false; scan(); });
+      }).observe(doc.body, {childList:true,subtree:true});
     } catch (e) { /* Les styles CSS de secours restent actifs. */ }
   }
   installReveal();
@@ -466,7 +470,6 @@ def connect():
     con = sqlite3.connect(DB_PATH, timeout=20, check_same_thread=False)
     con.row_factory = sqlite3.Row
     con.execute("PRAGMA foreign_keys=ON")
-    con.execute("PRAGMA journal_mode=WAL")
     return con
 
 def pw_hash(password, salt=None):
@@ -717,7 +720,7 @@ def header():
         slides.append(
             '<div class="africa-slide">'
             f'<img src="{html.escape(src, quote=True)}" alt="{html.escape(alt, quote=True)}" '
-            f'loading="eager" decoding="async" referrerpolicy="no-referrer" '
+            f'loading="{'eager' if index == 1 else 'lazy'}" decoding="async" referrerpolicy="no-referrer" '
             '>'
             f'<div class="africa-slide-caption">{html.escape(title)}'
             f'<small>{html.escape(message)}</small></div></div>'
