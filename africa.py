@@ -310,19 +310,26 @@ div[data-testid="stDataFrame"]{{overflow-x:auto;}}
 .africa-topband{{box-sizing:border-box;position:relative;isolation:isolate;overflow:hidden;width:100%;min-height:clamp(440px,53vw,700px);padding:clamp(24px,5vw,72px);border-radius:clamp(18px,2.5vw,34px);margin:0 0 22px;color:#fff;background:#06152c;border-bottom:6px solid #f4bd38;box-shadow:0 24px 60px rgba(6,21,44,.25);}}
 .africa-photo-stage{{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;min-width:0!important;min-height:0!important;overflow:hidden;border-radius:inherit;background:#06152c;z-index:0!important;}}
 .africa-photo-stage:after{{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(3,15,38,.91) 0%,rgba(5,28,62,.72) 45%,rgba(5,20,42,.18) 100%),linear-gradient(0deg,rgba(3,15,38,.62),transparent 70%);z-index:1;pointer-events:none;}}
-.africa-photo-stage img{{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;object-fit:cover!important;object-position:center!important;border-radius:inherit;opacity:0;animation:africaTopSlide 42s infinite;will-change:opacity,transform;filter:saturate(1.12) contrast(1.04);}}
-.africa-photo-stage img:nth-child(1){{animation-delay:0s}}.africa-photo-stage img:nth-child(2){{animation-delay:6s}}.africa-photo-stage img:nth-child(3){{animation-delay:12s}}.africa-photo-stage img:nth-child(4){{animation-delay:18s}}.africa-photo-stage img:nth-child(5){{animation-delay:24s}}.africa-photo-stage img:nth-child(6){{animation-delay:30s}}.africa-photo-stage img:nth-child(7){{animation-delay:36s}}
+.africa-top-slide{{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;opacity:0;animation:africaTopSlide 21s infinite;will-change:opacity;overflow:hidden;}}
+.africa-top-slide img{{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;object-fit:cover!important;object-position:center!important;border-radius:inherit;animation:africaPhotoZoom 3s ease-in-out infinite alternate;filter:saturate(1.12) contrast(1.04);}}
+.africa-top-slide:nth-child(1){{animation-delay:0s}}.africa-top-slide:nth-child(2){{animation-delay:3s}}.africa-top-slide:nth-child(3){{animation-delay:6s}}.africa-top-slide:nth-child(4){{animation-delay:9s}}.africa-top-slide:nth-child(5){{animation-delay:12s}}.africa-top-slide:nth-child(6){{animation-delay:15s}}.africa-top-slide:nth-child(7){{animation-delay:18s}}
+.africa-top-slide-copy{{position:absolute;z-index:3;right:clamp(16px,4vw,56px);bottom:clamp(18px,4vw,44px);max-width:min(560px,75%);padding:clamp(13px,2vw,22px);border-left:5px solid #f4bd38;background:linear-gradient(110deg,rgba(5,20,42,.91),rgba(5,20,42,.48));border-radius:4px 18px 18px 4px;box-shadow:0 10px 35px #0004;backdrop-filter:blur(5px);}}
+.africa-top-slide-copy small{{display:block;color:#ffdc72;font-weight:950;letter-spacing:.15em;text-transform:uppercase;font-size:clamp(.62rem,.9vw,.78rem);margin-bottom:7px}}
+.africa-top-slide-copy strong{{display:block;color:#fff;font-weight:1000;font-size:clamp(1.1rem,3vw,2.35rem);line-height:1.02;letter-spacing:-.025em;text-shadow:0 3px 15px #0008}}
+.africa-top-slide-copy span{{display:block;color:#f1f5fb;font-size:clamp(.8rem,1.2vw,1rem);line-height:1.45;margin-top:8px;font-weight:600}}
 .africa-topband-copy{{position:relative;z-index:2;max-width:960px;padding-top:clamp(16px,5vw,64px);}}
 .africa-topband h1{{font-size:clamp(2.8rem,8vw,7rem);line-height:.92;letter-spacing:-.055em;font-weight:1000;margin:16px 0 20px;color:#fff;text-shadow:0 6px 30px #0008;}}
 .africa-topband p{{font-size:clamp(1.05rem,1.9vw,1.42rem);line-height:1.6;color:#f3f7ff;margin:0;max-width:760px;font-weight:600;text-shadow:0 2px 14px #0008;}}
 .africa-topband .top-kicker{{display:inline-flex;align-items:center;gap:10px;font-size:clamp(.68rem,1vw,.82rem);text-transform:uppercase;letter-spacing:.17em;font-weight:950;color:#ffdc72;}}
 .africa-topband .top-kicker:before{{content:"";width:34px;height:4px;background:#f4bd38;border-radius:5px;}}
 .africa-topband .top-slogan{{display:inline-flex;align-items:center;margin-top:24px;padding:12px 17px;border:1px solid #ffffff70;border-left:4px solid #f4bd38;border-radius:7px 18px 18px 7px;background:rgba(5,20,42,.45);backdrop-filter:blur(8px);font-weight:950;letter-spacing:.04em;color:#fff;}}
-@keyframes africaTopSlide{{0%{{opacity:0;transform:scale(1.12)}}2%,14.2%{{opacity:1;transform:scale(1.035)}}16.7%,100%{{opacity:0;transform:scale(1)}}}}
+@keyframes africaTopSlide{{0%{{opacity:0}}2%,13.8%{{opacity:1}}14.3%,100%{{opacity:0}}}}
+@keyframes africaPhotoZoom{{from{{transform:scale(1.04)}}to{{transform:scale(1.16)}}}}
 @media(min-width:701px) and (max-width:1050px){{.africa-topband{{min-height:clamp(460px,58vw,620px);padding:clamp(24px,4vw,42px)}}.africa-topband-copy{{padding-top:clamp(28px,5vw,60px)}}}}
 @media(max-width:700px){{.africa-topband{{min-height:clamp(480px,135vw,650px);padding:24px 19px;border-radius:19px;margin-bottom:17px}}.africa-topband-copy{{padding-top:clamp(35px,10vw,76px)}}.africa-topband h1{{font-size:clamp(2.8rem,13vw,4.5rem);overflow-wrap:anywhere;margin:15px 0}}.africa-topband p{{font-size:1rem;line-height:1.55}}.africa-topband .top-kicker{{font-size:.66rem;letter-spacing:.1em;line-height:1.5}}.africa-topband .top-slogan{{font-size:.78rem;line-height:1.4;max-width:100%;white-space:normal;margin-top:19px}}}}
 @media(max-width:380px){{.africa-topband{{min-height:500px;padding:20px 14px}}.africa-topband h1{{font-size:2.55rem}}}}
-@media(prefers-reduced-motion:reduce){{.africa-photo-stage img{{animation:none!important;opacity:0}}.africa-photo-stage img:first-child{{opacity:1;transform:none}}}}
+@media(max-width:700px){{.africa-top-slide-copy{{right:12px;bottom:14px;left:12px;max-width:none;padding:12px 14px}}.africa-top-slide-copy strong{{font-size:clamp(1.05rem,5.5vw,1.6rem)}}.africa-top-slide-copy span{{font-size:.82rem}}}}
+@media(prefers-reduced-motion:reduce){{.africa-top-slide{{animation:none!important;opacity:0}}.africa-top-slide:first-child{{opacity:1}}.africa-top-slide img{{animation:none!important;transform:none!important}}}}
 
 /* Galerie XXL : trois cartes photo immersives, accents or et vert */
 .africa-gallery-section{{margin:clamp(30px,5vw,64px) 0;}}
@@ -737,21 +744,30 @@ def header():
     """Bandeau XXL animé : fait défiler im1.png à im7.png si les fichiers existent."""
     slogan = html.escape(SLOGAN)
     images = [
-        (APP_DIR / "im1.png", "ASC AFRICA — Notre histoire"),
-        (APP_DIR / "im2.png", "ASC AFRICA — Les supporters"),
-        (APP_DIR / "im3.png", "ASC AFRICA — L'équipe"),
-        (APP_DIR / "im4.png", "ASC AFRICA — La passion du club"),
-        (APP_DIR / "im5.png", "ASC AFRICA — La fierté de Saint-Louis"),
-        (APP_DIR / "im6.png", "ASC AFRICA — Un groupe, une famille"),
-        (APP_DIR / "im7.png", "ASC AFRICA — AFRICA KASSÉ, AFRICA REK"),
+        ("im1.png", "NOTRE HISTOIRE", "UNE FIERTÉ. UNE FAMILLE.", "Une histoire commune, des couleurs qui nous rassemblent."),
+        ("im2.png", "NOS SUPPORTERS", "NOTRE FORCE, C’EST VOUS.", "Chaque voix compte. Votre énergie porte l’ASC AFRICA."),
+        ("im3.png", "L’ÉQUIPE", "UN GROUPE. UN MÊME COMBAT.", "Discipline, courage et solidarité à chaque étape."),
+        ("im4.png", "LA PASSION", "SAINT-LOUIS VIBRE AFRICA.", "Le football nous rassemble et fait vibrer toute une ville."),
+        ("im5.png", "NOS COULEURS", "PORTONS HAUT NOTRE FIERTÉ.", "Un maillot, une identité, une ambition collective."),
+        ("im6.png", "LA SOLIDARITÉ", "ENSEMBLE, PLUS FORTS.", "Dans l’effort comme dans l’épreuve, personne n’avance seul."),
+        ("im7.png", "AFRICA KASSÉ", "AFRICA KASSÉ. AFRICA REK.", "Une équipe, une famille, la fierté de Saint-Louis."),
     ]
     image_tags = []
-    for path, alt in images:
+    for index, (filename, kicker, title, message) in enumerate(images, start=1):
+        path = APP_DIR / filename
         if path.exists():
             uri = _logo_data_uri(path)
             if uri:
-                image_tags.append(f'<img src="{uri}" alt="{html.escape(alt, quote=True)}">')
-    stage = '<div class="africa-photo-stage" aria-label="Galerie animée ASC AFRICA">' + ''.join(image_tags) + '</div>' if image_tags else ''
+                image_tags.append(
+                    f'<article class="africa-top-slide" aria-label="{html.escape(title, quote=True)}">'
+                    f'<img src="{uri}" alt="{html.escape(kicker, quote=True)}">'
+                    '<div class="africa-top-slide-copy">'
+                    f'<small>{html.escape(kicker)}</small>'
+                    f'<strong>{html.escape(title)}</strong>'
+                    f'<span>{html.escape(message)}</span>'
+                    '</div></article>'
+                )
+    stage = '<div class="africa-photo-stage" aria-label="Bannière animée ASC AFRICA">' + ''.join(image_tags) + '</div>' if image_tags else ''
     st.markdown(f'''<section class="africa-topband" role="banner" aria-label="Présentation de l’ASC AFRICA">
       {stage}<div class="africa-topband-copy"><div class="top-kicker">Saint-Louis • Sénégal • La passion du club</div>
       <h1>ASC AFRICA</h1>
