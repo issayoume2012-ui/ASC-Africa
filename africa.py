@@ -1773,7 +1773,7 @@ def whatsapp_reminders_page():
           AND NOT EXISTS (
               SELECT 1 FROM payments p
               WHERE p.member_id = m.id
-                AND LOWER(COALESCE(p.payment_type, '')) LIKE 'cotisation membre%'
+                AND LOWER(COALESCE(p.payment_type, '')) LIKE 'cotisation membre%%'
                 AND LOWER(TRIM(COALESCE(p.period, ''))) = LOWER(TRIM(?))
           )
         ORDER BY m.full_name
