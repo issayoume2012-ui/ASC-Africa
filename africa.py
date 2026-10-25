@@ -1769,11 +1769,45 @@ def whatsapp_reminders_page():
         periode = st.text_input("Période de cotisation à vérifier", value=periode_defaut,
                                help="Saisissez le mois et l’année comme dans le champ « Période concernée » des paiements, par exemple « Octobre 2026 ». La comparaison ignore les majuscules et les espaces en début/fin.")
     with b:
-        st.caption("Le recensement vérifie les membres actifs et recherche un paiement dont le type commence par « Cotisation membre » et dont la période correspond au mois choisi. "
-                   "Pour que le résultat soit fiable, utilisez la même écriture du mois et de l’année dans « Période concernée » lors de l’enregistrement du paiement (ex. « Octobre 2026 »). Vérifiez les encaissements avant toute relance.")
+        st.caption("Le recensement affiche les membres actifs qui ne sont pas à jour : leur cotisation du mois sélectionné n’est pas retrouvée dans les paiements. Les variantes d’écriture de la période (espaces, tirets ou barres) sont acceptées. Si la période du paiement est vide, la date du paiement sert de repère. Vérifiez toujours les encaissements avant une relance.")
     if not periode.strip():
         st.warning("Veuillez préciser une période.")
         return
+
+    # Convertit « Octobre 2026 » en « 2026-10 » pour repérer aussi les
+    # paiements du mois dont le champ « période » n'a pas été renseigné.
+    mois_noms = {
+        "janvier": 1, "janv": 1, "january": 1,
+        "fevrier": 2, "fevr": 2, "february": 2,
+        "mars": 3, "march": 3,
+        "avril": 4, "avr": 4, "april": 4,
+        "mai": 5, "may": 5,
+        "juin": 6, "june": 6,
+        "juillet": 7, "juil": 7, "july": 7,
+        "aout": 8, "august": 8,
+        "septembre": 9, "sept": 9, "september": 9,
+        "octobre": 10, "oct": 10, "october": 10,
+        "novembre": 11, "nov": 11, "november": 11,
+        "decembre": 12, "dec": 12, "december": 12,
+    }
+    import re
+    import unicodedata
+    periode_simple = unicodedata.normalize("NFKD", periode.strip().lower())
+    periode_simple = "".join(ch for ch in periode_simple if not unicodedata.combining(ch))
+    chiffres = re.search(r"(20\d{2})", periode_simple)
+    annee_mois = None
+    if chiffres:
+        annee = chiffres.group(1)
+        mois_texte = re.sub(r"20\d{2}", " ", periode_simple)
+        mois_texte = re.sub(r"[^a-z]", " ", mois_texte).strip()
+        mois_num = mois_noms.get(mois_texte)
+        if mois_num:
+            annee_mois = f"{annee}-{mois_num:02d}"
+    # Accepte aussi les périodes saisies au format YYYY-MM.
+    if not annee_mois:
+        iso_mois = re.search(r"(20\d{2})[-/](0?[1-9]|1[0-2])", periode_simple)
+        if iso_mois:
+            annee_mois = f"{iso_mois.group(1)}-{int(iso_mois.group(2)):02d}"
 
     unpaid = query_df("""
         SELECT m.id, m.member_no, m.full_name, m.phone
@@ -1783,10 +1817,17 @@ def whatsapp_reminders_page():
               SELECT 1 FROM payments p
               WHERE p.member_id = m.id
                 AND LEFT(LOWER(TRIM(COALESCE(p.payment_type, ''))), LENGTH('cotisation membre')) = 'cotisation membre'
-                AND LOWER(TRIM(COALESCE(p.period, ''))) = LOWER(TRIM(?))
+                AND (
+                    LOWER(REGEXP_REPLACE(TRIM(COALESCE(p.period, '')), '[[:space:][:punct:]]', '', 'g'))
+                    = LOWER(REGEXP_REPLACE(TRIM(?), '[[:space:][:punct:]]', '', 'g'))
+                    OR (
+                        COALESCE(TRIM(p.period), '') = ''
+                        AND SUBSTRING(COALESCE(p.payment_date, '') FROM 1 FOR 7) = ?
+                    )
+                )
           )
         ORDER BY m.full_name
-    """, (periode.strip(),))
+    """, (periode.strip(), annee_mois))
     total = len(unpaid)
     sans_tel = int(unpaid["phone"].fillna("").astype(str).str.strip().eq("").sum()) if total else 0
     m1, m2, m3 = st.columns(3)
