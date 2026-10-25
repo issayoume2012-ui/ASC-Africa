@@ -1745,7 +1745,16 @@ st.markdown(r"""<style>
 
 def whatsapp_reminders_page():
     """Liste les membres sans cotisation enregistrée pour une période et prépare les rappels WhatsApp."""
-    st.markdown('<div class="section">📲 Rappels de cotisation par WhatsApp</div>', unsafe_allow_html=True)
+    # Affiche le logo officiel ASC AFRICA s'il est présent dans le dépôt.
+    club_logo = next((p for p in LOGO_PATHS if p.exists()), None)
+    if club_logo:
+        logo_col, title_col = st.columns([1, 5], vertical_alignment="center")
+        with logo_col:
+            st.image(str(club_logo), width=115)
+        with title_col:
+            st.markdown('<div class="section">📲 Rappels de cotisation par WhatsApp</div>', unsafe_allow_html=True)
+    else:
+        st.markdown('<div class="section">📲 Rappels de cotisation par WhatsApp</div>', unsafe_allow_html=True)
     st.markdown(
         "<div class='admin-banner'><div class='kicker'>Suivi des cotisations · Relance respectueuse</div>"
         "<h2>Membres à relancer</h2><p>Repérez les membres dont la cotisation n’est pas enregistrée pour la période choisie, "
@@ -1758,10 +1767,10 @@ def whatsapp_reminders_page():
     a, b = st.columns([1, 2])
     with a:
         periode = st.text_input("Période de cotisation à vérifier", value=periode_defaut,
-                               help="Utilisez la même période que celle enregistrée lors de l’encaissement, par exemple « Octobre 2026 ».")
+                               help="Saisissez le mois et l’année comme dans le champ « Période concernée » des paiements, par exemple « Octobre 2026 ». La comparaison ignore les majuscules et les espaces en début/fin.")
     with b:
-        st.caption("Le contrôle compare la période au champ « Période concernée » des encaissements de type « Cotisation membre ». "
-                   "Vérifiez que les paiements ont bien été enregistrés pour éviter les relances erronées.")
+        st.caption("Le recensement vérifie les membres actifs et recherche un paiement dont le type commence par « Cotisation membre » et dont la période correspond au mois choisi. "
+                   "Pour que le résultat soit fiable, utilisez la même écriture du mois et de l’année dans « Période concernée » lors de l’enregistrement du paiement (ex. « Octobre 2026 »). Vérifiez les encaissements avant toute relance.")
     if not periode.strip():
         st.warning("Veuillez préciser une période.")
         return
@@ -1769,11 +1778,11 @@ def whatsapp_reminders_page():
     unpaid = query_df("""
         SELECT m.id, m.member_no, m.full_name, m.phone
         FROM members m
-        WHERE COALESCE(m.status, 'Actif') = 'Actif'
+        WHERE LOWER(TRIM(COALESCE(m.status, 'Actif'))) = 'actif'
           AND NOT EXISTS (
               SELECT 1 FROM payments p
               WHERE p.member_id = m.id
-                AND LOWER(COALESCE(p.payment_type, '')) LIKE 'cotisation membre%%'
+                AND LEFT(LOWER(TRIM(COALESCE(p.payment_type, ''))), LENGTH('cotisation membre')) = 'cotisation membre'
                 AND LOWER(TRIM(COALESCE(p.period, ''))) = LOWER(TRIM(?))
           )
         ORDER BY m.full_name
@@ -1786,17 +1795,15 @@ def whatsapp_reminders_page():
     m3.metric("Sans téléphone", sans_tel)
 
     message_defaut = (
-        "Asalaam aleykoum {prenom} 🙏🏾\n\n"
-        "Naka nga def ? Nous espérons que tu vas bien. Petit rappel amical concernant ta cotisation ASC AFRICA "
-        "pour la période de {periode}. Souniou club mooy sunu famille, et chaque contribution compte pour faire avancer nos activités.\n\n"
-        "Bu fekkee nga fayoon ba pare, jërëjëf te baal nu — tu peux ignorer ce message. Sinon, merci de régulariser "
-        "dès que possible ou de contacter l’administration si tu as une question.\n\n"
-        "Jërëjëf ci sa ndimbal ak sa ngor. Ensemble, AFRICA KASSÉ, AFRICA REK ! ⚽💙"
+        "Asalaam maalekum {prenom} 🙏🏾\n"
+        "Petit rappel : ta cotisation ASC AFRICA pour {periode} n’est pas encore enregistrée.\n"
+        "Merci de penser au paiement dès que possible pour soutenir les activités du club. Jërëjëf ! ⚽💙\n"
+        "ASC AFRICA — AFRICA KASSÉ, AFRICA REK"
     )
-    with st.expander("✍️ Personnaliser le message de rappel", expanded=True):
+    with st.expander("✍️ Personnaliser le message de rappel", expanded=False):
         template = st.text_area("Message WhatsApp (variables : {prenom}, {nom}, {periode})",
-                                value=message_defaut, height=210)
-        st.caption("Le message reste courtois et prévoit le cas où le membre aurait déjà payé. L’envoi est effectué par l’administrateur dans WhatsApp.")
+                                value=message_defaut, height=120)
+        st.caption("Message court en français simple, avec une formule de salutation wolof. Vérifiez les paiements avant l’envoi. Le logo est affiché dans l’application ; WhatsApp ne permet pas d’intégrer automatiquement une image dans le texte prérempli, vous pouvez joindre le logo manuellement dans WhatsApp si besoin.")
     if unpaid.empty:
         st.success(f"Tous les membres actifs ont une cotisation enregistrée pour « {periode} ».")
         return
