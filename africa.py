@@ -1742,6 +1742,92 @@ st.markdown(r"""<style>
 }
 </style>""",unsafe_allow_html=True)
 
+
+def whatsapp_reminders_page():
+    """Liste les membres sans cotisation enregistrée pour une période et prépare les rappels WhatsApp."""
+    st.markdown('<div class="section">📲 Rappels de cotisation par WhatsApp</div>', unsafe_allow_html=True)
+    st.markdown(
+        "<div class='admin-banner'><div class='kicker'>Suivi des cotisations · Relance respectueuse</div>"
+        "<h2>Membres à relancer</h2><p>Repérez les membres dont la cotisation n’est pas enregistrée pour la période choisie, "
+        "puis préparez un message personnalisé en français et en wolof. Chaque bouton ouvre WhatsApp avec le texte prérempli.</p></div>",
+        unsafe_allow_html=True
+    )
+    mois_fr = ["janvier", "février", "mars", "avril", "mai", "juin",
+               "juillet", "août", "septembre", "octobre", "novembre", "décembre"]
+    periode_defaut = f"{mois_fr[date.today().month - 1].capitalize()} {date.today().year}"
+    a, b = st.columns([1, 2])
+    with a:
+        periode = st.text_input("Période de cotisation à vérifier", value=periode_defaut,
+                               help="Utilisez la même période que celle enregistrée lors de l’encaissement, par exemple « Octobre 2026 ».")
+    with b:
+        st.caption("Le contrôle compare la période au champ « Période concernée » des encaissements de type « Cotisation membre ». "
+                   "Vérifiez que les paiements ont bien été enregistrés pour éviter les relances erronées.")
+    if not periode.strip():
+        st.warning("Veuillez préciser une période.")
+        return
+
+    unpaid = query_df("""
+        SELECT m.id, m.member_no, m.full_name, m.phone
+        FROM members m
+        WHERE COALESCE(m.status, 'Actif') = 'Actif'
+          AND NOT EXISTS (
+              SELECT 1 FROM payments p
+              WHERE p.member_id = m.id
+                AND LOWER(COALESCE(p.payment_type, '')) LIKE 'cotisation membre%'
+                AND LOWER(TRIM(COALESCE(p.period, ''))) = LOWER(TRIM(?))
+          )
+        ORDER BY m.full_name
+    """, (periode.strip(),))
+    total = len(unpaid)
+    sans_tel = int(unpaid["phone"].fillna("").astype(str).str.strip().eq("").sum()) if total else 0
+    m1, m2, m3 = st.columns(3)
+    m1.metric("Membres actifs à relancer", total)
+    m2.metric("Avec numéro renseigné", total - sans_tel)
+    m3.metric("Sans téléphone", sans_tel)
+
+    message_defaut = (
+        "Asalaam aleykoum {prenom} 🙏🏾\n\n"
+        "Naka nga def ? Nous espérons que tu vas bien. Petit rappel amical concernant ta cotisation ASC AFRICA "
+        "pour la période de {periode}. Souniou club mooy sunu famille, et chaque contribution compte pour faire avancer nos activités.\n\n"
+        "Bu fekkee nga fayoon ba pare, jërëjëf te baal nu — tu peux ignorer ce message. Sinon, merci de régulariser "
+        "dès que possible ou de contacter l’administration si tu as une question.\n\n"
+        "Jërëjëf ci sa ndimbal ak sa ngor. Ensemble, AFRICA KASSÉ, AFRICA REK ! ⚽💙"
+    )
+    with st.expander("✍️ Personnaliser le message de rappel", expanded=True):
+        template = st.text_area("Message WhatsApp (variables : {prenom}, {nom}, {periode})",
+                                value=message_defaut, height=210)
+        st.caption("Le message reste courtois et prévoit le cas où le membre aurait déjà payé. L’envoi est effectué par l’administrateur dans WhatsApp.")
+    if unpaid.empty:
+        st.success(f"Tous les membres actifs ont une cotisation enregistrée pour « {periode} ».")
+        return
+
+    st.dataframe(
+        unpaid[["member_no", "full_name", "phone"]].rename(
+            columns={"member_no": "N° membre", "full_name": "Nom complet", "phone": "Téléphone"}
+        ), use_container_width=True, hide_index=True
+    )
+    st.markdown("### Préparer les rappels individuels")
+    for _, member in unpaid.iterrows():
+        name = str(member.get("full_name") or "Membre")
+        phone = str(member.get("phone") or "").strip()
+        prenom = name.split()[0] if name.split() else name
+        try:
+            msg = template.format(prenom=prenom, nom=name, periode=periode.strip())
+        except (KeyError, ValueError):
+            st.error("Le modèle contient une variable inconnue ou des accolades incorrectes. Utilisez uniquement {prenom}, {nom} et {periode}.")
+            break
+        left, right = st.columns([3, 1])
+        with left:
+            st.write(f"**{name}** · {phone or 'Téléphone non renseigné'}")
+        with right:
+            url = whatsapp_url(phone, msg)
+            if url:
+                st.link_button("💬 Ouvrir WhatsApp", url, use_container_width=True)
+            else:
+                st.button("Numéro manquant", disabled=True, key=f"wa_missing_{int(member.id)}", use_container_width=True)
+    st.info("Pour des raisons de sécurité et de respect des membres, ces boutons n’envoient pas automatiquement les messages : "
+            "ils ouvrent WhatsApp avec le message prérempli, que l’administrateur peut vérifier puis envoyer.")
+
 def main():
     if "authenticated" not in st.session_state: st.session_state.authenticated=False
     if not st.session_state.authenticated:
@@ -1760,7 +1846,7 @@ def main():
     st.markdown(f"<div class='admin-banner'><div class='kicker'>ASC AFRICA · Administration sécurisée</div><h2>Centre de pilotage du club</h2><p>Connecté : <b>{html.escape(str(st.session_state.actor))}</b> · Les données publiques et administratives sont reliées à Supabase PostgreSQL.</p></div>",unsafe_allow_html=True)
     role = st.session_state.get("actor_role", "admin")
     is_admin = role == "admin"
-    finance_sections = ["🏠 Tableau de bord financier", "💳 Cotisations & cartes", "💰 Trésorerie", "📊 Rapports & exports"]
+    finance_sections = ["🏠 Tableau de bord financier", "💳 Cotisations & cartes", "📲 Rappels WhatsApp", "💰 Trésorerie", "📊 Rapports & exports"]
     affairs_sections = ["👥 Membres", "📅 Activités", "📰 Communication"]
     if is_admin:
         bureau_options = ["💰 Finances globales", "🏛️ Affaires administratives", "🛡️ Contrôle & paramètres"]
@@ -1808,6 +1894,7 @@ def main():
         st.info("Le bureau des Finances suit les cotisations, contributions partenaires, recettes, dépenses, modes de paiement, justificatifs et rapports périodiques.")
     elif nav=="👥 Membres": members_page()
     elif nav=="💳 Cotisations & cartes": payments_page()
+    elif nav=="📲 Rappels WhatsApp": whatsapp_reminders_page()
     elif nav=="💰 Trésorerie": cash_page()
     elif nav=="📅 Activités": activities_page()
     elif nav=="📰 Communication": news_sponsors_page()
