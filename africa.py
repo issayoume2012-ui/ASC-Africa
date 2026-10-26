@@ -484,8 +484,19 @@ class PgCompatConnection:
         return sql.replace("?", "%s")
 
     def execute(self, sql, params=()):
+        """Exécute une requête PostgreSQL sans interpréter les % des LIKE.
+
+        psycopg2 traite les caractères % comme des marqueurs de format lorsqu'on
+        lui passe un tuple de paramètres, même vide. Les requêtes sans paramètres
+        contenant LIKE '%texte%' provoquaient ainsi IndexError: tuple index out of range.
+        """
         cur = self.raw.cursor(cursor_factory=RealDictCursor)
-        cur.execute(self._sql(sql), tuple(params or ()))
+        statement = self._sql(sql)
+        values = tuple(params or ())
+        if values:
+            cur.execute(statement, values)
+        else:
+            cur.execute(statement)
         return cur
 
     def executescript(self, script):
